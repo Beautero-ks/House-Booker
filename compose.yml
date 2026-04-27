@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  api-gateway:
+    image: housebooker/api-gateway:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    networks:
+      - housebooker-network
+
+  auth-service:
+    image: housebooker/auth-service:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/auth_db
+    depends_on:
+      - eureka-server
+      - postgres-auth
+    networks:
+      - housebooker-network
+
+networks:
+  housebooker-network:
+    external: true  # Utilise le réseau créé par le fichier d'infrastructure
