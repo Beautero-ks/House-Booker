@@ -124,8 +124,8 @@ docker-compose up -d
 
 ## 🌐 Accès
 
-* Frontend : http://localhost
-* API Gateway : http://localhost:8080
+* Frontend : http://localhost:3000
+* API Gateway : http://localhost:8082
 
 ---
 
@@ -157,6 +157,10 @@ Les contributions sont les bienvenues !
 5. Ouvrir une Pull Request
 
 ---
+
+## Liens rapide
+
+[Architecture de l'application](./docs/architecture.md)
 
 ## 📄 Licence
 
