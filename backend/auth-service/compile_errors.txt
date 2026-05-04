@@ -1,0 +1,33 @@
+[ERROR] COMPILATION ERROR : 
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[36,22] cannot find symbol
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[45,17] cannot find symbol
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[60,36] cannot find symbol
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[64,16] cannot find symbol
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[70,12] cannot find symbol
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/job/OtpCleanerJob.java:[30,41] cannot find symbol
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project auth-service: Compilation failure: Compilation failure: 
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[36,22] cannot find symbol
+[ERROR]   symbol:   method invalidateAllByUserId(java.util.UUID)
+[ERROR]   location: variable otpRepository of type com.intergiciel.auth_service.repository.OtpRepository
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[45,17] cannot find symbol
+[ERROR]   symbol:   method used(boolean)
+[ERROR]   location: class com.intergiciel.auth_service.entity.OtpCode.OtpCodeBuilder
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[60,36] cannot find symbol
+[ERROR]   symbol:   method findValidOtp(java.util.UUID,java.lang.String)
+[ERROR]   location: variable otpRepository of type com.intergiciel.auth_service.repository.OtpRepository
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[64,16] cannot find symbol
+[ERROR]   symbol:   method setUsed(boolean)
+[ERROR]   location: variable otp of type com.intergiciel.auth_service.entity.OtpCode
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[70,12] cannot find symbol
+[ERROR]   symbol:   method setUsed(boolean)
+[ERROR]   location: variable otp of type com.intergiciel.auth_service.entity.OtpCode
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/job/OtpCleanerJob.java:[30,41] cannot find symbol
+[ERROR]   symbol:   method deleteExpiredAndUsed(java.time.LocalDateTime)
+[ERROR]   location: variable otpRepository of type com.intergiciel.auth_service.repository.OtpRepository
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

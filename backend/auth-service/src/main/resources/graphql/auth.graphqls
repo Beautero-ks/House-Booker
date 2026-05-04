@@ -1,0 +1,269 @@
+# ============================================================
+# auth.graphqls
+# Schéma GraphQL complet du Auth-Service
+# Basé sur les spécifications métier :
+#   - Inscription avec name, email, password, phoneNumber
+#   - Génération OTP après inscription → envoyé par Notification-Service via Kafka
+#   - Vérification du compte via OTP
+#   - Connexion uniquement si compte vérifié
+#   - Access Token (15min) + Refresh Token (7j)
+#   - Renouvellement du token après expiration
+#   - Renvoi OTP si expiré
+# ============================================================
+
+
+# ─────────────────────────────────────────────────────────────
+# SCALARS
+# ─────────────────────────────────────────────────────────────
+
+
+
+
+# ─────────────────────────────────────────────────────────────
+# TYPES DE RÉPONSE
+# ─────────────────────────────────────────────────────────────
+
+"""
+Réponse retournée par toutes les mutations d'authentification.
+Les champs accessToken et refreshToken sont null pour les
+mutations qui ne génèrent pas de tokens (ex: verifyOtp, resendOtp).
+"""
+type AuthResponse {
+
+    "Indique si l'opération a réussi"
+    success: Boolean!
+
+    "Message descriptif du résultat (succès ou erreur métier)"
+    message: String!
+
+    """
+    Token JWT d'accès — durée de vie : 15 minutes.
+    À envoyer dans le header Authorization: Bearer <accessToken>
+    pour chaque requête authentifiée vers les autres microservices.
+    Présent uniquement après register et login.
+    """
+    accessToken: String
+
+    """
+    Token JWT de rafraîchissement — durée de vie : 7 jours.
+    Permet de renouveler l'accessToken sans reconnexion.
+    À stocker de manière sécurisée côté client.
+    Présent uniquement après register et login.
+    """
+    refreshToken: String
+
+    "Informations de base sur l'utilisateur concerné"
+    user: UserInfo
+}
+
+"""
+Informations de base retournées sur l'utilisateur.
+"""
+type UserInfo {
+
+    "Identifiant unique UUID de l'utilisateur"
+    id: String!
+
+    "Nom complet de l'utilisateur"
+    name: String!
+
+    "Adresse email unique de l'utilisateur"
+    email: String!
+
+    "Numéro de téléphone de l'utilisateur"
+    phoneNumber: String
+
+    """
+    Indique si le compte a été vérifié via OTP.
+    false → le compte ne peut pas encore se connecter.
+    true  → le compte est actif et peut se connecter.
+    """
+    isVerified: Boolean!
+
+    "Date de création du compte"
+    createdAt: String
+}
+
+
+# ─────────────────────────────────────────────────────────────
+# INPUTS
+# ─────────────────────────────────────────────────────────────
+
+"""
+Données requises pour l'inscription d'un nouvel utilisateur.
+Après inscription :
+  1. Un access token et refresh token sont générés
+  2. Un OTP à 6 chiffres est généré (expire dans 10 minutes)
+  3. L'event Kafka 'user.created' est publié
+  4. Le Notification-Service envoie l'OTP par mail
+"""
+input RegisterInput {
+
+    "Nom complet de l'utilisateur (ex: Jean Dupont)"
+    name: String!
+
+    "Adresse email unique — sera utilisée pour la connexion"
+    email: String!
+
+    """
+    Mot de passe en clair — sera hashé avec BCrypt côté serveur.
+    Minimum 8 caractères.
+    """
+    password: String!
+
+    "Numéro de téléphone au format international (ex: +237612345678)"
+    phoneNumber: String!
+}
+
+"""
+Données requises pour la connexion.
+Prérequis : le compte doit avoir été vérifié via OTP.
+"""
+input LoginInput {
+
+    "Email utilisé lors de l'inscription"
+    email: String!
+
+    "Mot de passe en clair — sera comparé au hash BCrypt stocké"
+    password: String!
+}
+
+"""
+Données requises pour vérifier le compte via le code OTP.
+Le code OTP est envoyé par mail au moment de l'inscription.
+Il expire après 10 minutes.
+"""
+input VerifyOtpInput {
+
+    """
+    Identifiant UUID de l'utilisateur.
+    Récupéré dans le champ user.id de la réponse du register.
+    """
+    userId: String!
+
+    "Code OTP à 6 chiffres reçu par mail"
+    code: String!
+}
+
+"""
+Données requises pour renouveler l'access token.
+À utiliser quand l'access token (15min) est expiré.
+"""
+input RefreshTokenInput {
+
+    """
+    Token de rafraîchissement — durée de vie : 7 jours.
+    Récupéré dans le champ refreshToken de la réponse du register ou login.
+    """
+    refreshToken: String!
+}
+
+
+# ─────────────────────────────────────────────────────────────
+# QUERY
+# ─────────────────────────────────────────────────────────────
+
+type Query {
+
+    "Vérifie que le Auth-Service est opérationnel"
+    healthCheck: String!
+}
+
+
+# ─────────────────────────────────────────────────────────────
+# MUTATIONS
+# ─────────────────────────────────────────────────────────────
+
+type Mutation {
+
+    """
+    Inscription d'un nouvel utilisateur.
+
+    Flux :
+      1. Valide les données (email unique, format téléphone, password min 8 chars)
+      2. Crée l'utilisateur en base (isVerified = false)
+      3. Génère un access token JWT (15 min) et un refresh token (7 jours)
+      4. Génère un OTP à 6 chiffres valable 10 minutes
+      5. Publie l'event Kafka 'user.created' avec l'OTP inclus
+           → User-Service : crée le profil utilisateur
+           → Notification-Service : envoie le mail contenant l'OTP
+      6. Retourne les tokens et les infos de l'utilisateur (isVerified = false)
+
+    Erreurs possibles :
+      - "Un compte avec cet email existe déjà" (BAD_REQUEST)
+      - "Format d'email invalide" (BAD_REQUEST)
+      - "Le mot de passe doit contenir au moins 8 caractères" (BAD_REQUEST)
+      - "Format de téléphone invalide" (BAD_REQUEST)
+    """
+    register(input: RegisterInput!): AuthResponse!
+
+    """
+    Vérification du compte utilisateur via le code OTP reçu par mail.
+
+    Flux :
+      1. Cherche l'OTP en base pour cet utilisateur
+      2. Vérifie que le code est correct, non utilisé et non expiré
+      3. Marque l'OTP comme utilisé
+      4. Passe isVerified = true sur l'utilisateur
+      5. Retourne un message de confirmation (sans tokens)
+
+    Après cette mutation → rediriger vers la mutation login.
+
+    Erreurs possibles :
+      - "Code OTP invalide" (UNAUTHORIZED)
+      - "Code OTP expiré. Demandez-en un nouveau." (UNAUTHORIZED)
+      - "Ce compte est déjà vérifié" (BAD_REQUEST)
+      - "Utilisateur introuvable" (NOT_FOUND)
+    """
+    verifyOtp(input: VerifyOtpInput!): AuthResponse!
+
+    """
+    Connexion d'un utilisateur existant et vérifié.
+
+    Flux :
+      1. Cherche l'utilisateur par email
+      2. Vérifie que isVerified = true (sinon bloque la connexion)
+      3. Compare le mot de passe avec le hash BCrypt
+      4. Génère un nouvel access token (15 min) et refresh token (7 jours)
+      5. Retourne les tokens et les infos utilisateur
+
+    Erreurs possibles :
+      - "Email ou mot de passe incorrect" (UNAUTHORIZED)
+      - "Compte non vérifié. Vérifiez votre boîte mail." (UNAUTHORIZED)
+    """
+    login(input: LoginInput!): AuthResponse!
+
+    """
+    Renouvellement de l'access token après expiration (15 min).
+
+    Flux :
+      1. Vérifie la signature JWT du refresh token
+      2. Vérifie que le refresh token existe en base (non révoqué)
+      3. Vérifie que le refresh token n'est pas expiré (7 jours)
+      4. Génère et retourne un nouvel access token
+      5. Retourne le même refresh token
+
+    Erreurs possibles :
+      - "Refresh token invalide ou révoqué" (UNAUTHORIZED)
+      - "Refresh token expiré" (UNAUTHORIZED)
+      - "Utilisateur introuvable" (NOT_FOUND)
+    """
+    refreshToken(input: RefreshTokenInput!): AuthResponse!
+
+    """
+    Renvoi d'un nouveau code OTP quand l'ancien a expiré.
+
+    Flux :
+      1. Vérifie que le compte existe et n'est pas encore vérifié
+      2. Invalide tous les anciens OTPs de cet utilisateur
+      3. Génère un nouveau OTP à 6 chiffres (valable 10 minutes)
+      4. Republie l'event Kafka 'user.created' avec le nouvel OTP
+           → Notification-Service renvoie le mail avec le nouveau code
+      5. Retourne un message de confirmation
+
+    Erreurs possibles :
+      - "Ce compte est déjà vérifié" (BAD_REQUEST)
+      - "Utilisateur introuvable" (NOT_FOUND)
+    """
+    resendOtp(userId: String!): AuthResponse!
+}

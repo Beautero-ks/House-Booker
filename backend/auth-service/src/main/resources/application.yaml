@@ -1,3 +1,71 @@
 spring:
   application:
     name: auth-service
+
+  config:
+    import: optional:configserver:http://localhost:8888
+
+  # ===== POSTGRESQL =====
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: postgres
+    password: 1234
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # ===== GRAPHQL =====
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+    path: /graphql
+    schema:
+      printer:
+        enabled: true
+
+  # ===== KAFKA =====
+  kafka:
+    bootstrap-servers: localhost:29092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+# ===== SERVER =====
+server:
+  port: 8081
+
+# ===== EUREKA =====
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+# ===== JWT =====
+jwt:
+  secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+# ===== OTP =====
+otp:
+  expiration-minutes: 10
+
+# ===== KAFKA TOPICS =====
+kafka:
+  topics:
+    user-created: user.created

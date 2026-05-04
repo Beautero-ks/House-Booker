@@ -1,0 +1,466 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.intergiciel:auth-service >--------------------
+[INFO] Building  0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ auth-service ---
+[INFO] Deleting /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ auth-service ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ auth-service ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 21 source files with javac [debug parameters release 21] to target/classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[6,43] cannot access com.intergiciel.auth_service.entity.User
+  bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/entity/User.java
+    file does not contain class com.intergiciel.auth_service.entity.User
+    Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[7,47] cannot access com.intergiciel.auth_service.repository.UserRepository
+  bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/UserRepository.java
+    file does not contain class com.intergiciel.auth_service.repository.UserRepository
+    Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[3,43] cannot access com.intergiciel.auth_service.entity.OtpCode
+  bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/entity/OtpCode.java
+    file does not contain class com.intergiciel.auth_service.entity.OtpCode
+    Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[5,47] cannot access com.intergiciel.auth_service.repository.OtpRepository
+  bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/OtpRepository.java
+    file does not contain class com.intergiciel.auth_service.repository.OtpRepository
+    Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[5,47] cannot access com.intergiciel.auth_service.repository.RefreshTokenRepository
+  bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/RefreshTokenRepository.java
+    file does not contain class com.intergiciel.auth_service.repository.RefreshTokenRepository
+    Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[4,49] package com.intergiciel.auth_service.dto.response does not exist
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[3,48] cannot find symbol
+  symbol:   class LoginInput
+  location: package com.intergiciel.auth_service.dto.request
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[4,48] cannot find symbol
+  symbol:   class RegisterInput
+  location: package com.intergiciel.auth_service.dto.request
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[5,49] package com.intergiciel.auth_service.dto.response does not exist
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/entity/User.java:[1,8] duplicate class: User
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/UserRepository.java:[1,8] duplicate class: UserRepository
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[57,51] cannot find symbol
+  symbol:   class RegisterInput
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[57,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[70,52] cannot find symbol
+  symbol:   class VerifyOtpInput
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[70,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[84,48] cannot find symbol
+  symbol:   class LoginInput
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[84,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[97,55] cannot find symbol
+  symbol:   class RefreshTokenInput
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[97,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[110,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[21,19] cannot find symbol
+  symbol:   class UserRepository
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/entity/OtpCode.java:[1,8] duplicate class: OtpCode
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/OtpRepository.java:[1,8] duplicate class: OtpRepository
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[3,43] cannot find symbol
+  symbol:   class RefreshToken
+  location: package com.intergiciel.auth_service.entity
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/RefreshTokenRepository.java:[1,8] duplicate class: RefreshTokenRepository
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[31,34] cannot find symbol
+  symbol:   class RegisterInput
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[31,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[74,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[99,31] cannot find symbol
+  symbol:   class LoginInput
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[99,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[129,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[148,12] cannot find symbol
+  symbol:   class AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[34,36] cannot find symbol
+  symbol:   class User
+  location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[27,19] cannot find symbol
+  symbol:   class RefreshTokenRepository
+  location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[49,40] cannot find symbol
+  symbol:   class User
+  location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[21,19] cannot find symbol
+  symbol:   class OtpRepository
+  location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[34,35] cannot find symbol
+  symbol:   class User
+  location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/job/OtpCleanerJob.java:[16,19] cannot find symbol
+  symbol:   class OtpRepository
+  location: class com.intergiciel.auth_service.job.OtpCleanerJob
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/dto/event/UserCreatedEvent.java:[54,32] cannot find symbol
+  symbol:   method builder()
+  location: class com.intergiciel.auth_service.dto.event.UserCreatedEvent
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/dto/event/UserCreatedEvent.java:[58,31] cannot find symbol
+  symbol:   method builder()
+  location: class com.intergiciel.auth_service.dto.event.UserCreatedEvent.UserData
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[58,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[71,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[85,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[98,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[111,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[36,9] cannot find symbol
+  symbol:   class User
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[36,21] cannot find symbol
+  symbol:   variable User
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[45,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[56,16] cannot find symbol
+  symbol:   variable AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[61,35] package AuthResponse does not exist
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[77,9] cannot find symbol
+  symbol:   class User
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[88,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[90,16] cannot find symbol
+  symbol:   variable AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[101,9] cannot find symbol
+  symbol:   class User
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[110,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[112,16] cannot find symbol
+  symbol:   variable AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[117,35] package AuthResponse does not exist
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[136,16] cannot find symbol
+  symbol:   variable AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[150,9] cannot find symbol
+  symbol:   class User
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[159,16] cannot find symbol
+  symbol:   variable AuthResponse
+  location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[41,9] cannot find symbol
+  symbol:   class OtpCode
+  location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[41,23] cannot find symbol
+  symbol:   variable OtpCode
+  location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[49,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[60,9] cannot find symbol
+  symbol:   class OtpCode
+  location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[72,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[62,9] cannot find symbol
+  symbol:   class RefreshToken
+  location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[62,37] cannot find symbol
+  symbol:   variable RefreshToken
+  location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[69,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[80,9] cannot find symbol
+  symbol:   class RefreshToken
+  location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[103,13] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[52,17] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[57,17] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/exception/GraphQLExceptionHandler.java:[37,13] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.exception.GraphQLExceptionHandler
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/exception/GraphQLExceptionHandler.java:[46,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.exception.GraphQLExceptionHandler
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/job/OtpCleanerJob.java:[28,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.job.OtpCleanerJob
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/job/OtpCleanerJob.java:[32,9] cannot find symbol
+  symbol:   variable log
+  location: class com.intergiciel.auth_service.job.OtpCleanerJob
+[INFO] 76 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.717 s
+[INFO] Finished at: 2026-05-02T11:48:40+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project auth-service: Compilation failure: Compilation failure: 
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[6,43] cannot access com.intergiciel.auth_service.entity.User
+[ERROR]   bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/entity/User.java
+[ERROR]     file does not contain class com.intergiciel.auth_service.entity.User
+[ERROR]     Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[7,47] cannot access com.intergiciel.auth_service.repository.UserRepository
+[ERROR]   bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/UserRepository.java
+[ERROR]     file does not contain class com.intergiciel.auth_service.repository.UserRepository
+[ERROR]     Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[3,43] cannot access com.intergiciel.auth_service.entity.OtpCode
+[ERROR]   bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/entity/OtpCode.java
+[ERROR]     file does not contain class com.intergiciel.auth_service.entity.OtpCode
+[ERROR]     Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[5,47] cannot access com.intergiciel.auth_service.repository.OtpRepository
+[ERROR]   bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/OtpRepository.java
+[ERROR]     file does not contain class com.intergiciel.auth_service.repository.OtpRepository
+[ERROR]     Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[5,47] cannot access com.intergiciel.auth_service.repository.RefreshTokenRepository
+[ERROR]   bad source file: /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/RefreshTokenRepository.java
+[ERROR]     file does not contain class com.intergiciel.auth_service.repository.RefreshTokenRepository
+[ERROR]     Please remove or make sure it appears in the correct subdirectory of the sourcepath.
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[4,49] package com.intergiciel.auth_service.dto.response does not exist
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[3,48] cannot find symbol
+[ERROR]   symbol:   class LoginInput
+[ERROR]   location: package com.intergiciel.auth_service.dto.request
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[4,48] cannot find symbol
+[ERROR]   symbol:   class RegisterInput
+[ERROR]   location: package com.intergiciel.auth_service.dto.request
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[5,49] package com.intergiciel.auth_service.dto.response does not exist
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/entity/User.java:[1,8] duplicate class: User
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/UserRepository.java:[1,8] duplicate class: UserRepository
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[57,51] cannot find symbol
+[ERROR]   symbol:   class RegisterInput
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[57,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[70,52] cannot find symbol
+[ERROR]   symbol:   class VerifyOtpInput
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[70,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[84,48] cannot find symbol
+[ERROR]   symbol:   class LoginInput
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[84,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[97,55] cannot find symbol
+[ERROR]   symbol:   class RefreshTokenInput
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[97,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[110,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[21,19] cannot find symbol
+[ERROR]   symbol:   class UserRepository
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/entity/OtpCode.java:[1,8] duplicate class: OtpCode
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/OtpRepository.java:[1,8] duplicate class: OtpRepository
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[3,43] cannot find symbol
+[ERROR]   symbol:   class RefreshToken
+[ERROR]   location: package com.intergiciel.auth_service.entity
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/repository/RefreshTokenRepository.java:[1,8] duplicate class: RefreshTokenRepository
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[31,34] cannot find symbol
+[ERROR]   symbol:   class RegisterInput
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[31,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[74,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[99,31] cannot find symbol
+[ERROR]   symbol:   class LoginInput
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[99,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[129,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[148,12] cannot find symbol
+[ERROR]   symbol:   class AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[34,36] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[27,19] cannot find symbol
+[ERROR]   symbol:   class RefreshTokenRepository
+[ERROR]   location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[49,40] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[21,19] cannot find symbol
+[ERROR]   symbol:   class OtpRepository
+[ERROR]   location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[34,35] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/job/OtpCleanerJob.java:[16,19] cannot find symbol
+[ERROR]   symbol:   class OtpRepository
+[ERROR]   location: class com.intergiciel.auth_service.job.OtpCleanerJob
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/dto/event/UserCreatedEvent.java:[54,32] cannot find symbol
+[ERROR]   symbol:   method builder()
+[ERROR]   location: class com.intergiciel.auth_service.dto.event.UserCreatedEvent
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/dto/event/UserCreatedEvent.java:[58,31] cannot find symbol
+[ERROR]   symbol:   method builder()
+[ERROR]   location: class com.intergiciel.auth_service.dto.event.UserCreatedEvent.UserData
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[58,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[71,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[85,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[98,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/controller/AuthResolver.java:[111,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.resolver.AuthResolver
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[36,9] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[36,21] cannot find symbol
+[ERROR]   symbol:   variable User
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[45,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[56,16] cannot find symbol
+[ERROR]   symbol:   variable AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[61,35] package AuthResponse does not exist
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[77,9] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[88,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[90,16] cannot find symbol
+[ERROR]   symbol:   variable AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[101,9] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[110,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[112,16] cannot find symbol
+[ERROR]   symbol:   variable AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[117,35] package AuthResponse does not exist
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[136,16] cannot find symbol
+[ERROR]   symbol:   variable AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[150,9] cannot find symbol
+[ERROR]   symbol:   class User
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/AuthService.java:[159,16] cannot find symbol
+[ERROR]   symbol:   variable AuthResponse
+[ERROR]   location: class com.intergiciel.auth_service.service.AuthService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[41,9] cannot find symbol
+[ERROR]   symbol:   class OtpCode
+[ERROR]   location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[41,23] cannot find symbol
+[ERROR]   symbol:   variable OtpCode
+[ERROR]   location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[49,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[60,9] cannot find symbol
+[ERROR]   symbol:   class OtpCode
+[ERROR]   location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/OtpService.java:[72,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.OtpService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[62,9] cannot find symbol
+[ERROR]   symbol:   class RefreshToken
+[ERROR]   location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[62,37] cannot find symbol
+[ERROR]   symbol:   variable RefreshToken
+[ERROR]   location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[69,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[80,9] cannot find symbol
+[ERROR]   symbol:   class RefreshToken
+[ERROR]   location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[103,13] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.TokenService
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[52,17] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[57,17] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/exception/GraphQLExceptionHandler.java:[37,13] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.exception.GraphQLExceptionHandler
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/exception/GraphQLExceptionHandler.java:[46,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.exception.GraphQLExceptionHandler
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/job/OtpCleanerJob.java:[28,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.job.OtpCleanerJob
+[ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/job/OtpCleanerJob.java:[32,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class com.intergiciel.auth_service.job.OtpCleanerJob
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
