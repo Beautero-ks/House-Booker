@@ -1,0 +1,12 @@
+spring:
+  main:
+    banner-mode: off
+
+  test:
+    database:
+      replace: none
+
+# Fix Console.istty()
+logging:
+  console:
+    enabled: false
