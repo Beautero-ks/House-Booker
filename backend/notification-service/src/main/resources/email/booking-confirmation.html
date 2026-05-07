@@ -1,0 +1,18 @@
+<div th:replace="~{email/email-layout :: body}">
+    <div class="content">
+        <h2>✅ Réservation Confirmée !</h2>
+        <p>Bonjour <span th:text="${firstName}">Utilisateur</span>,</p>
+        
+        <p>Votre réservation a été confirmée avec succès.</p>
+        
+        <div class="info-box">
+            <strong>Logement :</strong> <span th:text="${houseTitle}"></span><br>
+            <strong>Dates :</strong> <span th:text="${checkInDate}"></span> au <span th:text="${checkOutDate}"></span><br>
+            <strong>Référence :</strong> <span th:text="${bookingId}"></span>
+        </div>
+        
+        <a href="http://localhost:3000/my-bookings" class="button">Voir ma réservation</a>
+        
+        <p>Si vous avez des questions, n’hésitez pas à nous contacter.</p>
+    </div>
+</div>
