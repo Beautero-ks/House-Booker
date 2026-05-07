@@ -1,0 +1,52 @@
+scalar Date
+scalar DateTime
+
+type Booking {
+    id: ID!
+    userId: ID!
+    houseId: ID!
+    startDate: Date!
+    endDate: Date!
+    status: BookingStatus!
+    totalPrice: Float!
+    createdAt: DateTime!
+    updatedAt: DateTime
+}
+
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    PAID
+    CANCELLED
+    COMPLETED
+    REFUNDED
+}
+
+input BookingCreateInput {
+    houseId: ID!
+    startDate: Date!
+    endDate: Date!
+}
+
+input BookingResponseInput {
+    id: ID!
+    userId: ID!
+    houseId: ID!
+    startDate: Date!
+    endDate: Date!
+    status: BookingStatus!
+    totalPrice: Float!
+    createdAt: DateTime!
+    updatedAt: DateTime
+}
+
+type Query {
+    booking(id: ID!): Booking
+    myBookings(status: BookingStatus, page: Int = 0, size: Int = 10): [Booking!]!
+    checkAvailability(houseId: ID!, startDate: Date!, endDate: Date!): Boolean!
+}
+
+type Mutation {
+    createBooking(input: BookingCreateInput!): Booking!
+    cancelBooking(bookingId: ID!, reason: String): Booking!
+}

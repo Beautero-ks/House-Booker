@@ -24,7 +24,7 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 public class Booking {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
@@ -57,5 +57,16 @@ public class Booking {
 
     @LastModifiedBy
     private String lastModifiedBy;
+
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = LocalDateTime.now();
+        status = BookingStatus.PENDING;
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
 
 }
