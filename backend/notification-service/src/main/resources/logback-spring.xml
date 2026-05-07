@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- ÉVITER TOUT APPEL À System.console() -->
+    
+    <!-- Console Appender avec encoding explicite -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Désactiver la détection automatique de l'encodage console -->
+    <logger name="org.springframework.boot.logging" level="OFF"/>
+    <logger name="org.springframework.boot.context.logging" level="OFF"/>
+    
+    <!-- Vos loggers applicatifs -->
+    <logger name="com.intergiciel.notification" level="DEBUG"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.hibernate" level="WARN"/>
+    
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

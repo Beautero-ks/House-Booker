@@ -1,0 +1,14 @@
+<div th:replace="~{email/email-layout :: body}">
+    <div class="content">
+        <h2>🎉 Bienvenue sur HouseBooker !</h2>
+        <p>Bonjour <span th:text="${firstName}"></span>,</p>
+        <p>Nous sommes ravis de vous compter parmi nous.</p>
+        <p>Vous pouvez maintenant :</p>
+        <ul>
+            <li>Rechercher des logements</li>
+            <li>Publier vos propres annonces</li>
+            <li>Gérer vos réservations</li>
+        </ul>
+        <a href="http://localhost:3000" class="button">Commencer maintenant</a>
+    </div>
+</div>

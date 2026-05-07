@@ -1,3 +1,122 @@
+server:
+  port: 8088
+
 spring:
   application:
     name: notification-service
+
+  main:
+    banner-mode: off
+    web-application-type: servlet
+
+  output:
+    ansi:
+      enabled: never
+
+  # Désactiver Docker Compose automatique
+  docker:
+    compose:
+      enabled: false
+
+  # Désactiver DevTools complètement
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+    add-properties: false
+
+  boot:
+    logging:
+      console:
+        enabled: false
+
+  # Configuration datasource
+  datasource:
+    url: jdbc:postgresql://localhost:5436/notification_db
+    username: admin
+    password: secret
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  # JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    open-in-view: false
+
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service-group
+      auto-offset-reset: earliest
+
+  # Mail (pour le développement)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:test@gmail.com}
+    password: ${MAIL_PASSWORD:password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  # GraphQL
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+    schema:
+      printer:
+        enabled: true
+
+# Eureka - Désactivé en local
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+# Kafka Topics
+kafka:
+  topics:
+    notification: notification-topic
+    booking-events: booking-events
+    payment-events: payment-events
+    user-events: user-events
+
+# Logging
+logging:
+  level:
+    com.intergiciel.notification: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# OpenAPI/Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
