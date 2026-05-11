@@ -2,6 +2,7 @@ package com.intergiciel.house_service.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "logement")
@@ -9,7 +10,7 @@ public class Logement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     private String titre;
     private String description;
@@ -19,7 +20,7 @@ public class Logement {
     private Double latitude;
     private Double longitude;
     private Boolean disponible;
-    private Long proprietaireId;
+    private UUID proprietaireId;
 
     @Enumerated(EnumType.STRING)
     private StatutValidation statutValidation;
@@ -30,8 +31,8 @@ public class Logement {
     public Logement() {}
 
     // 👉 getters & setters (OBLIGATOIRE)
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
 
     public String getTitre() { return titre; }
     public void setTitre(String titre) { this.titre = titre; }
@@ -57,8 +58,8 @@ public class Logement {
     public Boolean getDisponible() { return disponible; }
     public void setDisponible(Boolean disponible) { this.disponible = disponible; }
 
-    public Long getProprietaireId() { return proprietaireId; }
-    public void setProprietaireId(Long proprietaireId) { this.proprietaireId = proprietaireId; }
+    public UUID getProprietaireId() { return proprietaireId; }
+    public void setProprietaireId(UUID proprietaireId) { this.proprietaireId = proprietaireId; }
 
     public StatutValidation getStatutValidation() { return statutValidation; }
     public void setStatutValidation(StatutValidation statutValidation) { this.statutValidation = statutValidation; }

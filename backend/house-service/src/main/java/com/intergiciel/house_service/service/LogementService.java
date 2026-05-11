@@ -1,5 +1,7 @@
 package com.intergiciel.house_service.service;
 import java.time.LocalDateTime;
+
+import com.intergiciel.house_service.dto.LogementDto;
 import com.intergiciel.house_service.entity.StatutValidation;
 import com.intergiciel.house_service.exception.LogementNotFoundException;
 import com.intergiciel.house_service.entity.Logement;
@@ -9,6 +11,7 @@ import java.util.Optional;
 
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class LogementService {
@@ -36,12 +39,12 @@ public class LogementService {
     }
     // getbyid
 
-   public Logement getById(Long id) {
+   public Logement getById(UUID id) {
     return repository.findById(id)
             .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
     }
 // update
-    public Logement update(Long id, Logement newData) {
+    public Logement update(UUID id, Logement newData) {
 
     Logement logement = repository.findById(id)
             .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
@@ -58,7 +61,7 @@ public class LogementService {
     return repository.save(logement);
 }
 //delete
-public void delete(Long id) {
+public void delete(UUID id) {
     Logement logement = repository.findById(id)
             .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
 
@@ -86,7 +89,7 @@ public List<Logement> getEnAttente() {
     return repository.findByStatutValidation(StatutValidation.EN_ATTENTE);
 }
 // valider un logement
-public Logement valider(Long id) {
+public Logement valider(UUID id) {
     Logement logement = repository.findById(id)
             .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
 
@@ -95,7 +98,7 @@ public Logement valider(Long id) {
     return repository.save(logement);
 }
 // rejeter un logement
-public Logement rejeter(Long id) {
+public Logement rejeter(UUID id) {
     Logement logement = repository.findById(id)
             .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
 

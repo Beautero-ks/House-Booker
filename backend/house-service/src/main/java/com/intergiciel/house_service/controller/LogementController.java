@@ -6,6 +6,7 @@ import com.intergiciel.house_service.service.LogementService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 
@@ -29,17 +30,17 @@ public class LogementController {
     }
 //getbyid
     @GetMapping("/{id}")
-     public Logement getById(@PathVariable Long id) {
+     public Logement getById(@PathVariable UUID id) {
     return service.getById(id);
      }
     // update
     @PutMapping("/{id}")
-      public Logement update(@PathVariable Long id, @RequestBody Logement newData) {
+      public Logement update(@PathVariable UUID id, @RequestBody Logement newData) {
      return service.update(id, newData);
     }
     //delete
     @DeleteMapping("/{id}")
-     public String delete(@PathVariable Long id) {
+     public String delete(@PathVariable UUID id) {
      service.delete(id);
     return "Logement supprimé avec succès";
      }
@@ -75,12 +76,12 @@ public List<Logement> getEnAttente() {
 }
 // valider un logement 
 @PutMapping("/{id}/valider")
-public Logement valider(@PathVariable Long id) {
+public Logement valider(@PathVariable UUID id) {
     return service.valider(id);
 }
 // rejeter un logement
 @PutMapping("/{id}/rejeter")
-public Logement rejeter(@PathVariable Long id) {
+public Logement rejeter(@PathVariable UUID id) {
     return service.rejeter(id);
 }
 
