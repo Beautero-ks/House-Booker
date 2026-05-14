@@ -1,0 +1,262 @@
+# =====================================================
+# APPLICATION.YML - Spring Boot Configuration
+# =====================================================
+#
+# This file configures our Spring Boot application.
+# YAML format uses indentation (2 spaces) to show hierarchy.
+#
+# You can override these settings with:
+# - Environment variables (e.g., SPRING_DATASOURCE_URL)
+# - Command line arguments (e.g., --server.port=8081)
+# - Profile-specific files (e.g., application-dev.yml)
+#
+
+# ==================== Server Configuration ====================
+server:
+  port: 8080                    # The port our API will listen on
+  
+  # Tomcat tuning for 10k req/sec
+  tomcat:
+    threads:
+      max: 400                  # Max worker threads (default 200)
+      min-spare: 50             # Keep 50 threads warm
+    max-connections: 10000      # Max concurrent connections
+    accept-count: 200           # Queue length when all threads busy
+    connection-timeout: 5000    # 5s connection timeout (fail fast)
+  
+  # Error handling configuration
+  error:
+    include-message: always     # Include error messages in responses
+    include-binding-errors: always
+
+# ==================== Spring Configuration ====================
+spring:
+  application:
+    name: notification-system   # Name of our application (shows in logs)
+  
+  # ==================== Database (PostgreSQL) ====================
+  #
+  # JPA = Java Persistence API
+  # Hibernate = The implementation of JPA we use
+  #
+  datasource:
+    url: jdbc:postgresql://localhost:5432/notification_db
+    #     └── jdbc:postgresql://HOST:PORT/DATABASE_NAME
+    username: postgres
+    password: postgres
+    
+    # HikariCP is the connection pool (manages database connections)
+    # Formula: pool-size ≈ (core_count * 2) + spinning_disks
+    # For 10k req/sec: each request ≈ 10ms DB time → need ~100 active conns
+    hikari:
+      pool-name: NotificationHikariPool
+      auto-commit: false        # We manage transactions manually
+      maximum-pool-size: 50     # Supports ~5,000-10,000 req/sec at 5-10ms per query
+      minimum-idle: 25          # Keep 25 connections warm
+      idle-timeout: 30000       # Close idle connections after 30 seconds
+      connection-timeout: 5000  # Fail fast (5s) instead of waiting 20s
+      leak-detection-threshold: 10000  # Warn if connection held > 10s
+  
+  # JPA / Hibernate configuration
+  jpa:
+    # Don't auto-generate schema, Flyway handles this
+    hibernate:
+      ddl-auto: none
+    
+    # Show SQL queries in logs (set to true for debugging)
+    show-sql: false
+    
+    properties:
+      hibernate:
+        # Format SQL nicely in logs
+        format_sql: false
+        
+        
+        # Batch operations for better performance
+        jdbc:
+          batch_size: 50
+          fetch_size: 100
+        order_inserts: true
+        order_updates: true
+        
+        # Connection-level statement caching
+        connection:
+          provider_disables_autocommit: true
+  
+  # ==================== Flyway (Database Migrations) ====================
+  #
+  # Flyway runs SQL scripts to set up and update the database schema.
+  # Scripts are in: src/main/resources/db/migration/
+  # Naming: V1__description.sql, V2__description.sql, etc.
+  #
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true   # If database exists, create baseline
+  
+  # ==================== Redis (Cache & Rate Limiting) ====================
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000             # Connection timeout in milliseconds
+  
+  # ==================== Kafka (Message Queue) ====================
+  kafka:
+    # Bootstrap servers = initial Kafka brokers to connect to
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    
+    # Producer: Our API uses this to send messages to Kafka
+    producer:
+      # How to convert notification ID to bytes for Kafka
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      
+      # Wait for leader acknowledgment (tradeoff: slightly less durable, 5x faster)
+      acks: 1                    # Wait for leader only (acks=all adds ~5ms per send)
+      
+      # Retry settings for failed sends
+      retries: 3
+      
+      # Batching: accumulate messages before sending to maximize throughput
+      batch-size: 65536          # 64KB batch size (default 16KB)
+      buffer-memory: 67108864    # 64MB total buffer memory
+      
+      properties:
+        # If broker doesn't respond, retry after 1 second
+        retry.backoff.ms: 1000
+        
+        # Linger: wait up to 5ms to fill a batch before sending
+        # Tradeoff: adds 0-5ms latency but dramatically increases throughput
+        linger.ms: 5
+        
+        # Compress messages to reduce network I/O
+        compression.type: lz4
+        
+        # Enable idempotence to prevent duplicate messages
+        enable.idempotence: true
+    
+    # Consumer: Worker uses this to receive messages from Kafka
+    consumer:
+      # Consumer group ID (consumers in same group share the work)
+      group-id: notification-consumer-group
+      
+      # How to convert bytes from Kafka to notification objects
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      
+      # Where to start reading if no previous offset exists
+      auto-offset-reset: earliest
+      
+      properties:
+        # Trust our notification message package
+        spring.json.trusted.packages: com.notification.messaging.message
+    
+    # Listener settings (for @KafkaListener methods)
+    listener:
+      # Manual commit = we control when messages are marked as processed
+      ack-mode: manual
+      
+      # Match concurrency to total partition count across topics
+      concurrency: 10
+
+# ==================== Logging Configuration ====================
+#
+# Log levels: TRACE < DEBUG < INFO < WARN < ERROR
+# Production usually uses INFO or WARN
+# Development uses DEBUG for more details
+#
+logging:
+  level:
+    # Our application logs (WARN in prod to avoid log I/O bottleneck at 10k req/s)
+    com.notification: WARN
+    
+    # Hibernate SQL logs (set to DEBUG/TRACE to enable)
+    org.hibernate.SQL: OFF
+    org.hibernate.orm.jdbc.bind: OFF
+    
+    # Kafka logs (set to WARN to reduce noise)
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+  
+  # Log format pattern
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# ==================== Actuator (Health Checks & Metrics) ====================
+#
+# Spring Actuator provides production-ready features:
+# - Health: http://localhost:8080/actuator/health
+# - Info: http://localhost:8080/actuator/info
+# - Metrics: http://localhost:8080/actuator/metrics
+#
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus   # Which endpoints to expose
+  endpoint:
+    health:
+      show-details: always              # Show detailed health info
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+# ==================== OpenAPI / Swagger Configuration ====================
+#
+# API documentation available at:
+# - Swagger UI: http://localhost:8080/swagger-ui.html
+# - OpenAPI JSON: http://localhost:8080/v3/api-docs
+#
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method            # Sort by HTTP method
+
+# ==================== Custom Application Properties ====================
+#
+# Our own configuration properties for the notification system.
+# These are accessed via @Value or @ConfigurationProperties
+#
+notification:
+  # Kafka topic names (channel-specific for independent scaling)
+  kafka:
+    topic:
+      # Channel-specific topics (Alex Xu's design pattern)
+      # Each channel can scale independently
+      email: notifications.email           # Email notifications topic
+      sms: notifications.sms               # SMS notifications topic  
+      push: notifications.push             # Push notifications topic
+      in-app: notifications.in-app         # In-app notifications topic
+      # Dead Letter Queue for failed messages
+      dlq: notifications.dlq
+  
+  # Rate limiting configuration (per user, per channel)
+  rate-limit:
+    email:
+      max-requests: 10                   # Max 10 emails
+      window-seconds: 3600               # Per hour (3600 seconds)
+    sms:
+      max-requests: 5                    # Max 5 SMS
+      window-seconds: 3600               # Per hour
+    push:
+      max-requests: 20                   # Max 20 push notifications
+      window-seconds: 3600               # Per hour
+    in-app:
+      max-requests: 100                  # Max 100 in-app
+      window-seconds: 3600               # Per hour
+  
+  # Retry configuration
+  retry:
+    max-attempts: 3                      # Maximum retry attempts
+    initial-delay-seconds: 60            # First retry after 1 minute
+    multiplier: 5                        # Each retry waits 5x longer
+  
+  # Deduplication configuration
+  dedupe:
+    ttl-seconds: 86400                   # Keep event IDs for 24 hours (86400 seconds)
