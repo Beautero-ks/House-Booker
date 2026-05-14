@@ -14,7 +14,8 @@ package com.notification.repository;
 // No SQL writing needed for most operations.
 //
 
-import com.notification.model.entity.NotificationUser;
+import com.notification.model.entity.User;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -44,7 +45,7 @@ import java.util.UUID;
  * to Spring's DataAccessException).
  */
 @Repository
-public interface UserRepository extends JpaRepository<NotificationUser, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID> {
 
     // ==================== Query Methods ====================
     // 
@@ -70,14 +71,14 @@ public interface UserRepository extends JpaRepository<NotificationUser, UUID> {
      *   userRepository.findByEmail("john@example.com")
      *       .ifPresent(user -> System.out.println(user.getId()));
      */
-    Optional<NotificationUser> findByEmail(String email);
+    Optional<User> findByEmail(String email);
     
     /**
      * Find a user by phone number.
      * 
      * Spring generates: SELECT * FROM users WHERE phone = ?
      */
-    Optional<NotificationUser> findByPhone(String phone);
+    Optional<User> findByPhone(String phone);
     
     /**
      * Check if a user exists with the given email.
@@ -94,7 +95,7 @@ public interface UserRepository extends JpaRepository<NotificationUser, UUID> {
      * 
      * The "IsNotNull" suffix generates: WHERE device_token IS NOT NULL
      */
-    List<NotificationUser> findByDeviceTokenIsNotNull();
+    List<User> findByDeviceTokenIsNotNull();
     
     // ==================== Custom JPQL Queries ====================
     //
@@ -117,9 +118,9 @@ public interface UserRepository extends JpaRepository<NotificationUser, UUID> {
      * - p.channel = property on UserPreference entity
      * - :channel = Named parameter (passed from method argument)
      */
-    @Query("SELECT u FROM NotificationUser u JOIN u.preferences p " +
+    @Query("SELECT u FROM User u JOIN u.preferences p " +
            "WHERE p.channel = :channel AND p.enabled = true")
-    List<NotificationUser> findUsersWithChannelEnabled(
+    List<User> findUsersWithChannelEnabled(
         @org.springframework.data.repository.query.Param("channel") 
         com.notification.model.enums.ChannelType channel
     );
@@ -131,6 +132,6 @@ public interface UserRepository extends JpaRepository<NotificationUser, UUID> {
      * 
      * Example: countByEmailDomain("gmail.com") → 500
      */
-    @Query("SELECT COUNT(u) FROM NotificationUser u WHERE u.email LIKE %:domain")
+    @Query("SELECT COUNT(u) FROM User u WHERE u.email LIKE %:domain")
     long countByEmailDomain(@org.springframework.data.repository.query.Param("domain") String domain);
 }

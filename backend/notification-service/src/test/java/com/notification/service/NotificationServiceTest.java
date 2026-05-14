@@ -14,7 +14,7 @@ import com.notification.dto.request.SendNotificationRequest;
 import com.notification.dto.response.NotificationResponse;
 import com.notification.exception.ResourceNotFoundException;
 import com.notification.model.entity.Notification;
-import com.notification.model.entity.NotificationUser;
+import com.notification.model.entity.User;
 import com.notification.model.enums.ChannelType;
 import com.notification.model.enums.NotificationStatus;
 import com.notification.model.enums.Priority;
@@ -71,7 +71,7 @@ class NotificationServiceTest {
     private NotificationService notificationService;
     
     // Test data
-    private NotificationUser testNotificationUser;
+    private User testUser;
     private UUID testUserId;
     
     /**
@@ -80,7 +80,7 @@ class NotificationServiceTest {
     @BeforeEach
     void setUp() {
         testUserId = UUID.randomUUID();
-        testNotificationUser = NotificationUser.builder()
+        testUser = User.builder()
             .id(testUserId)
             .email("test@example.com")
             .phone("+1234567890")
@@ -102,7 +102,7 @@ class NotificationServiceTest {
             .build();
         
         // Mock userService to return our test user (cached lookup)
-        when(userService.findById(testUserId)).thenReturn(testNotificationUser);
+        when(userService.findById(testUserId)).thenReturn(testUser);
         
         // Mock rate limiter to allow the notification
         when(rateLimiterService.checkAndIncrement(any(), any())).thenReturn(true);
@@ -169,7 +169,7 @@ class NotificationServiceTest {
             // No content or template
             .build();
         
-        when(userService.findById(testUserId)).thenReturn(testNotificationUser);
+        when(userService.findById(testUserId)).thenReturn(testUser);
         when(rateLimiterService.checkAndIncrement(any(), any())).thenReturn(true);
         
         // Act & Assert
@@ -190,7 +190,7 @@ class NotificationServiceTest {
         UUID notificationId = UUID.randomUUID();
         Notification notification = Notification.builder()
             .id(notificationId)
-            .notificationUser(testNotificationUser)
+            .user(testUser)
             .channel(ChannelType.EMAIL)
             .content("Test")
             .status(NotificationStatus.SENT)
@@ -222,7 +222,7 @@ class NotificationServiceTest {
             .build();
         
         // Mock repository and services
-        when(userService.findById(testUserId)).thenReturn(testNotificationUser);
+        when(userService.findById(testUserId)).thenReturn(testUser);
         when(deduplicationService.isDuplicate(eventId)).thenReturn(true);
         
         // Act

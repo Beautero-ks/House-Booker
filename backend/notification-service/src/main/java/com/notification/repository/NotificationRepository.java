@@ -46,14 +46,14 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
      * 
      * Returns Page<Notification> for pagination support.
      */
-    Page<Notification> findByNotificationUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
+    Page<Notification> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
     
     /**
      * Find notifications for a user filtered by channel.
      * 
      * Example: Show only email notifications
      */
-    Page<Notification> findByNotificationUserIdAndChannelOrderByCreatedAtDesc(
+    Page<Notification> findByUserIdAndChannelOrderByCreatedAtDesc(
         UUID userId, 
         ChannelType channel, 
         Pageable pageable
@@ -64,7 +64,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
      * 
      * Example: Show only delivered notifications
      */
-    Page<Notification> findByNotificationUserIdAndStatusOrderByCreatedAtDesc(
+    Page<Notification> findByUserIdAndStatusOrderByCreatedAtDesc(
         UUID userId, 
         NotificationStatus status, 
         Pageable pageable
@@ -98,7 +98,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
      * - Channel is IN_APP (only in-app has read tracking)
      * - Status is DELIVERED (sent but not read)
      */
-    @Query("SELECT COUNT(n) FROM Notification n WHERE n.notificationUser.id = :userId " +
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId " +
            "AND n.channel = 'IN_APP' AND n.status = 'DELIVERED'")
     long countUnreadForUser(@Param("userId") UUID userId);
     
@@ -165,7 +165,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
      */
     @Modifying
     @Query("UPDATE Notification n SET n.status = 'READ', n.readAt = :now " +
-           "WHERE n.notificationUser.id = :userId AND n.channel = 'IN_APP' " +
+           "WHERE n.user.id = :userId AND n.channel = 'IN_APP' " +
            "AND n.status = 'DELIVERED'")
     int markAllAsReadForUser(
         @Param("userId") UUID userId, 
@@ -199,7 +199,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
      * Used for rate limiting: "How many emails did we send to this
      * user in the last hour?"
      */
-    @Query("SELECT COUNT(n) FROM Notification n WHERE n.notificationUser.id = :userId " +
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId " +
            "AND n.channel = :channel AND n.createdAt >= :since " +
            "AND n.status NOT IN ('FAILED')")
     long countByUserIdAndChannelSince(
@@ -212,6 +212,6 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
      * Find notification by ID with user eagerly loaded.
      * Used for processing notifications where we need to access user properties.
      */
-    @Query("SELECT n FROM Notification n JOIN FETCH n.notificationUser WHERE n.id = :id")
+    @Query("SELECT n FROM Notification n JOIN FETCH n.user WHERE n.id = :id")
     Optional<Notification> findByIdWithUser(@Param("id") UUID id);
 }

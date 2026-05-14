@@ -10,7 +10,7 @@ package com.notification.service;
 //
 
 import com.notification.exception.ResourceNotFoundException;
-import com.notification.model.entity.NotificationUser;
+import com.notification.model.entity.User;
 import com.notification.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import java.util.List;
 
 /**
  * Service for user operations.
@@ -53,7 +55,7 @@ public class UserService {
      * @throws ResourceNotFoundException if user not found
      */
     @Cacheable(value = "users", key = "'email:' + #email")
-    public NotificationUser findByEmail(String email) {
+    public User findByEmail(String email) {
         logger.debug("Looking up user by email: {}", email);
 
         return userRepository.findByEmail(email)
@@ -72,7 +74,7 @@ public class UserService {
      * @throws ResourceNotFoundException if user not found
      */
     @Cacheable(value = "users", key = "'phone:' + #phone")
-    public NotificationUser findByPhone(String phone) {
+    public User findByPhone(String phone) {
         logger.debug("Looking up user by phone: {}", phone);
 
         return userRepository.findByPhone(phone)
@@ -91,7 +93,7 @@ public class UserService {
      * @throws ResourceNotFoundException if user not found
      */
     @Cacheable(value = "users", key = "'id:' + #id")
-    public NotificationUser findById(UUID id) {
+    public User findById(UUID id) {
         logger.debug("Looking up user by ID: {}", id);
 
         return userRepository.findById(id)
@@ -107,7 +109,7 @@ public class UserService {
      * @return List of users with device tokens
      */
     @Cacheable(value = "users", key = "'deviceTokens'")
-    public List<NotificationUser> findUsersWithDeviceTokens() {
+    public List<User> findUsersWithDeviceTokens() {
         logger.debug("Looking up users with device tokens for push notifications");
 
         return userRepository.findByDeviceTokenIsNotNull();
@@ -155,7 +157,7 @@ public class UserService {
      *
      * @return List of all users
      */
-    public List<NotificationUser> findAllUsers() {
+    public List<User> findAllUsers() {
         logger.debug("Getting all users");
         return userRepository.findAll();
     }
@@ -169,43 +171,23 @@ public class UserService {
      * @return The user entity
      */
     @Transactional
-    public NotificationUser createUserIfNotExists(String email, String phone, String deviceToken) {
+    public User createUserIfNotExists(String email, String phone, String deviceToken) {
         logger.debug("Creating user if not exists: {}", email);
 
-        Optional<NotificationUser> existingUser = userRepository.findByEmail(email);
+        Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             logger.debug("User already exists with email: {}", email);
             return existingUser.get();
         }
 
-        NotificationUser newNotificationUser = NotificationUser.builder()
+        User newUser = User.builder()
             .email(email)
             .phone(phone)
             .deviceToken(deviceToken)
             .build();
 
-        NotificationUser savedNotificationUser = userRepository.save(newNotificationUser);
+        User savedUser = userRepository.save(newUser);
         logger.info("Created new user with email: {}", email);
-        return savedNotificationUser;
-    }
-
-    @Transactional
-    public NotificationUser syncUser(
-            UUID id,
-            String email,
-            String phone
-    ) {
-
-        return userRepository.findById(id)
-                .orElseGet(() -> {
-
-                    NotificationUser user = NotificationUser.builder()
-                            .id(id)
-                            .email(email)
-                            .phone(phone)
-                            .build();
-
-                    return userRepository.save(user);
-                });
+        return savedUser;
     }
 }

@@ -15,7 +15,7 @@ package com.notification.service.channel;
 //
 
 import com.notification.model.entity.Notification;
-import com.notification.model.entity.NotificationUser;
+import com.notification.model.entity.User;
 import com.notification.model.enums.ChannelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,10 +46,10 @@ public class SmsChannelHandler implements ChannelHandler {
         }
         
         // Check if user has a phone number
-        NotificationUser notificationUser = notification.getNotificationUser();
-        if (notificationUser == null || notificationUser.getPhone() == null || notificationUser.getPhone().isBlank()) {
+        User user = notification.getUser();
+        if (user == null || user.getPhone() == null || user.getPhone().isBlank()) {
             log.warn("Cannot send SMS: User {} has no phone number", 
-                notificationUser != null ? notificationUser.getId() : "null");
+                user != null ? user.getId() : "null");
             return false;
         }
         
@@ -58,8 +58,8 @@ public class SmsChannelHandler implements ChannelHandler {
     
     @Override
     public boolean send(Notification notification) {
-        NotificationUser notificationUser = notification.getNotificationUser();
-        String phone = notificationUser.getPhone();
+        User user = notification.getUser();
+        String phone = user.getPhone();
         
         // Truncate message if too long for SMS
         String message = notification.getContent();

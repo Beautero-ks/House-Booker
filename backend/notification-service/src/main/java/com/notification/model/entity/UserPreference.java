@@ -41,7 +41,7 @@ import java.util.UUID;
     // Without this, we could accidentally have multiple EMAIL preferences for one user
     uniqueConstraints = @UniqueConstraint(
         name = "uk_user_channel",
-        columnNames = {"notification_user_id", "channel"}
+        columnNames = {"user_id", "channel"}
     )
 )
 @Data
@@ -70,8 +70,8 @@ public class UserPreference {
      *   reduces database queries when we only need the preference.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "notification_user_id", nullable = false)
-    private NotificationUser notificationUser;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
     
     // ==================== Channel Settings ====================
     
