@@ -62,8 +62,8 @@ type HouseDto{
 }
 
 type Query {
-    booking(id: UUID!): Booking
-    myBookings(status: BookingStatus, page: Int = 0, size: Int = 10): [Booking!]!
+    booking(id: UUID!, userId: UUID!): Booking
+    myBookings(userId: UUID!, status: BookingStatus, page: Int = 0, size: Int = 10): [Booking!]!
     checkAvailability(houseId: UUID!, startDate: Date!, endDate: Date!): Boolean!
     getHouseById(id: UUID!): HouseDto
 }

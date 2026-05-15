@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intergiciel.booking_service.application.dto.HouseDto;
 import com.intergiciel.booking_service.shared.exception.HouseNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -50,7 +52,8 @@ public class HouseServiceClient {
         this.objectMapper = objectMapper;
     }
 
-    public HouseDto getHouseById(UUID id) {
+    @QueryMapping
+    public HouseDto getHouseById(@Argument UUID id) {
         GraphQlRequest request = new GraphQlRequest(
                 GET_HOUSE_BY_ID_QUERY,
                 Map.of("id", id.toString())
