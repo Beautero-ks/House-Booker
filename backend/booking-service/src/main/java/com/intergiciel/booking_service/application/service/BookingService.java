@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,12 @@ public class BookingService {
             throw new HouseNotFoundException("Logement introuvable avec l'ID: " + houseId);
         }
 
+        if (!endDate.isAfter(startDate)) {
+            throw new IllegalArgumentException(
+                    "La date de fin doit être après la date de début"
+            );
+        }
+
         // 2. Vérifier la disponibilité
         if (!isHouseAvailable(houseId, startDate, endDate)) {
             throw new HouseNotAvailableException("Logement non disponible pour les dates demandées");
@@ -50,7 +57,7 @@ public class BookingService {
 
         // 3. Calculer le prix total (ex: prix par nuit * nombre de nuits)
         long nights = ChronoUnit.DAYS.between(startDate, endDate);
-        BigDecimal totalPrice = house.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+        BigDecimal totalPrice = BigDecimal.valueOf(house.getPrix()).multiply(BigDecimal.valueOf(nights));
 
         // 4. Créer la réservation
         Booking booking = Booking.builder()
@@ -93,7 +100,7 @@ public class BookingService {
 
         // Mettre à jour le statut
         booking.setStatus(BookingStatus.CANCELLED);
-        booking.setUpdatedAt(LocalDateTime.now());
+        booking.setUpdatedAt(OffsetDateTime.now());
         booking = bookingRepository.save(booking);
 
         // Mettre à jour la disponibilité (optionnel)
@@ -136,7 +143,13 @@ public class BookingService {
 
         // Vérifier la table availability (optionnel)
         if (availabilityRepository != null) {
-            List<Availability> availabilities = availabilityRepository.findByHouseIdAndDateBetween(houseId, startDate, endDate);
+            List<Availability> availabilities = availabilityRepository
+                    .findByHouseIdAndDateBetween(houseId, startDate, endDate);
+
+            if (availabilities.isEmpty()) {
+                return true;
+            }
+
             return availabilities.stream().allMatch(Availability::isAvailable);
         }
 

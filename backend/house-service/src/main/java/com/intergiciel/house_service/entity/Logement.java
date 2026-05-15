@@ -1,7 +1,8 @@
 package com.intergiciel.house_service.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
@@ -9,7 +10,7 @@ import java.util.UUID;
 public class Logement {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String titre;
@@ -25,7 +26,7 @@ public class Logement {
     @Enumerated(EnumType.STRING)
     private StatutValidation statutValidation;
 
-    private LocalDateTime dateCreation;
+    private OffsetDateTime dateCreation;
 
     // 👉 constructeur vide (OBLIGATOIRE)
     public Logement() {}
@@ -64,6 +65,8 @@ public class Logement {
     public StatutValidation getStatutValidation() { return statutValidation; }
     public void setStatutValidation(StatutValidation statutValidation) { this.statutValidation = statutValidation; }
 
-    public LocalDateTime getDateCreation() { return dateCreation; }
-    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
+    public OffsetDateTime getDateCreation() { return dateCreation; }
+    public void setDateCreation(OffsetDateTime dateCreation) {
+        this.dateCreation = dateCreation;
+    }
 }

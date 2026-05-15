@@ -1,16 +1,12 @@
-package com.intergiciel.booking_service.application.dto;
+package com.intergiciel.house_service.dto;
 
 import lombok.*;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class HouseDto {
+public class LogementCreateInput {
     private String titre;
     private String description;
     private String adresse;
@@ -19,8 +15,5 @@ public class HouseDto {
     private Double latitude;
     private Double longitude;
     private Boolean disponible;
-    private UUID proprietaireId;
-    private OffsetDateTime dateCreation;
-    private String statutValidation;
-
+    private String proprietaireId; // UUID en String pour GraphQL
 }

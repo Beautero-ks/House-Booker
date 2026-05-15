@@ -5,7 +5,7 @@ import com.intergiciel.house_service.entity.Logement;
 import com.intergiciel.house_service.entity.StatutValidation;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Component
 public class LogementMapper {
@@ -14,6 +14,7 @@ public class LogementMapper {
     public LogementDto toDto(Logement logement) {
         if (logement == null) return null;
         return LogementDto.builder()
+                .id(logement.getId())
                 .titre(logement.getTitre())
                 .description(logement.getDescription())
                 .adresse(logement.getAdresse())
@@ -42,7 +43,7 @@ public class LogementMapper {
         logement.setDisponible(dto.getDisponible());
         logement.setProprietaireId(dto.getProprietaireId());
         logement.setStatutValidation(StatutValidation.EN_ATTENTE);
-        logement.setDateCreation(LocalDateTime.now());
+        logement.setDateCreation(OffsetDateTime.now());
         return logement;
     }
 

@@ -1,89 +1,85 @@
 package com.intergiciel.house_service.controller;
 
 
-import com.intergiciel.house_service.entity.Logement;
+import com.intergiciel.house_service.dto.LogementCreateDto;
+import com.intergiciel.house_service.dto.LogementDto;
+import com.intergiciel.house_service.dto.LogementUpdateDto;
 import com.intergiciel.house_service.service.LogementService;
-import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.stereotype.Controller;
 
 import java.util.List;
 import java.util.UUID;
 
-@RestController
-
-@RequestMapping("/api/logements")
+@Controller
+@RequiredArgsConstructor
 public class LogementController {
 
     private final LogementService service;
 
-    public LogementController(LogementService service) {
-        this.service = service;
+    @MutationMapping("create")
+    public LogementDto create(@Argument("input") LogementCreateDto input) {
+        return service.save(input);
     }
-// create
-    @PostMapping
-    public Logement create(@RequestBody Logement logement) {
-        return service.save(logement);
-    }
-// select
-    @GetMapping
-    public List<Logement> getAll() {
+
+    @QueryMapping("getAll")
+    public List<LogementDto> getAll() {
         return service.findAll();
     }
-//getbyid
-    @GetMapping("/{id}")
-     public Logement getById(@PathVariable UUID id) {
-    return service.getById(id);
-     }
-    // update
-    @PutMapping("/{id}")
-      public Logement update(@PathVariable UUID id, @RequestBody Logement newData) {
-     return service.update(id, newData);
+
+    @QueryMapping("getById")
+    public LogementDto getById(@Argument UUID id) {
+        return service.getById(id);
     }
-    //delete
-    @DeleteMapping("/{id}")
-     public String delete(@PathVariable UUID id) {
-     service.delete(id);
-    return "Logement supprimé avec succès";
-     }
 
-     
-// recherche par ville
-@GetMapping("/search/ville")
-public List<Logement> searchByVille(@RequestParam String ville) {
-    return service.searchByVille(ville);
-}
+    @MutationMapping("mettreAJourLogement")
+    public LogementDto mettreAJourLogement(@Argument UUID id, @Argument("input") LogementUpdateDto input) {
+        return service.update(id, input);
+    }
 
-// recherche par type
-@GetMapping("/search/type")
-public List<Logement> searchByType(@RequestParam String type) {
-    return service.searchByType(type);
-}
+    @MutationMapping("supprimerLogement")
+    public Boolean supprimerLogement(@Argument UUID id) {
+        service.delete(id);
+        return Boolean.TRUE;
+    }
 
-// recherche par prix
-@GetMapping("/search/prix")
-public List<Logement> searchByPrix(@RequestParam Double min, @RequestParam Double max) {
-    return service.searchByPrix(min, max);
-}
 
-// disponibilité
-@GetMapping("/search/disponible")
-public List<Logement> searchDisponible(@RequestParam Boolean disponible) {
-    return service.searchDisponible(disponible);
-}
-// recuperer les logements en attentes
-@GetMapping("/en-attente")
-public List<Logement> getEnAttente() {
-    return service.getEnAttente();
-}
-// valider un logement 
-@PutMapping("/{id}/valider")
-public Logement valider(@PathVariable UUID id) {
-    return service.valider(id);
-}
-// rejeter un logement
-@PutMapping("/{id}/rejeter")
-public Logement rejeter(@PathVariable UUID id) {
-    return service.rejeter(id);
-}
+    @QueryMapping("searchByVille")
+    public List<LogementDto> searchByVille(@Argument String ville) {
+        return service.searchByVille(ville);
+    }
+
+    @QueryMapping("searchByType")
+    public List<LogementDto> searchByType(@Argument String type) {
+        return service.searchByType(type);
+    }
+
+    @QueryMapping("searchByPrix")
+    public List<LogementDto> searchByPrix(@Argument Double min, @Argument Double max) {
+        return service.searchByPrix(min, max);
+    }
+
+    @QueryMapping("searchDisponible")
+    public List<LogementDto> searchDisponible(@Argument Boolean disponible) {
+        return service.searchDisponible(disponible);
+    }
+
+    @MutationMapping("validerLogement")
+    public LogementDto validerLogement(@Argument UUID id) {
+        return service.valider(id);
+    }
+
+    @MutationMapping("rejeterLogement")
+    public LogementDto rejeterLogement(@Argument UUID id) {
+        return service.rejeter(id);
+    }
+
+    @QueryMapping("getEnAttente")
+    public List<LogementDto> getEnAttente() {
+        return service.getEnAttente();
+    }
 
 }
-

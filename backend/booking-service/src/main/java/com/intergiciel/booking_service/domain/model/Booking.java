@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
@@ -47,10 +48,10 @@ public class Booking {
     private BigDecimal totalPrice;
 
     @CreatedDate
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @LastModifiedDate
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @CreatedBy
     private String createdBy;
@@ -60,13 +61,13 @@ public class Booking {
 
     @PrePersist
     protected void onCreate(){
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = OffsetDateTime.now();
         status = BookingStatus.PENDING;
     }
 
     @PreUpdate
     protected void onUpdate(){
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 
 }

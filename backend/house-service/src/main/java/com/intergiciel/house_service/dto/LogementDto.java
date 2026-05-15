@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Data
@@ -16,6 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class LogementDto {
+    private UUID id;
     private String titre;
     private String description;
     private String adresse;
@@ -25,7 +26,7 @@ public class LogementDto {
     private Double longitude;
     private Boolean disponible;
     private UUID proprietaireId;
-    private LocalDateTime dateCreation;
+    private OffsetDateTime dateCreation;
 
     @Enumerated(EnumType.STRING)
     private StatutValidation statutValidation;

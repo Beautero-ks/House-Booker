@@ -1,10 +1,11 @@
 scalar Date
 scalar DateTime
+scalar UUID
 
 type Booking {
-    id: ID!
-    userId: ID!
-    houseId: ID!
+    id: UUID!
+    userId: UUID!
+    houseId: UUID!
     startDate: Date!
     endDate: Date!
     status: BookingStatus!
@@ -22,16 +23,22 @@ enum BookingStatus {
     REFUNDED
 }
 
+enum StatutValidation {
+    EN_ATTENTE
+    VALIDE
+    REJETE
+}
+
 input BookingCreateInput {
-    houseId: ID!
+    houseId: UUID!
     startDate: Date!
     endDate: Date!
 }
 
 input BookingResponseInput {
-    id: ID!
-    userId: ID!
-    houseId: ID!
+    id: UUID!
+    userId: UUID!
+    houseId: UUID!
     startDate: Date!
     endDate: Date!
     status: BookingStatus!
@@ -40,13 +47,28 @@ input BookingResponseInput {
     updatedAt: DateTime
 }
 
+type HouseDto{
+    titre: String!
+    description: String!
+    adresse: String
+    type: String
+    prix: Int
+    latitude: Float
+    longitude: Float
+    disponible: Boolean
+    proprietaireId: UUID!
+    dateCreation: DateTime
+    statutValidation: StatutValidation
+}
+
 type Query {
-    booking(id: ID!): Booking
+    booking(id: UUID!): Booking
     myBookings(status: BookingStatus, page: Int = 0, size: Int = 10): [Booking!]!
-    checkAvailability(houseId: ID!, startDate: Date!, endDate: Date!): Boolean!
+    checkAvailability(houseId: UUID!, startDate: Date!, endDate: Date!): Boolean!
+    getHouseById(id: UUID!): HouseDto
 }
 
 type Mutation {
-    createBooking(input: BookingCreateInput!): Booking!
-    cancelBooking(bookingId: ID!, reason: String): Booking!
+    createBooking(userId: UUID, input: BookingCreateInput!): Booking
+    cancelBooking(bookingId: UUID!, reason: String, userId: UUID): Booking
 }

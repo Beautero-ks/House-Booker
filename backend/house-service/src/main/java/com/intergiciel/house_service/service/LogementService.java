@@ -1,112 +1,111 @@
 package com.intergiciel.house_service.service;
-import java.time.LocalDateTime;
-
+import com.intergiciel.house_service.dto.LogementCreateDto;
 import com.intergiciel.house_service.dto.LogementDto;
+import com.intergiciel.house_service.dto.LogementUpdateDto;
 import com.intergiciel.house_service.entity.StatutValidation;
 import com.intergiciel.house_service.exception.LogementNotFoundException;
 import com.intergiciel.house_service.entity.Logement;
+import com.intergiciel.house_service.mapper.LogementMapper;
 import com.intergiciel.house_service.repository.LogementRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class LogementService {
 
     private final LogementRepository repository;
+    private final LogementMapper mapper;
 
-    public LogementService(LogementRepository repository) {
-        this.repository = repository;
+    // sauvegarder un logement
+    public LogementDto save(LogementCreateDto dto) {
+        Logement logement = mapper.toEntity(dto);
+        Logement saved = repository.save(logement);
+        return mapper.toDto(saved);
     }
 
-    // public Logement save(Logement logement) {
-    //     return repository.save(logement);
-    // }
-// sauvegarder un logement 
-    public Logement save(Logement logement) {
-
-    logement.setStatutValidation(StatutValidation.EN_ATTENTE);
-    logement.setDateCreation(LocalDateTime.now());
-
-    return repository.save(logement);
+    public List<LogementDto> findAll() {
+        return repository.findAll().stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
     }
-//select
-    public List<Logement> findAll() {
-        return repository.findAll();
+
+    public LogementDto getById(UUID id) {
+        Logement logement = findByIdOrThrow(id);
+        return mapper.toDto(logement);
     }
-    // getbyid
 
-   public Logement getById(UUID id) {
-    return repository.findById(id)
-            .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
+    public LogementDto update(UUID id, LogementUpdateDto dto) {
+        Logement logement = findByIdOrThrow(id);
+        mapper.updateEntity(logement, dto);
+        Logement updated = repository.save(logement);
+        return mapper.toDto(updated);
     }
-// update
-    public Logement update(UUID id, Logement newData) {
 
-    Logement logement = repository.findById(id)
-            .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
+    public void delete(UUID id) {
+        Logement logement = findByIdOrThrow(id);
+        repository.delete(logement);
+    }
 
-    logement.setTitre(newData.getTitre());
-    logement.setDescription(newData.getDescription());
-    logement.setAdresse(newData.getAdresse());
-    logement.setType(newData.getType());
-    logement.setPrix(newData.getPrix());
-    logement.setLatitude(newData.getLatitude());
-    logement.setLongitude(newData.getLongitude());
-    logement.setDisponible(newData.getDisponible());
+    // ========== Recherche ==========
+    public List<LogementDto> searchByVille(String ville) {
+        return repository.findByAdresseContaining(ville).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
 
-    return repository.save(logement);
+    public List<LogementDto> searchByType(String type) {
+        return repository.findByType(type).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<LogementDto> searchByPrix(Double min, Double max) {
+        return repository.findByPrixBetween(min, max).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<LogementDto> searchDisponible(Boolean disponible) {
+        return repository.findByDisponible(disponible).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    // ========== Validation ==========
+    public LogementDto valider(UUID id) {
+        Logement logement = findByIdOrThrow(id);
+        logement.setStatutValidation(StatutValidation.VALIDE);
+        Logement updated = repository.save(logement);
+        return mapper.toDto(updated);
+    }
+
+    public LogementDto rejeter(UUID id) {
+        Logement logement = findByIdOrThrow(id);
+        logement.setStatutValidation(StatutValidation.REJETE);
+        Logement updated = repository.save(logement);
+        return mapper.toDto(updated);
+    }
+
+    public List<LogementDto> getEnAttente() {
+        return repository.findByStatutValidation(StatutValidation.EN_ATTENTE).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    // ========== Méthodes utilitaires ==========
+    private Logement findByIdOrThrow(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new LogementNotFoundException("Logement introuvable avec l'ID: " + id));
+    }
 }
-//delete
-public void delete(UUID id) {
-    Logement logement = repository.findById(id)
-            .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
-
-    repository.delete(logement);
-}
-
-// rechercher
-public List<Logement> searchByVille(String ville) {
-    return repository.findByAdresseContaining(ville);
-}
-
-public List<Logement> searchByType(String type) {
-    return repository.findByType(type);
-}
-
-public List<Logement> searchByPrix(Double min, Double max) {
-    return repository.findByPrixBetween(min, max);
-}
-
-public List<Logement> searchDisponible(Boolean disponible) {
-    return repository.findByDisponible(disponible);
-}
-//recuperer les logements en attentes
-public List<Logement> getEnAttente() {
-    return repository.findByStatutValidation(StatutValidation.EN_ATTENTE);
-}
-// valider un logement
-public Logement valider(UUID id) {
-    Logement logement = repository.findById(id)
-            .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
-
-    logement.setStatutValidation(StatutValidation.VALIDE);
-
-    return repository.save(logement);
-}
-// rejeter un logement
-public Logement rejeter(UUID id) {
-    Logement logement = repository.findById(id)
-            .orElseThrow(() -> new LogementNotFoundException("Logement introuvable"));
-
-    logement.setStatutValidation(StatutValidation.REJETE);
-
-    return repository.save(logement);
-}
-}
-
 
 
