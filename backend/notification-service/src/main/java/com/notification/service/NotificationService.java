@@ -1,33 +1,20 @@
 package com.notification.service;
 
-// =====================================================
-// NotificationService.java - Core Business Logic
-// =====================================================
+// =========================================================================
+// NotificationService.java - Logique métier principale
+// =========================================================================
 //
-// This is the HEART of our notification system!
-// It orchestrates the entire notification flow:
-// 1. Validate request
-// 2. Check rate limits
-// 3. Process template (if using one)
-// 4. Create notification record
-// 5. Send to Kafka for async processing
+// Ce service orchestre l'envoi des notifications :
+// 1. Validation des paramètres
+// 2. Vérification des doublons (eventId)
+// 3. Vérification des limites de débit (rate limiting)
+// 4. Création de l'enregistrement en base de données
+// 5. Envoi d'un message Kafka pour traitement asynchrone
 //
 
-import com.notification.dto.request.BulkNotificationRequest;
-import com.notification.dto.request.SendNotificationRequest;
-import com.notification.dto.response.BulkNotificationResponse;
-import com.notification.dto.response.NotificationResponse;
-import com.notification.dto.response.PagedResponse;
-import com.notification.exception.NotificationException;
-import com.notification.exception.ResourceNotFoundException;
-import com.notification.model.entity.Notification;
-import com.notification.model.entity.User;
-import com.notification.model.enums.ChannelType;
-import com.notification.model.enums.NotificationStatus;
-import com.notification.repository.NotificationRepository;
-import com.notification.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,418 +22,211 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.notification.dto.request.BulkNotificationRequest;
+import com.notification.dto.request.SendNotificationRequest;
+import com.notification.dto.response.BulkNotificationResponse;
+import com.notification.dto.response.NotificationResponse;
+import com.notification.dto.response.PagedResponse;
+import com.notification.model.entity.Notification;
+import com.notification.model.enums.ChannelType;
+import com.notification.model.enums.NotificationStatus;
+import com.notification.model.enums.Priority;
+import com.notification.repository.NotificationRepository;
+
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 /**
- * Main service for notification operations.
- * 
- * Handles:
- * - Sending single notifications
- * - Sending bulk notifications
- * - Retrieving user's notification inbox
- * - Marking notifications as read
- * - Analytics and status queries
+ * Service principal de gestion des notifications.
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
-    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
-    
-    // ==================== Dependencies ====================
-    
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
-    private final UserService userService;
-    private final TemplateService templateService;
     private final RateLimiterService rateLimiterService;
     private final DeduplicationService deduplicationService;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    
-    // Channel-specific Kafka topics (Alex Xu's design pattern)
-    // Each channel has its own topic for independent scaling
-    @Value("${notification.kafka.topic.email:notifications.email}")
+
+    // Topics Kafka pour chaque canal (configuration externe)
+    @Value("${notification.kafka.topics.email:notifications.email}")
     private String emailTopic;
-    
-    @Value("${notification.kafka.topic.sms:notifications.sms}")
+
+    @Value("${notification.kafka.topics.sms:notifications.sms}")
     private String smsTopic;
-    
-    @Value("${notification.kafka.topic.push:notifications.push}")
+
+    @Value("${notification.kafka.topics.push:notifications.push}")
     private String pushTopic;
-    
-    @Value("${notification.kafka.topic.in-app:notifications.in-app}")
+
+    @Value("${notification.kafka.topics.in-app:notifications.in-app}")
     private String inAppTopic;
-    
-    // ==================== Constructor ====================
-    
+
     /**
-     * Constructor injection of all dependencies.
-     * 
-     * Spring will automatically create and inject these beans.
-     * This is called "Dependency Injection" and makes testing easier
-     * (we can pass mock objects in tests).
-     */
-    public NotificationService(
-            NotificationRepository notificationRepository,
-            UserRepository userRepository,
-            UserService userService,
-            TemplateService templateService,
-            RateLimiterService rateLimiterService,
-            DeduplicationService deduplicationService,
-            KafkaTemplate<String, String> kafkaTemplate) {
-        this.notificationRepository = notificationRepository;
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.templateService = templateService;
-        this.rateLimiterService = rateLimiterService;
-        this.deduplicationService = deduplicationService;
-        this.kafkaTemplate = kafkaTemplate;
-    }
-    
-    // ==================== Send Notification ====================
-    
-    /**
-     * Send a single notification.
-     * 
-     * This is the main entry point for sending notifications.
-     * 
-     * Flow:
-     * 1. Validate user exists
-     * 2. Check rate limit
-     * 3. Process template OR use direct content
-     * 4. Create notification record in DB
-     * 5. Send to Kafka for async delivery
-     * 
-     * @param request The notification request
-     * @return The created notification response
+     * Envoie une notification unique.
+     *
+     * @param request contient le destinataire, le canal, le contenu, etc.
+     * @return la notification créée (avec son ID et son statut)
      */
     @Transactional
     public NotificationResponse sendNotification(SendNotificationRequest request) {
-        log.debug("Processing notification request for user: {}", request.getUserId());
-        
-        // Step 1: Validate user exists (cached via Redis - avoids DB hit per request)
-        User user = userService.findById(request.getUserId());
-        
-        // Step 2: Check for duplicates (if eventId provided)
+        log.debug("Envoi d'une notification à l'utilisateur {}", request.getUserId());
+
+        // 1. Vérification des doublons (si un eventId est fourni)
         if (request.getEventId() != null && !request.getEventId().isBlank()) {
             if (deduplicationService.isDuplicate(request.getEventId())) {
-                log.debug("Duplicate notification event detected: {}. Discarding.", request.getEventId());
-                // Return a response indicating the notification was not sent due to deduplication
+                log.debug("Événement dupliqué détecté : {}. Notification ignorée.", request.getEventId());
                 return NotificationResponse.builder()
-                    .id(null) // No notification created
-                    .userId(user.getId())
-                    .channel(request.getChannel())
-                    .priority(request.getPriority())
-                    .status(NotificationStatus.FAILED)
-                    .errorMessage("Duplicate event: notification already processed")
-                    .build();
+                        .id(null)
+                        .userId(request.getUserId())
+                        .channel(request.getChannel())
+                        .priority(request.getPriority())
+                        .status(NotificationStatus.FAILED)
+                        .errorMessage("Événement en double : notification déjà traitée")
+                        .build();
             }
         }
-        
-        // Step 3: Check rate limit (throws exception if exceeded)
-        rateLimiterService.checkAndIncrement(user.getId(), request.getChannel());
-        
-        // Step 3: Get content (from template or direct)
-        String subject;
-        String content;
-        
-        if (request.isTemplateRequest()) {
-            // Using a template - process it with variables
-            TemplateService.ProcessedTemplate processed = 
-                templateService.processTemplate(
-                    request.getTemplateName(), 
-                    request.getTemplateVariables()
-                );
-            subject = processed.getSubject();
-            content = processed.getBody();
-            
-            // Validate channel matches template
-            if (processed.getChannel() != request.getChannel()) {
-                throw new NotificationException(
-                    "Template '" + request.getTemplateName() + 
-                    "' is for channel " + processed.getChannel() + 
-                    ", not " + request.getChannel()
-                );
-            }
-        } else {
-            // Direct content
-            if (!request.hasValidContent()) {
-                throw new IllegalArgumentException(
-                    "Either templateName or content must be provided"
-                );
-            }
-            subject = request.getSubject();
-            content = request.getContent();
-        }
-        
-        // Step 4: Create notification record in the DB
+
+        // 2. Vérification du rate limiting (lève une exception si la limite est dépassée)
+        rateLimiterService.checkAndIncrement(request.getUserId(), request.getChannel());
+
+        // 3. Construction de l'entité Notification
         Notification notification = Notification.builder()
-            .user(user)
-            .channel(request.getChannel())
-            .priority(request.getPriority())
-            .subject(subject)
-            .content(content)
-            .status(NotificationStatus.PENDING)
-            .build();
-        
+                .userId(request.getUserId())
+                .channel(request.getChannel())
+                .priority(request.getPriority() != null ? request.getPriority() : Priority.MEDIUM)
+                .subject(request.getSubject())
+                .content(request.getContent())
+                .status(NotificationStatus.PENDING)
+                .build();
+
         notification = notificationRepository.save(notification);
-        
-        log.debug("Created notification {} for user {}", notification.getId(), user.getId());
-        
-        // Step 5: Send to Kafka for async processing
+        log.debug("Notification créée avec l'id {}", notification.getId());
+
+        // 4. Envoi vers Kafka pour traitement asynchrone
         sendToKafka(notification);
-        
-        return NotificationResponse.from(notification);
+
+        return NotificationResponse.fromEntity(notification);
     }
-    
+
     /**
-     * Send bulk notifications to multiple users.
-     * 
-     * For each user, we:
-     * 1. Check rate limit
-     * 2. Create notification
-     * 3. Send to Kafka
-     * 
-     * Failed notifications don't stop the whole batch.
-     */
-    @Transactional
-    public BulkNotificationResponse sendBulkNotification(BulkNotificationRequest request) {
-        log.info("Processing bulk notification for {} users", request.getUserIds().size());
-        
-        BulkNotificationResponse response = BulkNotificationResponse.builder()
-            .totalRequested(request.getUserIds().size())
-            .build();
-        
-        // Process content once (same for all users)
-        String subject;
-        String content;
-        
-        if (request.isTemplateRequest()) {
-            TemplateService.ProcessedTemplate processed = 
-                templateService.processTemplate(
-                    request.getTemplateName(), 
-                    request.getTemplateVariables()
-                );
-            subject = processed.getSubject();
-            content = processed.getBody();
-        } else {
-            subject = request.getSubject();
-            content = request.getContent();
-        }
-        
-        // Process each user (use cached user lookups)
-        for (UUID userId : request.getUserIds()) {
-            try {
-                // Find user (cached via Redis)
-                User user = userService.findById(userId);
-                
-                // Check rate limit (skip if exceeded, don't fail whole batch)
-                if (rateLimiterService.isRateLimited(userId, request.getChannel())) {
-                    response.addFailure(userId, "Rate limit exceeded");
-                    continue;
-                }
-                
-                // Increment rate limit counter
-                rateLimiterService.checkAndIncrement(userId, request.getChannel());
-                
-                // Create notification
-                Notification notification = Notification.builder()
-                    .user(user)
-                    .channel(request.getChannel())
-                    .priority(request.getPriority())
-                    .subject(subject)
-                    .content(content)
-                    .status(NotificationStatus.PENDING)
-                    .build();
-                
-                notification = notificationRepository.save(notification);
-                
-                // Send to Kafka
-                sendToKafka(notification);
-                
-                response.addSuccess(notification.getId());
-                
-            } catch (Exception e) {
-                log.error("Failed to create notification for user {}: {}", 
-                    userId, e.getMessage());
-                response.addFailure(userId, e.getMessage());
-            }
-        }
-        
-        log.info("Bulk notification complete: {} success, {} failed", 
-            response.getSuccessCount(), response.getFailedCount());
-        
-        return response;
-    }
-    
-    // ==================== Query Methods ====================
-    
-    /**
-     * Get a notification by ID.
+     * Récupère une notification par son identifiant.
      */
     @Transactional(readOnly = true)
     public NotificationResponse getNotificationById(UUID id) {
         Notification notification = notificationRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Notification", "id", id));
-        
-        return NotificationResponse.from(notification);
+                .orElseThrow(() -> new RuntimeException("Notification non trouvée avec l'id : " + id));
+        return NotificationResponse.fromEntity(notification);
     }
-    
+
     /**
-     * Get notifications for a user (inbox).
-     * 
-     * Supports pagination for large inboxes.
+     * Récupère les notifications d'un utilisateur (boîte de réception) avec pagination.
      */
     @Transactional(readOnly = true)
-    public PagedResponse<NotificationResponse> getUserNotifications(
-            UUID userId, 
-            Pageable pageable) {
-        
-        // Verify user exists
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User", "id", userId);
+    public PagedResponse<NotificationResponse> getUserNotifications(UUID userId, Pageable pageable) {
+        Page<Notification> page = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        return PagedResponse.of(page.map(NotificationResponse::fromEntity));
+    }
+
+    /**
+     * Récupère les notifications d'un utilisateur filtrées par canal.
+     */
+    @Transactional(readOnly = true)
+    public PagedResponse<NotificationResponse> getUserNotificationsByChannel(UUID userId, ChannelType channel, Pageable pageable) {
+        Page<Notification> page = notificationRepository.findByUserIdAndChannelOrderByCreatedAtDesc(userId, channel, pageable);
+        return PagedResponse.of(page.map(NotificationResponse::fromEntity));
+    }
+
+    /**
+     * Marque une notification IN_APP comme lue.
+     */
+    @Transactional
+    public NotificationResponse markAsRead(UUID notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification non trouvée : " + notificationId));
+
+        if (notification.getChannel() != ChannelType.IN_APP) {
+            throw new IllegalArgumentException("Seules les notifications IN_APP peuvent être marquées comme lues.");
         }
-        
-        Page<Notification> page = notificationRepository
-            .findByUserIdOrderByCreatedAtDesc(userId, pageable);
-        
-        return PagedResponse.from(page, NotificationResponse::from);
+
+        notification.markAsRead();
+        notification = notificationRepository.save(notification);
+        return NotificationResponse.fromEntity(notification);
     }
-    
+
     /**
-     * Get notifications for a user filtered by channel.
+     * Marque toutes les notifications IN_APP d'un utilisateur comme lues.
      */
-    @Transactional(readOnly = true)
-    public PagedResponse<NotificationResponse> getUserNotificationsByChannel(
-            UUID userId, 
-            ChannelType channel, 
-            Pageable pageable) {
-        
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User", "id", userId);
-        }
-        
-        Page<Notification> page = notificationRepository
-            .findByUserIdAndChannelOrderByCreatedAtDesc(userId, channel, pageable);
-        
-        return PagedResponse.from(page, NotificationResponse::from);
+    @Transactional
+    public int markAllAsRead(UUID userId) {
+        return notificationRepository.markAllAsReadForUser(userId, OffsetDateTime.now());
     }
-    
+
     /**
-     * Get notifications by status and channel (for admin/monitoring).
-     * 
-     * Used to check queue status for specific channels.
-     */
-    @Transactional(readOnly = true)
-    public PagedResponse<NotificationResponse> getNotificationsByStatusAndChannel(
-            NotificationStatus status, 
-            ChannelType channel, 
-            Pageable pageable) {
-        
-        Page<Notification> page = notificationRepository
-            .findByStatusAndChannelOrderByCreatedAtDesc(status, channel, pageable);
-        
-        return PagedResponse.from(page, NotificationResponse::from);
-    }
-    
-    /**
-     * Get notifications by status (for admin/monitoring).
-     */
-    @Transactional(readOnly = true)
-    public PagedResponse<NotificationResponse> getNotificationsByStatus(
-            NotificationStatus status, 
-            Pageable pageable) {
-        
-        Page<Notification> page = notificationRepository
-            .findByStatusOrderByCreatedAtDesc(status, pageable);
-        
-        return PagedResponse.from(page, NotificationResponse::from);
-    }
-    
-    /**
-     * Get unread count for a user (in-app notifications).
+     * Compte les notifications non lues pour un utilisateur (IN_APP uniquement).
      */
     @Transactional(readOnly = true)
     public long getUnreadCount(UUID userId) {
         return notificationRepository.countUnreadForUser(userId);
     }
-    
-    // ==================== Status Update Methods ====================
-    
-    /**
-     * Mark a notification as read.
-     */
+
     @Transactional
-    public NotificationResponse markAsRead(UUID notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-            .orElseThrow(() -> new ResourceNotFoundException("Notification", "id", notificationId));
-        
-        if (notification.getChannel() != ChannelType.IN_APP) {
-            throw new IllegalArgumentException(
-                "Only IN_APP notifications can be marked as read"
-            );
+public BulkNotificationResponse sendBulkNotification(BulkNotificationRequest request) {
+    log.info("Traitement d'une notification groupée pour {} utilisateurs", request.getUserIds().size());
+
+    BulkNotificationResponse response = BulkNotificationResponse.builder()
+            .totalRequested(request.getUserIds().size())
+            .build();
+
+    // Contenu commun (si template, à dérouler plus tard)
+    String subject = request.getSubject();
+    String content = request.getContent();
+
+    for (UUID userId : request.getUserIds()) {
+        try {
+            SendNotificationRequest singleRequest = SendNotificationRequest.builder()
+                    .userId(userId)
+                    .channel(request.getChannel())
+                    .priority(request.getPriority())
+                    .subject(subject)
+                    .content(content)
+                    .build();
+            NotificationResponse notifResponse = sendNotification(singleRequest);
+            response.addSuccess(notifResponse.getId());
+        } catch (Exception e) {
+            log.error("Échec pour l'utilisateur {} : {}", userId, e.getMessage());
+            response.addFailure(userId, e.getMessage());
         }
-        
-        notification.markAsRead();
-        notification = notificationRepository.save(notification);
-        
-        return NotificationResponse.from(notification);
     }
-    
+
+    log.info("Notifications groupées terminées : {} succès, {} échecs",
+            response.getSuccessCount(), response.getFailedCount());
+    return response;
+}
+
+    // ==================== Méthodes privées ====================
+
     /**
-     * Mark all notifications as read for a user.
-     */
-    @Transactional
-    public int markAllAsRead(UUID userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User", "id", userId);
-        }
-        
-        return notificationRepository.markAllAsReadForUser(userId, OffsetDateTime.now());
-    }
-    
-    // ==================== Private Helper Methods ====================
-    
-    /**
-     * Send notification to Kafka for async processing.
-     * 
-     * Routes to channel-specific topic based on notification channel.
-     * This follows Alex Xu's design for independent channel scaling.
-     * 
-     * Key = notification ID (for partitioning)
-     * Value = notification ID (worker will fetch details)
+     * Envoie l'ID de la notification vers le topic Kafka correspondant à son canal.
+     * Le consumer se chargera de récupérer les détails et d'effectuer l'envoi effectif.
+     *
+     * @param notification la notification à traiter
      */
     private void sendToKafka(Notification notification) {
+        String topic = getTopicForChannel(notification.getChannel());
+        String key = notification.getId().toString();
+        String value = notification.getId().toString();
+
         try {
-            String key = notification.getId().toString();
-            String value = notification.getId().toString();
-            String topic = getTopicForChannel(notification.getChannel());
-            
-            // Fire-and-forget: don't block on the future.
-            // The Kafka producer batches internally (linger.ms + batch-size)
-            // and retries automatically on transient failures.
             kafkaTemplate.send(topic, key, value);
-            
-            log.debug("Sent notification {} to Kafka topic {}", 
-                notification.getId(), topic);
-                
+            log.debug("Notification {} envoyée au topic {}", notification.getId(), topic);
         } catch (Exception e) {
-            log.error("Failed to send notification {} to Kafka: {}", 
-                notification.getId(), e.getMessage());
-            // Don't fail the transaction - notification is saved in DB
-            // A retry job can pick it up later
+            log.error("Échec d'envoi de la notification {} vers Kafka : {}", notification.getId(), e.getMessage());
+            // La notification est déjà en base avec le statut PENDING.
+            // Un job de nettoyage pourra la reprendre ultérieurement.
         }
     }
-    
-    /**
-     * Get the Kafka topic for a specific channel.
-     * 
-     * Each channel has its own topic allowing:
-     * - Independent scaling (more email consumers, fewer SMS)
-     * - Channel isolation (email issues don't affect push)
-     * - Different processing priorities per channel
-     */
+
     private String getTopicForChannel(ChannelType channel) {
         return switch (channel) {
             case EMAIL -> emailTopic;

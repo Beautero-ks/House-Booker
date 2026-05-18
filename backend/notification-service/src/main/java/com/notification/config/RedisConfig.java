@@ -24,12 +24,13 @@ import java.time.Duration;
 
 /**
  * =====================================================
- * REDIS CONFIGURATION - HOUSEBOOKER
+ * CONFIGURATION REDIS - HOUSEBOOKER (Notification Service)
  * =====================================================
  *
  * Configuration Redis utilisée pour :
  * - Rate Limiting (compteurs par utilisateur)
- * - Caching (templates, préférences utilisateur, tokens, etc.)
+ * - Déduplication des événements
+ * - Caching (si nécessaire)
  *
  * @author HouseBooker Dev Team
  * @version 1.0.0
@@ -54,7 +55,7 @@ public class RedisConfig {
     }
 
     /**
-     * Template optimisé pour les opérations avec des Strings (idéal pour le Rate Limiting).
+     * Template optimisé pour les opérations avec des Strings (idéal pour le Rate Limiting et la déduplication).
      */
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
@@ -65,6 +66,7 @@ public class RedisConfig {
 
     /**
      * Cache Manager pour les annotations Spring Cache (@Cacheable, @CacheEvict, etc.).
+     * Permet de mettre en cache les résultats des méthodes (ex: templates de notification).
      */
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
@@ -75,7 +77,7 @@ public class RedisConfig {
 
         // Polymorphic Type Validator sécurisé (remplace l'ancien enableDefaultTyping)
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                .allowIfBaseType("com.housebooker.notification")
+                .allowIfBaseType("com.housebooker.notification")   // Package racine du microservice
                 .allowIfSubType("java.util")
                 .build();
 

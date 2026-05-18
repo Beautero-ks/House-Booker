@@ -1,1291 +1,647 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notification System - Interactive Walkthrough</title>
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HouseBooker - Notification Service Tester</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #eee;
+      * {
+        font-family: "Inter", sans-serif;
+      }
+      .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #1f1f1f;
+        border-radius: 10px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #f97316;
+        border-radius: 10px;
+      }
+      .bg-dark-card {
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(2px);
+        border: 1px solid rgba(249, 115, 22, 0.2);
+      }
+      .hover-glow:hover {
+        box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+        transition: all 0.2s;
+      }
+      @keyframes fadeSlideUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
         }
-
-        .container { max-width: 1400px; margin: 0 auto; }
-
-        /* ===== Header ===== */
-        .header {
-            text-align: center;
-            padding: 30px 30px 10px;
-            margin-bottom: 10px;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .header p { opacity: 0.8; font-size: 1.1em; }
-
-        /* ===== Chapter Dividers ===== */
-        .chapter {
-            margin: 40px 0 20px;
-            padding: 0 10px;
-        }
-        .chapter-label {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.75em;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 8px;
-        }
-        .chapter-label.preflight { background: rgba(52, 152, 219, 0.3); color: #5dade2; }
-        .chapter-label.setup { background: rgba(155, 89, 182, 0.3); color: #bb8fce; }
-        .chapter-label.flow { background: rgba(39, 174, 96, 0.3); color: #58d68d; }
-        .chapter-label.observe { background: rgba(230, 126, 34, 0.3); color: #f0b27a; }
-
-        .chapter h2 {
-            font-size: 1.6em;
-            margin-bottom: 4px;
-        }
-        .chapter p {
-            color: #888;
-            font-size: 0.95em;
-        }
-
-        /* ===== Pipeline ===== */
-        .pipeline {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 20px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            overflow-x: auto;
-        }
-        .pipeline-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px;
-            min-width: 110px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-radius: 10px;
-        }
-        .pipeline-step:hover { background: rgba(255,255,255,0.1); }
-        .pipeline-step.active { background: rgba(102, 126, 234, 0.3); border: 2px solid #667eea; }
-        .pipeline-step.completed { background: rgba(39, 174, 96, 0.3); }
-        .pipeline-icon { font-size: 2em; margin-bottom: 10px; }
-        .pipeline-label { font-size: 0.8em; text-align: center; font-weight: 600; }
-        .pipeline-arrow { font-size: 1.5em; color: #667eea; margin: 0 3px; }
-
-        /* ===== Grid ===== */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
-        .full-width { grid-column: 1 / -1; }
-
-        /* ===== Cards ===== */
-        .card {
-            background: rgba(255,255,255,0.08);
-            border-radius: 15px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .card h2 {
-            font-size: 1.4em;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .card h2 .step-num {
-            background: #667eea;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.7em;
-        }
-        .card h3 {
-            font-size: 1.1em;
-            margin: 15px 0 10px;
-            color: #a0a0a0;
-        }
-
-        /* ===== Forms ===== */
-        .form-group { margin-bottom: 15px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #ccc;
-            font-size: 0.9em;
-        }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            font-size: 1em;
-            background: rgba(0,0,0,0.3);
-            color: #fff;
-            transition: border-color 0.3s;
-        }
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus { outline: none; border-color: #667eea; }
-        .form-group textarea { resize: vertical; min-height: 80px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-        /* ===== Buttons ===== */
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s;
-            margin-right: 10px;
-            margin-top: 10px;
-        }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
-        .btn-success { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; }
-        .btn-warning { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; }
-        .btn-danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
-        .btn-info { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; }
-        .btn-sm { padding: 8px 15px; font-size: 0.85em; }
-
-        /* ===== Output ===== */
-        .output-area {
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
-        .output-area h4 { margin-bottom: 10px; color: #a0a0a0; font-size: 0.9em; text-transform: uppercase; }
-        .json-output {
-            background: #0d1117;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Fira Code', 'Courier New', monospace;
-            font-size: 0.85em;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 300px;
-            overflow-y: auto;
-            color: #7ee787;
-        }
-
-        /* ===== Flow Log ===== */
-        .flow-log {
-            background: rgba(0,0,0,0.4);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .log-entry {
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .log-entry.step1 { background: rgba(52, 152, 219, 0.2); border-left: 3px solid #3498db; }
-        .log-entry.step2 { background: rgba(155, 89, 182, 0.2); border-left: 3px solid #9b59b6; }
-        .log-entry.step3 { background: rgba(46, 204, 113, 0.2); border-left: 3px solid #2ecc71; }
-        .log-entry.step4 { background: rgba(241, 196, 15, 0.2); border-left: 3px solid #f1c40f; }
-        .log-entry.step5 { background: rgba(230, 126, 34, 0.2); border-left: 3px solid #e67e22; }
-        .log-entry.step6 { background: rgba(231, 76, 60, 0.2); border-left: 3px solid #e74c3c; }
-        .log-entry.step7 { background: rgba(26, 188, 156, 0.2); border-left: 3px solid #1abc9c; }
-        .log-entry.success { background: rgba(39, 174, 96, 0.3); border-left: 3px solid #27ae60; }
-        .log-entry.error { background: rgba(231, 76, 60, 0.3); border-left: 3px solid #e74c3c; }
-        .log-icon { font-size: 1.2em; }
-        .log-time { color: #888; font-size: 0.8em; }
-        .log-message { flex: 1; }
-
-        /* ===== Status Badges ===== */
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.75em;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .status-pending { background: #f39c12; color: #000; }
-        .status-processing { background: #3498db; color: #fff; }
-        .status-sent { background: #27ae60; color: #fff; }
-        .status-delivered { background: #2ecc71; color: #fff; }
-        .status-failed { background: #e74c3c; color: #fff; }
-
-        /* ===== Tabs ===== */
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-btn {
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            border-radius: 8px;
-            color: #ccc;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.3s;
-        }
-        .tab-btn:hover { background: rgba(255,255,255,0.2); }
-        .tab-btn.active { background: #667eea; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* ===== Template Variables ===== */
-        .var-container { margin-top: 10px; }
-        .var-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; }
-        .var-row input { flex: 1; }
-        .var-row .remove-btn {
-            background: #e74c3c; color: white; border: none;
-            width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
-        }
-
-        /* ===== Health Grid ===== */
-        .health-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .health-item {
-            padding: 20px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            text-align: center;
-        }
-        .health-item .icon { font-size: 2em; margin-bottom: 10px; }
-        .health-item .label { color: #888; font-size: 0.9em; }
-        .health-item .status { font-weight: 600; margin-top: 5px; }
-        .health-item.up { border: 2px solid #27ae60; }
-        .health-item.down { border: 2px solid #e74c3c; }
-
-        /* ===== Notification Cards (inbox) ===== */
-        .notification-list { margin-top: 15px; }
-        .notification-item {
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
-        }
-        .notification-item .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .notification-item .channel-icon { font-size: 1.2em; margin-right: 10px; }
-        .notification-item .content-preview { color: #aaa; font-size: 0.9em; }
-
-        /* ===== Monitor Cards ===== */
-        .notifications-list { max-height: 600px; overflow-y: auto; margin-top: 15px; }
-        .notification-card {
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
-        }
-        .notification-card .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .notification-card .channel-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-        .notification-card .channel-badge.EMAIL { background: #3498db; color: white; }
-        .notification-card .channel-badge.SMS { background: #27ae60; color: white; }
-        .notification-card .channel-badge.PUSH { background: #e67e22; color: white; }
-        .notification-card .channel-badge.IN_APP { background: #9b59b6; color: white; }
-        .notification-card .status-badge { padding: 2px 6px; border-radius: 10px; font-size: 0.75em; font-weight: 600; }
-        .notification-card .status-badge.PENDING { background: #f39c12; color: white; }
-        .notification-card .status-badge.SENT { background: #27ae60; color: white; }
-        .notification-card .status-badge.FAILED { background: #e74c3c; color: white; }
-        .notification-card .content { color: #eee; margin: 10px 0; }
-        .notification-card .meta { display: flex; gap: 15px; font-size: 0.85em; color: #aaa; flex-wrap: wrap; }
-
-        .hidden { display: none !important; }
-        .spinner {
-            display: inline-block; width: 20px; height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top-color: #667eea; border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+      }
+      .animate-fade-slide {
+        animation: fadeSlideUp 0.3s ease forwards;
+      }
     </style>
-</head>
-<body>
-<div class="container">
+  </head>
+  <body class="bg-black text-gray-200">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <div
+          class="inline-flex items-center gap-2 bg-orange-900/30 text-orange-400 px-4 py-1 rounded-full text-sm font-semibold mb-3"
+        >
+          <span class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+          Notification Service – HouseBooker
+        </div>
+        <h1
+          class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent"
+        >
+          🔔 Notification Flow Tester
+        </h1>
+        <p class="text-gray-400 max-w-2xl mx-auto mt-3">
+          Envoyez, suivez, inspectez — chaque notification en temps réel
+        </p>
+      </div>
 
-    <!-- ================================================================
-         HEADER
-         ================================================================ -->
-    <div class="header">
-        <h1>🔔 Notification System</h1>
-        <p>Interactive Walkthrough &mdash; follow the story of a notification from creation to delivery</p>
+      <!-- Pipeline visuel -->
+      <div
+        class="flex flex-wrap justify-center items-center gap-2 md:gap-4 mb-12 pb-2"
+      >
+        <div
+          class="flex flex-col items-center gap-1"
+          onclick="
+            document
+              .getElementById('preflight')
+              .scrollIntoView({ behavior: 'smooth' })
+          "
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-orange-600/20 border border-orange-500 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition"
+          >
+            ❤️
+          </div>
+          <span class="text-xs text-gray-400">Preflight</span>
+        </div>
+        <div class="text-orange-500 text-xl">→</div>
+        <div
+          class="flex flex-col items-center gap-1"
+          onclick="
+            document
+              .getElementById('sendSection')
+              .scrollIntoView({ behavior: 'smooth' })
+          "
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-orange-600/20 border border-orange-500 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition"
+          >
+            📨
+          </div>
+          <span class="text-xs text-gray-400">Envoyer</span>
+        </div>
+        <div class="text-orange-500 text-xl">→</div>
+        <div
+          class="flex flex-col items-center gap-1"
+          onclick="
+            document
+              .getElementById('trackSection')
+              .scrollIntoView({ behavior: 'smooth' })
+          "
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-orange-600/20 border border-orange-500 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition"
+          >
+            🔎
+          </div>
+          <span class="text-xs text-gray-400">Suivre</span>
+        </div>
+        <div class="text-orange-500 text-xl">→</div>
+        <div
+          class="flex flex-col items-center gap-1"
+          onclick="
+            document
+              .getElementById('inboxSection')
+              .scrollIntoView({ behavior: 'smooth' })
+          "
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-orange-600/20 border border-orange-500 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition"
+          >
+            📬
+          </div>
+          <span class="text-xs text-gray-400">Inbox</span>
+        </div>
+        <div class="text-orange-500 text-xl">→</div>
+        <div
+          class="flex flex-col items-center gap-1"
+          onclick="
+            document
+              .getElementById('monitorSection')
+              .scrollIntoView({ behavior: 'smooth' })
+          "
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-orange-600/20 border border-orange-500 flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition"
+          >
+            📡
+          </div>
+          <span class="text-xs text-gray-400">Monitor</span>
+        </div>
+      </div>
+
+      <!-- CHAPITRE 1 – PREFLIGHT -->
+      <div id="preflight" class="scroll-mt-24 mb-10">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-1 h-6 bg-orange-500 rounded"></div>
+          <span class="text-orange-400 text-sm font-bold tracking-wider"
+            >CHAPITRE 1</span
+          >
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold mb-2">
+          🔍 Preflight – Vérification de l'infrastructure
+        </h2>
+        <p class="text-gray-400 mb-5">
+          Vérifiez que le service est opérationnel avant d'envoyer des
+          notifications.
+        </p>
+        <div class="bg-dark-card rounded-2xl p-5 border border-gray-800">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-semibold text-lg">❤️ Health check</h3>
+            <button
+              onclick="checkHealth()"
+              class="bg-orange-600 hover:bg-orange-500 text-white px-4 py-1.5 rounded-lg text-sm transition"
+            >
+              🔍 Tester
+            </button>
+          </div>
+          <div
+            id="healthOutput"
+            class="bg-black/60 p-3 rounded-xl text-xs font-mono overflow-x-auto"
+          >
+            ⚠️ Cliquez sur "Tester" pour voir l'état du service
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPITRE 2 – ENVOI -->
+      <div id="sendSection" class="scroll-mt-24 mb-10">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-1 h-6 bg-orange-500 rounded"></div>
+          <span class="text-orange-400 text-sm font-bold tracking-wider"
+            >CHAPITRE 2</span
+          >
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold mb-4">
+          📨 Envoyer une notification
+        </h2>
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="bg-dark-card rounded-2xl p-5 border border-gray-800">
+            <div class="space-y-3">
+              <div>
+                <label class="text-sm text-gray-400">User ID *</label
+                ><input
+                  id="notifUserId"
+                  class="w-full bg-black border border-gray-700 rounded-lg p-2 text-sm"
+                  placeholder="550e8400-e29b-41d4-a716-446655440001"
+                  value="550e8400-e29b-41d4-a716-446655440001"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-sm text-gray-400">Canal</label
+                  ><select
+                    id="notifChannel"
+                    class="w-full bg-black border border-gray-700 rounded-lg p-2 text-sm"
+                  >
+                    <option>EMAIL</option>
+                    <option>SMS</option>
+                    <option>PUSH</option>
+                    <option>IN_APP</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-sm text-gray-400">Priorité</label
+                  ><select
+                    id="notifPriority"
+                    class="w-full bg-black border border-gray-700 rounded-lg p-2 text-sm"
+                  >
+                    <option>MEDIUM</option>
+                    <option>HIGH</option>
+                    <option>LOW</option>
+                    <option>CRITICAL</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-gray-400">Sujet (optionnel)</label
+                ><input
+                  id="notifSubject"
+                  class="w-full bg-black border border-gray-700 rounded-lg p-2 text-sm"
+                  placeholder="Bienvenue sur HouseBooker"
+                />
+              </div>
+              <div>
+                <label class="text-sm text-gray-400">Contenu *</label
+                ><textarea
+                  id="notifContent"
+                  rows="3"
+                  class="w-full bg-black border border-gray-700 rounded-lg p-2 text-sm"
+                  placeholder="Votre message..."
+                >
+Bonjour ! Ceci est un test de notification.</textarea
+                >
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  onclick="sendNotification()"
+                  class="bg-orange-600 hover:bg-orange-500 px-5 py-2 rounded-lg font-semibold"
+                >
+                  🚀 Envoyer</button
+                ><button
+                  onclick="sendBulkNotification()"
+                  class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+                >
+                  📦 Envoi groupé
+                </button>
+              </div>
+              <div
+                id="sendResponse"
+                class="bg-black/60 p-3 rounded-xl text-xs font-mono max-h-48 overflow-auto"
+              ></div>
+            </div>
+          </div>
+          <div class="bg-dark-card rounded-2xl p-5 border border-gray-800">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-lg flex items-center gap-2">
+                <span
+                  class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"
+                ></span>
+                Log en temps réel
+              </h3>
+              <button
+                onclick="clearLogs()"
+                class="text-xs text-gray-500 hover:text-orange-400"
+              >
+                Effacer
+              </button>
+            </div>
+            <div
+              id="liveLog"
+              class="bg-black/50 rounded-xl p-3 h-64 overflow-y-auto custom-scroll mt-3 font-mono text-xs space-y-1.5"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPITRE 3 – SUIVI + INBOX -->
+      <div class="grid lg:grid-cols-2 gap-6 mt-6">
+        <div
+          id="trackSection"
+          class="bg-dark-card rounded-2xl p-5 border border-gray-800 scroll-mt-24"
+        >
+          <h3 class="font-bold text-xl mb-3 flex items-center gap-2">
+            <span>🔎</span> Suivi individuel
+          </h3>
+          <div class="flex gap-2">
+            <input
+              id="trackId"
+              class="flex-1 bg-black border border-gray-700 rounded-lg p-2 text-sm"
+              placeholder="ID de la notification"
+            /><button
+              onclick="trackNotification()"
+              class="bg-orange-600 hover:bg-orange-500 px-4 rounded-lg"
+            >
+              Suivre
+            </button>
+          </div>
+          <div
+            id="trackResult"
+            class="mt-3 bg-black/60 p-3 rounded-xl text-xs font-mono max-h-48 overflow-auto"
+          ></div>
+        </div>
+        <div
+          id="inboxSection"
+          class="bg-dark-card rounded-2xl p-5 border border-gray-800 scroll-mt-24"
+        >
+          <h3 class="font-bold text-xl mb-3 flex items-center gap-2">
+            <span>📬</span> Boîte de réception
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            <input
+              id="inboxUserId"
+              class="flex-1 bg-black border border-gray-700 rounded-lg p-2 text-sm"
+              placeholder="User ID"
+            /><button
+              onclick="getUserInbox()"
+              class="bg-gray-800 hover:bg-gray-700 px-4 rounded-lg"
+            >
+              Afficher</button
+            ><button
+              onclick="getUnreadCount()"
+              class="bg-gray-800 hover:bg-gray-700 px-3 rounded-lg"
+            >
+              Non lus</button
+            ><button
+              onclick="markAllRead()"
+              class="bg-orange-800 hover:bg-orange-700 px-3 rounded-lg"
+            >
+              ✓ Tout lire
+            </button>
+          </div>
+          <div
+            id="inboxContent"
+            class="mt-3 bg-black/60 p-3 rounded-xl max-h-72 overflow-auto custom-scroll text-xs"
+          ></div>
+        </div>
+      </div>
+
+      <!-- CHAPITRE 4 – MONITOR -->
+      <div id="monitorSection" class="mt-10 scroll-mt-24">
+        <div class="bg-dark-card rounded-2xl p-5 border border-gray-800">
+          <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+            <h3 class="font-bold text-xl flex gap-2">
+              <span>📡</span> Toutes les notifications
+            </h3>
+            <div class="flex gap-2">
+              <button
+                onclick="loadAllNotifications()"
+                class="bg-orange-700 hover:bg-orange-600 px-3 py-1.5 rounded-lg text-sm"
+              >
+                📋 Dernières notifications</button
+              ><button
+                onclick="clearMonitor()"
+                class="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-sm"
+              >
+                🗑️ Vider
+              </button>
+            </div>
+          </div>
+          <div
+            id="monitorList"
+            class="space-y-2 max-h-[500px] overflow-y-auto custom-scroll"
+          ></div>
+        </div>
+      </div>
     </div>
 
-    <!-- ================================================================
-         PIPELINE VISUALIZATION (always visible, clickable nav)
-         ================================================================ -->
-    <div class="pipeline" id="pipelineVisualization">
-        <div class="pipeline-step" data-step="0" onclick="scrollToSection('chapter-preflight')">
-            <div class="pipeline-icon">❤️</div>
-            <div class="pipeline-label">Preflight</div>
-        </div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step" data-step="0" onclick="scrollToSection('chapter-setup')">
-            <div class="pipeline-icon">👥</div>
-            <div class="pipeline-label">Setup</div>
-        </div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step" data-step="1" onclick="scrollToSection('step1')">
-            <div class="pipeline-icon">📨</div>
-            <div class="pipeline-label">Send</div>
-        </div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step" data-step="2" onclick="scrollToSection('step2')">
-            <div class="pipeline-icon">⚙️</div>
-            <div class="pipeline-label">Process</div>
-        </div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step" data-step="3" onclick="scrollToSection('step2')">
-            <div class="pipeline-icon">📋</div>
-            <div class="pipeline-label">Kafka</div>
-        </div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step" data-step="4" onclick="scrollToSection('step4')">
-            <div class="pipeline-icon">🎧</div>
-            <div class="pipeline-label">Consumer</div>
-        </div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step" data-step="5" onclick="scrollToSection('step4')">
-            <div class="pipeline-icon">📤</div>
-            <div class="pipeline-label">Deliver</div>
-        </div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step" data-step="6" onclick="scrollToSection('step7')">
-            <div class="pipeline-icon">📬</div>
-            <div class="pipeline-label">Inbox</div>
-        </div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step" data-step="7" onclick="scrollToSection('notificationsMonitor')">
-            <div class="pipeline-icon">📊</div>
-            <div class="pipeline-label">Monitor</div>
-        </div>
-    </div>
+    <script>
+      const API_BASE = "";
+      let lastNotificationId = null;
 
-    <!-- ================================================================
-         CHAPTER 1: PREFLIGHT  —  Is everything running?
-         ================================================================ -->
-    <div class="chapter" id="chapter-preflight">
-        <span class="chapter-label preflight">Chapter 1</span>
-        <h2>Preflight Check</h2>
-        <p>Before sending notifications, make sure the infrastructure is healthy.</p>
-    </div>
+      function addLog(message, type = "info") {
+        const logDiv = document.getElementById("liveLog");
+        const entry = document.createElement("div");
+        entry.className = `border-l-4 ${type === "error" ? "border-red-500" : type === "success" ? "border-green-500" : "border-orange-500"} pl-2 py-1 text-gray-300 text-xs`;
+        entry.innerHTML = `<span class="text-gray-500">${new Date().toLocaleTimeString()}</span> ${message}`;
+        logDiv.appendChild(entry);
+        entry.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
 
-    <div class="main-grid">
-        <div class="card full-width" id="healthCard">
-            <h2>❤️ System Health &mdash; Infrastructure Status</h2>
-            <p style="color: #888; margin-bottom: 15px;">
-                The system depends on <strong>PostgreSQL</strong> (storage), <strong>Redis</strong> (rate-limiting &amp; cache),
-                and <strong>Kafka</strong> (async message queue). All three must be UP before you proceed.
-            </p>
+      function clearLogs() {
+        document.getElementById("liveLog").innerHTML = "";
+        addLog("🧹 Log vidé");
+      }
 
-            <button class="btn btn-primary" onclick="checkHealth()">🔍 Basic Check</button>
-            <button class="btn btn-success" onclick="checkDetailedHealth()">📊 Detailed Check</button>
+      async function fetchJson(url, options = {}) {
+        const res = await fetch(url, options);
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || `HTTP ${res.status}`);
+        return json;
+      }
 
-            <div id="healthGrid" class="health-grid hidden">
-                <div class="health-item" id="healthService">
-                    <div class="icon">🔔</div>
-                    <div class="label">Service</div>
-                    <div class="status">-</div>
-                </div>
-                <div class="health-item" id="healthDatabase">
-                    <div class="icon">🗄️</div>
-                    <div class="label">PostgreSQL</div>
-                    <div class="status">-</div>
-                </div>
-                <div class="health-item" id="healthRedis">
-                    <div class="icon">⚡</div>
-                    <div class="label">Redis</div>
-                    <div class="status">-</div>
-                </div>
-                <div class="health-item" id="healthKafka">
-                    <div class="icon">📋</div>
-                    <div class="label">Kafka</div>
-                    <div class="status">-</div>
-                </div>
-            </div>
+      // Health check
+      async function checkHealth() {
+        try {
+          const data = await fetchJson(`${API_BASE}/actuator/health`);
+          document.getElementById("healthOutput").innerHTML = JSON.stringify(
+            data,
+            null,
+            2,
+          );
+          addLog("✅ Health check réussi");
+        } catch (e) {
+          document.getElementById("healthOutput").innerHTML = `❌ ${e.message}`;
+          addLog(`⚠️ Health check échoué: ${e.message}`, "error");
+        }
+      }
 
-            <div id="healthOutput" class="output-area hidden">
-                <div class="json-output" id="healthJson"></div>
-            </div>
-        </div>
-    </div>
+      // Envoi notification
+      async function sendNotification() {
+        const userId = document.getElementById("notifUserId").value;
+        if (!userId) {
+          addLog("❌ User ID requis", "error");
+          return;
+        }
+        addLog("📨 Envoi notification...");
+        try {
+          const body = {
+            userId: userId,
+            channel: document.getElementById("notifChannel").value,
+            priority: document.getElementById("notifPriority").value,
+            subject: document.getElementById("notifSubject").value,
+            content: document.getElementById("notifContent").value,
+          };
+          const data = await fetchJson(`${API_BASE}/api/v1/notifications`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          document.getElementById("sendResponse").innerHTML = JSON.stringify(
+            data,
+            null,
+            2,
+          );
+          if (data.data?.id) {
+            lastNotificationId = data.data.id;
+            document.getElementById("trackId").value = data.data.id;
+            addLog(
+              `✅ Notification créée, ID: ${data.data.id.substring(0, 8)}...`,
+              "success",
+            );
+          } else {
+            addLog(`✅ Notification envoyée`, "success");
+          }
+        } catch (e) {
+          document.getElementById("sendResponse").innerHTML = JSON.stringify(
+            { error: e.message },
+            null,
+            2,
+          );
+          addLog(`❌ Échec envoi: ${e.message}`, "error");
+        }
+      }
 
-    <!-- ================================================================
-         CHAPTER 2: SETUP  —  Users & Templates
-         ================================================================ -->
-    <div class="chapter" id="chapter-setup">
-        <span class="chapter-label setup">Chapter 2</span>
-        <h2>Setup &mdash; Users &amp; Templates</h2>
-        <p>Every notification needs a recipient. Create users first, then optionally define reusable message templates.</p>
-    </div>
+      // Envoi groupé
+      async function sendBulkNotification() {
+        const ids = prompt("IDs utilisateurs séparés par des virgules");
+        if (!ids) return;
+        const userIds = ids.split(",").map((s) => s.trim());
+        addLog(`📦 Envoi groupé à ${userIds.length} utilisateurs...`);
+        try {
+          const body = {
+            userIds: userIds,
+            channel: document.getElementById("notifChannel").value,
+            priority: document.getElementById("notifPriority").value,
+            subject: document.getElementById("notifSubject").value,
+            content: document.getElementById("notifContent").value,
+          };
+          const data = await fetchJson(
+            `${API_BASE}/api/v1/notifications/bulk`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+            },
+          );
+          document.getElementById("sendResponse").innerHTML = JSON.stringify(
+            data,
+            null,
+            2,
+          );
+          addLog(
+            `✅ Bulk terminé: ${data.data?.successCount || 0} succès, ${data.data?.failedCount || 0} échecs`,
+          );
+        } catch (e) {
+          document.getElementById("sendResponse").innerHTML = JSON.stringify(
+            { error: e.message },
+            null,
+            2,
+          );
+          addLog(`❌ Bulk échoué: ${e.message}`, "error");
+        }
+      }
 
-    <div class="main-grid">
+      // Suivi notification
+      async function trackNotification() {
+        const id = document.getElementById("trackId").value;
+        if (!id) {
+          addLog("❌ ID manquant", "error");
+          return;
+        }
+        try {
+          const data = await fetchJson(
+            `${API_BASE}/api/v1/notifications/${id}`,
+          );
+          document.getElementById("trackResult").innerHTML = JSON.stringify(
+            data,
+            null,
+            2,
+          );
+          addLog(`📊 Statut: ${data.data?.status || "inconnu"}`);
+        } catch (e) {
+          document.getElementById("trackResult").innerHTML = JSON.stringify(
+            { error: e.message },
+            null,
+            2,
+          );
+          addLog(`❌ ${e.message}`, "error");
+        }
+      }
 
-        <!-- ---- User Management ---- -->
-        <div class="card" id="userCard">
-            <h2>👥 User Management</h2>
-            <p style="color: #888; margin-bottom: 15px;">
-                Users are the recipients of notifications. Each user can have an email, phone, and device token
-                for different channels (Email, SMS, Push).
-            </p>
-
-            <!-- Quick Actions -->
-            <div style="display:flex; flex-wrap:wrap; gap:5px;">
-                <button class="btn btn-info btn-sm" onclick="getAllUsers()">📋 List All Users</button>
-                <button class="btn btn-success btn-sm" onclick="getPushEligibleUsers()">🔔 Push-Eligible</button>
-            </div>
-
-            <!-- Create User -->
-            <h3>➕ Create New User</h3>
-            <p style="color:#666; font-size:0.85em; margin-bottom:10px;">
-                A user needs at least an <strong>email</strong>. Add a phone for SMS and a device token for push notifications.
-            </p>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" id="createUserEmail" placeholder="newuser@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone</label>
-                    <input type="tel" id="createUserPhone" placeholder="+1234567890">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Device Token (for push)</label>
-                <input type="text" id="createUserDeviceToken" placeholder="Firebase/APNs token">
-            </div>
-            <button class="btn btn-success" onclick="createUser()">➕ Create User</button>
-
-            <!-- Lookup -->
-            <h3>🔍 Lookup User</h3>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>By Email</label>
-                    <input type="email" id="lookupEmail" placeholder="john@example.com" value="john.doe@example.com">
-                </div>
-                <div class="form-group">
-                    <label>By Phone</label>
-                    <input type="tel" id="lookupPhone" placeholder="+1234567890">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>By User ID</label>
-                <input type="text" id="lookupUserId" placeholder="550e8400-e29b-41d4-...">
-            </div>
-            <div style="display:flex; flex-wrap:wrap; gap:5px;">
-                <button class="btn btn-primary btn-sm" onclick="findUserByEmail()">📧 By Email</button>
-                <button class="btn btn-primary btn-sm" onclick="findUserByPhone()">📱 By Phone</button>
-                <button class="btn btn-primary btn-sm" onclick="findUserById()">🆔 By ID</button>
-            </div>
-
-            <!-- Update / Delete -->
-            <h3>✏️ Update or Delete User</h3>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>User ID *</label>
-                    <input type="text" id="updateUserId" placeholder="Paste User ID here" required>
-                </div>
-                <div class="form-group">
-                    <label>New Email</label>
-                    <input type="email" id="updateUserEmail" placeholder="updated@example.com">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>New Phone</label>
-                    <input type="tel" id="updateUserPhone" placeholder="+1987654321">
-                </div>
-                <div class="form-group">
-                    <label>New Device Token</label>
-                    <input type="text" id="updateUserDeviceToken" placeholder="new-firebase-token">
-                </div>
-            </div>
-            <button class="btn btn-warning" onclick="updateUser()">🔄 Update</button>
-            <button class="btn btn-danger" onclick="deleteUser()">🗑️ Delete</button>
-
-            <div id="userOutput" class="output-area hidden">
-                <div class="json-output" id="userJson"></div>
-            </div>
-        </div>
-
-        <!-- ---- Template Management ---- -->
-        <div class="card" id="templateCard">
-            <h2>🎨 Template Management</h2>
-            <p style="color: #888; margin-bottom: 15px;">
-                Templates let you define reusable messages with <code style="color:#7ee787;">{{variables}}</code>.
-                For example, a welcome email template can greet each user by name.
-            </p>
-
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('createTemplate', this)">Create Template</button>
-                <button class="tab-btn" onclick="showTab('listTemplates', this)">Browse Templates</button>
-            </div>
-
-            <div id="createTemplate" class="tab-content active">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Template Name</label>
-                        <input type="text" id="newTemplateName" placeholder="welcome-email">
-                    </div>
-                    <div class="form-group">
-                        <label>Channel</label>
-                        <select id="newTemplateChannel">
-                            <option value="EMAIL">📧 Email</option>
-                            <option value="SMS">📱 SMS</option>
-                            <option value="PUSH">🔔 Push</option>
-                            <option value="IN_APP">📬 In-App</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Subject Template</label>
-                    <input type="text" id="newTemplateSubject" placeholder="Welcome, {{userName}}!">
-                </div>
-                <div class="form-group">
-                    <label>Body Template</label>
-                    <textarea id="newTemplateBody" placeholder="Hi {{userName}}, click here: {{link}}"></textarea>
-                </div>
-                <button class="btn btn-success" onclick="createTemplate()">Create Template</button>
-            </div>
-
-            <div id="listTemplates" class="tab-content">
-                <p style="color:#888; font-size:0.9em; margin-bottom:10px;">
-                    Load all templates or filter by channel to see what's available.
-                </p>
-                <button class="btn btn-primary" onclick="loadTemplates()">Load All</button>
-                <button class="btn btn-sm btn-info" onclick="loadTemplatesByChannel('EMAIL')">📧 Email</button>
-                <button class="btn btn-sm btn-info" onclick="loadTemplatesByChannel('SMS')">📱 SMS</button>
-                <button class="btn btn-sm btn-info" onclick="loadTemplatesByChannel('PUSH')">🔔 Push</button>
-            </div>
-
-            <div id="templateOutput" class="output-area hidden">
-                <div class="json-output" id="templateJson"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- ================================================================
-         CHAPTER 3: THE NOTIFICATION FLOW
-         ================================================================ -->
-    <div class="chapter" id="chapter-flow">
-        <span class="chapter-label flow">Chapter 3</span>
-        <h2>Send &amp; Process a Notification</h2>
-        <p>This is where the magic happens. Send a notification and watch it flow through the system in real time.</p>
-    </div>
-
-    <div class="main-grid">
-
-        <!-- ---- STEP 1: HTTP Request ---- -->
-        <div class="card" id="step1">
-            <h2><span class="step-num">STEP 1</span> 📨 Send Notification</h2>
-            <p style="color: #888; margin-bottom: 15px;">
-                <code style="color:#7ee787;">POST /api/v1/notifications</code> &mdash;
-                Choose a user, pick a channel, and fire the request.
-            </p>
-
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('directContent', this)">Direct Content</button>
-                <button class="tab-btn" onclick="showTab('useTemplate', this)">Use Template</button>
-            </div>
-
-            <div id="directContent" class="tab-content active">
-                <div class="form-group">
-                    <label>User ID</label>
-                    <input type="text" id="userId" placeholder="550e8400-e29b-41d4-a716-446655440001" value="550e8400-e29b-41d4-a716-446655440001">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Channel</label>
-                        <select id="channel">
-                            <option value="EMAIL">📧 Email</option>
-                            <option value="SMS">📱 SMS</option>
-                            <option value="PUSH">🔔 Push</option>
-                            <option value="IN_APP">📬 In-App</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Priority</label>
-                        <select id="priority">
-                            <option value="LOW">Low</option>
-                            <option value="MEDIUM" selected>Medium</option>
-                            <option value="HIGH">High</option>
-                            <option value="CRITICAL">Critical</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Subject</label>
-                    <input type="text" id="subject" placeholder="Welcome to our platform!">
-                </div>
-                <div class="form-group">
-                    <label>Content</label>
-                    <textarea id="content" placeholder="Your notification message here...">Hello! This is a test notification from the data flow tester.</textarea>
-                </div>
-                <div class="form-group">
-                    <label>Event ID (deduplication key &mdash; optional)</label>
-                    <input type="text" id="eventId" placeholder="order-123-confirmation">
-                </div>
-            </div>
-
-            <div id="useTemplate" class="tab-content">
-                <div class="form-group">
-                    <label>User ID</label>
-                    <input type="text" id="templateUserId" placeholder="550e8400-e29b-41d4-a716-446655440001" value="550e8400-e29b-41d4-a716-446655440001">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Channel</label>
-                        <select id="templateChannel">
-                            <option value="EMAIL">📧 Email</option>
-                            <option value="SMS">📱 SMS</option>
-                            <option value="PUSH">🔔 Push</option>
-                            <option value="IN_APP">📬 In-App</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Priority</label>
-                        <select id="templatePriority">
-                            <option value="MEDIUM" selected>Medium</option>
-                            <option value="HIGH">High</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Template Name</label>
-                    <input type="text" id="templateName" placeholder="welcome-email">
-                </div>
-                <div class="form-group">
-                    <label>Template Variables</label>
-                    <div class="var-container" id="templateVars">
-                        <div class="var-row">
-                            <input type="text" placeholder="Variable name" value="userName">
-                            <input type="text" placeholder="Value" value="John Doe">
-                            <button class="remove-btn" onclick="removeVarRow(this)">×</button>
+      // Boîte de réception
+      async function getUserInbox() {
+        const userId = document.getElementById("inboxUserId").value;
+        if (!userId) {
+          addLog("❌ User ID requis", "error");
+          return;
+        }
+        try {
+          const data = await fetchJson(
+            `${API_BASE}/api/v1/notifications/user/${userId}`,
+          );
+          const list = data.data?.content || [];
+          if (list.length === 0) {
+            document.getElementById("inboxContent").innerHTML =
+              '<div class="text-center text-gray-500 py-4">📭 Aucune notification</div>';
+          } else {
+            document.getElementById("inboxContent").innerHTML = list
+              .map(
+                (n) => `
+                        <div class="border-b border-gray-700 py-2">
+                            <div class="flex justify-between"><span class="font-bold text-orange-400">${n.channel}</span><span class="text-xs text-gray-400">${n.status}</span></div>
+                            <div class="text-sm mt-1">${n.content?.substring(0, 80)}${n.content?.length > 80 ? "..." : ""}</div>
+                            <div class="text-xs text-gray-500 mt-1">${new Date(n.createdAt).toLocaleString()}</div>
                         </div>
-                    </div>
-                    <button class="btn btn-sm btn-info" onclick="addVarRow()">+ Add Variable</button>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="sendNotification()">🚀 Send Notification</button>
-            <button class="btn btn-warning" onclick="sendBulkNotification()">📦 Send Bulk</button>
-
-            <div id="requestOutput" class="output-area hidden">
-                <h4>📤 Request Sent</h4>
-                <div class="json-output" id="requestJson"></div>
-            </div>
-        </div>
-
-        <!-- ---- STEP 2-3: Service Layer & Kafka ---- -->
-        <div class="card" id="step2">
-            <h2><span class="step-num">STEP 2-3</span> ⚙️ Service Layer &amp; Kafka</h2>
-            <p style="color: #888; margin-bottom: 15px;">
-                The API validates the request, checks the rate limit in Redis, resolves the template (if used),
-                saves to PostgreSQL, then publishes to a Kafka topic. Watch the live log below.
-            </p>
-
-            <div class="flow-log" id="flowLog">
-                <div class="log-entry step1">
-                    <span class="log-icon">⏳</span>
-                    <span class="log-message">Waiting for notification request...</span>
-                </div>
-            </div>
-
-            <div id="responseOutput" class="output-area hidden">
-                <h4>📥 API Response (201 Created)</h4>
-                <div class="json-output" id="responseJson"></div>
-            </div>
-        </div>
-
-        <!-- ---- STEP 4-6: Async Processing ---- -->
-        <div class="card" id="step4">
-            <h2><span class="step-num">STEP 4-6</span> 🎧 Async Processing</h2>
-            <p style="color: #888; margin-bottom: 15px;">
-                Kafka consumer picks up the message &rarr; ChannelDispatcher routes it &rarr;
-                the appropriate handler (Email / SMS / Push / In-App) delivers it.
-                Use the notification ID from Step 1 to track progress.
-            </p>
-
-            <div class="form-group">
-                <label>Track Notification by ID</label>
-                <input type="text" id="trackNotificationId" placeholder="Notification ID (auto-filled after sending)">
-            </div>
-            <button class="btn btn-info" onclick="trackNotification()">🔍 Track Status</button>
-            <button class="btn btn-success" onclick="refreshNotificationStatus()">🔄 Refresh</button>
-
-            <div id="trackingOutput" class="output-area hidden">
-                <h4>📊 Notification Status</h4>
-                <div class="json-output" id="trackingJson"></div>
-            </div>
-        </div>
-
-        <!-- ---- STEP 7: User Inbox ---- -->
-        <div class="card" id="step7">
-            <h2><span class="step-num">STEP 7</span> 📬 User Inbox</h2>
-            <p style="color: #888; margin-bottom: 15px;">
-                Once delivered, the notification lands in the user's inbox.
-                Check what was received, count unread items, or mark everything as read.
-            </p>
-
-            <div class="form-group">
-                <label>User ID</label>
-                <input type="text" id="inboxUserId" value="550e8400-e29b-41d4-a716-446655440001">
-            </div>
-
-            <button class="btn btn-primary" onclick="getUserInbox()">📬 Get Inbox</button>
-            <button class="btn btn-info" onclick="getInboxUnreadCount()">🔢 Unread Count</button>
-            <button class="btn btn-warning" onclick="markAllRead()">✓ Mark All Read</button>
-
-            <div id="inboxOutput" class="output-area hidden">
-                <div id="inboxContent"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- ================================================================
-         CHAPTER 4: OBSERVE  —  Monitor everything
-         ================================================================ -->
-    <div class="chapter" id="chapter-observe">
-        <span class="chapter-label observe">Chapter 4</span>
-        <h2>Observe &amp; Monitor</h2>
-        <p>See every notification that has flowed through the system, across all channels and topics.</p>
-    </div>
-
-    <div class="main-grid">
-        <div class="card full-width" id="notificationsMonitor">
-            <h2>📡 All Notifications Monitor</h2>
-            <p style="color: #888; margin-bottom: 15px;">
-                A single view of every notification &mdash; EMAIL, SMS, PUSH, IN_APP &mdash;
-                regardless of which Kafka topic it was routed through.
-            </p>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Filter by User ID (optional)</label>
-                    <input type="text" id="filterUserId" placeholder="550e8400-e29b-...">
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="loadAllNotifications()">📋 Load All</button>
-            <button class="btn btn-info" onclick="loadNotificationsByUser()">👤 By User</button>
-            <button class="btn btn-danger" onclick="clearNotifications()">🗑️ Clear</button>
-
-            <div id="notificationsMonitorOutput" class="output-area hidden">
-                <div class="notifications-list" id="notificationsList"></div>
-            </div>
-        </div>
-    </div>
-
-</div><!-- /.container -->
-
-<!-- ================================================================
-     JAVASCRIPT
-     ================================================================ -->
-<script>
-    // ───────────── Utility Helpers ─────────────
-
-    function showTab(tabId, btn) {
-        const parent = btn.closest('.card');
-        parent.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-    }
-
-    function addVarRow() {
-        const container = document.getElementById('templateVars');
-        const row = document.createElement('div');
-        row.className = 'var-row';
-        row.innerHTML = `
-            <input type="text" placeholder="Variable name">
-            <input type="text" placeholder="Value">
-            <button class="remove-btn" onclick="removeVarRow(this)">×</button>
-        `;
-        container.appendChild(row);
-    }
-    function removeVarRow(btn) { btn.parentElement.remove(); }
-
-    function scrollToSection(id) {
-        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function updatePipeline(step, completed = false) {
-        document.querySelectorAll('.pipeline-step').forEach(s => {
-            s.classList.remove('active');
-            const n = parseInt(s.dataset.step);
-            if (n > 0 && n < step) s.classList.add('completed');
-        });
-        const active = document.querySelector(`.pipeline-step[data-step="${step}"]`);
-        if (active) active.classList.add(completed ? 'completed' : 'active');
-    }
-
-    function addLog(step, icon, message, type = '') {
-        const log = document.getElementById('flowLog');
-        const entry = document.createElement('div');
-        entry.className = `log-entry step${step} ${type}`;
-        const time = new Date().toLocaleTimeString();
-        entry.innerHTML = `
-            <span class="log-icon">${icon}</span>
-            <span class="log-message">${message}</span>
-            <span class="log-time">${time}</span>
-        `;
-        log.appendChild(entry);
-        log.scrollTop = log.scrollHeight;
-    }
-    function clearLog() { document.getElementById('flowLog').innerHTML = ''; }
-    function formatJson(obj) { return JSON.stringify(obj, null, 2); }
-    function showOutput(elementId, jsonId, data) {
-        document.getElementById(elementId).classList.remove('hidden');
-        document.getElementById(jsonId).textContent = formatJson(data);
-    }
-
-    // ───────────── Chapter 1: Health ─────────────
-
-    async function checkHealth() {
-        try {
-            const response = await fetch('/api/v1/health');
-            const data = await response.json();
-            showOutput('healthOutput', 'healthJson', data);
-        } catch (error) { alert('Error: ' + error.message); }
-    }
-
-    async function checkDetailedHealth() {
-        try {
-            const response = await fetch('/api/v1/health/detailed');
-            const data = await response.json();
-            document.getElementById('healthGrid').classList.remove('hidden');
-            showOutput('healthOutput', 'healthJson', data);
-            updateHealthItem('healthService', data.data?.status === 'UP');
-            const deps = data.data?.dependencies || {};
-            updateHealthItem('healthDatabase', deps.database?.status === 'UP');
-            updateHealthItem('healthRedis', deps.redis?.status === 'UP');
-            updateHealthItem('healthKafka', deps.kafka?.status === 'UP');
-        } catch (error) { alert('Error: ' + error.message); }
-    }
-
-    function updateHealthItem(id, isUp) {
-        const item = document.getElementById(id);
-        item.classList.remove('up', 'down');
-        item.classList.add(isUp ? 'up' : 'down');
-        item.querySelector('.status').textContent = isUp ? '✅ UP' : '❌ DOWN';
-    }
-
-    // ───────────── Chapter 2: Users ─────────────
-
-    async function getAllUsers() {
-        try {
-            const data = await (await fetch('/api/v1/users')).json();
-            showOutput('userOutput', 'userJson', data);
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function getPushEligibleUsers() {
-        try {
-            const data = await (await fetch('/api/v1/users/push-eligible')).json();
-            showOutput('userOutput', 'userJson', data);
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function createUser() {
-        const email = document.getElementById('createUserEmail').value;
-        if (!email) { alert('Email is required'); return; }
-
-        try {
-            const response = await fetch('/api/v1/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email,
-                    phone: document.getElementById('createUserPhone').value || null,
-                    deviceToken: document.getElementById('createUserDeviceToken').value || null
-                })
-            });
-            const data = await response.json();
-            showOutput('userOutput', 'userJson', data);
-            if (response.ok) {
-                document.getElementById('createUserEmail').value = '';
-                document.getElementById('createUserPhone').value = '';
-                document.getElementById('createUserDeviceToken').value = '';
-            }
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function findUserByEmail() {
-        const v = document.getElementById('lookupEmail').value;
-        if (!v) return;
-        try { showOutput('userOutput', 'userJson', await (await fetch(`/api/v1/users/email/${encodeURIComponent(v)}`)).json()); }
-        catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function findUserByPhone() {
-        const v = document.getElementById('lookupPhone').value;
-        if (!v) return;
-        try { showOutput('userOutput', 'userJson', await (await fetch(`/api/v1/users/phone/${encodeURIComponent(v)}`)).json()); }
-        catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function findUserById() {
-        const v = document.getElementById('lookupUserId').value;
-        if (!v) { alert('Enter a User ID'); return; }
-        try { showOutput('userOutput', 'userJson', await (await fetch(`/api/v1/users/${v}`)).json()); }
-        catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function updateUser() {
-        const userId = document.getElementById('updateUserId').value;
-        if (!userId) { alert('User ID is required'); return; }
-        const body = {};
-        const e = document.getElementById('updateUserEmail').value;
-        const p = document.getElementById('updateUserPhone').value;
-        const d = document.getElementById('updateUserDeviceToken').value;
-        if (e) body.email = e;
-        if (p) body.phone = p;
-        if (d) body.deviceToken = d;
-        if (!Object.keys(body).length) { alert('Provide at least one field to update'); return; }
-
-        try {
-            const resp = await fetch(`/api/v1/users/${userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            showOutput('userOutput', 'userJson', await resp.json());
-            if (resp.ok) {
-                ['updateUserId','updateUserEmail','updateUserPhone','updateUserDeviceToken']
-                    .forEach(id => document.getElementById(id).value = '');
-            }
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function deleteUser() {
-        const userId = document.getElementById('updateUserId').value;
-        if (!userId) { alert('Enter a User ID in the Update section above'); return; }
-        if (!confirm(`Delete user ${userId}? This cannot be undone.`)) return;
-        try { showOutput('userOutput', 'userJson', await (await fetch(`/api/v1/users/${userId}`, { method: 'DELETE' })).json()); }
-        catch (e) { alert('Error: ' + e.message); }
-    }
-
-    // ───────────── Chapter 2: Templates ─────────────
-
-    async function createTemplate() {
-        try {
-            const resp = await fetch('/api/v1/templates', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: document.getElementById('newTemplateName').value,
-                    channel: document.getElementById('newTemplateChannel').value,
-                    subject: document.getElementById('newTemplateSubject').value,
-                    content: document.getElementById('newTemplateBody').value
-                })
-            });
-            showOutput('templateOutput', 'templateJson', await resp.json());
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function loadTemplates() {
-        try { showOutput('templateOutput', 'templateJson', await (await fetch('/api/v1/templates')).json()); }
-        catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function loadTemplatesByChannel(ch) {
-        try { showOutput('templateOutput', 'templateJson', await (await fetch(`/api/v1/templates?channel=${ch}`)).json()); }
-        catch (e) { alert('Error: ' + e.message); }
-    }
-
-    // ───────────── Chapter 3: Send Notification ─────────────
-
-    async function sendNotification() {
-        clearLog();
-        updatePipeline(1);
-
-        const isTemplate = document.getElementById('useTemplate').classList.contains('active');
-        let request;
-
-        if (isTemplate) {
-            const vars = {};
-            document.querySelectorAll('#templateVars .var-row').forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                if (inputs[0].value && inputs[1].value) vars[inputs[0].value] = inputs[1].value;
-            });
-            request = {
-                userId: document.getElementById('templateUserId').value,
-                channel: document.getElementById('templateChannel').value,
-                priority: document.getElementById('templatePriority').value,
-                templateName: document.getElementById('templateName').value,
-                templateVariables: vars
-            };
-        } else {
-            request = {
-                userId: document.getElementById('userId').value,
-                channel: document.getElementById('channel').value,
-                priority: document.getElementById('priority').value,
-                subject: document.getElementById('subject').value,
-                content: document.getElementById('content').value,
-                eventId: document.getElementById('eventId').value || undefined
-            };
+                    `,
+              )
+              .join("");
+          }
+          addLog(`📬 ${list.length} notification(s) chargée(s)`);
+        } catch (e) {
+          document.getElementById("inboxContent").innerHTML =
+            `<div class="text-red-400">Erreur: ${e.message}</div>`;
+          addLog(`❌ ${e.message}`, "error");
         }
+      }
 
-        showOutput('requestOutput', 'requestJson', request);
-        addLog(1, '📨', 'HTTP POST /api/v1/notifications');
-        addLog(1, '📤', `Sending ${request.channel} notification to user ${request.userId.substring(0,8)}...`);
-
-        try {
-            updatePipeline(2);
-            addLog(2, '🔍', 'Validating user exists...');
-
-            const response = await fetch('/api/v1/notifications', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(request)
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                addLog(2, '✅', 'User validation passed');
-                addLog(2, '⚡', 'Checking rate limit (Redis)...');
-                addLog(2, '✅', 'Rate limit OK');
-                if (request.templateName) addLog(2, '📝', `Processing template: ${request.templateName}`);
-                addLog(2, '💾', 'Saving notification to PostgreSQL...');
-                addLog(2, '✅', `Notification created: ${data.data?.id?.substring(0,8)}...`);
-
-                updatePipeline(3);
-                addLog(3, '📋', `Publishing to Kafka topic: notifications.${request.channel.toLowerCase()}`);
-                addLog(3, '✅', 'Message queued in Kafka');
-
-                updatePipeline(4);
-                addLog(4, '🎧', 'Consumer picking up message (async)...');
-
-                if (data.data?.id) document.getElementById('trackNotificationId').value = data.data.id;
-                showOutput('responseOutput', 'responseJson', data);
-
-                setTimeout(() => { updatePipeline(5); addLog(5, '🔀', 'ChannelDispatcher routing to handler...'); }, 500);
-                setTimeout(() => { updatePipeline(5); addLog(5, '📤', `${request.channel}ChannelHandler.send() called`); }, 1000);
-                setTimeout(() => { updatePipeline(6, true); addLog(7, '✅', 'Notification SENT!', 'success'); addLog(7, '🎉', 'Status updated in database', 'success'); }, 1500);
-            } else {
-                addLog(2, '❌', `Error: ${data.message}`, 'error');
-                showOutput('responseOutput', 'responseJson', data);
-            }
-        } catch (error) {
-            addLog(1, '❌', `Network error: ${error.message}`, 'error');
-        }
-    }
-
-    async function sendBulkNotification() {
-        const userIds = prompt('Enter user IDs (comma-separated):');
-        if (!userIds) return;
-
-        const request = {
-            userIds: userIds.split(',').map(id => id.trim()),
-            channel: document.getElementById('channel').value,
-            priority: document.getElementById('priority').value,
-            subject: document.getElementById('subject').value,
-            content: document.getElementById('content').value
-        };
-
-        clearLog();
-        addLog(1, '📦', `Bulk notification to ${request.userIds.length} users`);
-
-        try {
-            const data = await (await fetch('/api/v1/notifications/bulk', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(request)
-            })).json();
-            showOutput('responseOutput', 'responseJson', data);
-            addLog(1, '✅', 'Bulk request processed', 'success');
-        } catch (error) {
-            addLog(1, '❌', `Error: ${error.message}`, 'error');
-        }
-    }
-
-    // ───────────── Chapter 3: Track & Inbox ─────────────
-
-    async function trackNotification() {
-        const id = document.getElementById('trackNotificationId').value;
-        if (!id) { alert('Enter a notification ID'); return; }
-        try {
-            const data = await (await fetch(`/api/v1/notifications/${id}`)).json();
-            showOutput('trackingOutput', 'trackingJson', data);
-            if (data.data?.status) {
-                const s = data.data.status;
-                if (s === 'SENT' || s === 'DELIVERED') updatePipeline(6, true);
-                else if (s === 'PROCESSING') updatePipeline(5);
-                else if (s === 'PENDING') updatePipeline(3);
-            }
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    function refreshNotificationStatus() { trackNotification(); }
-
-    async function getUserInbox() {
-        const userId = document.getElementById('inboxUserId').value;
-        if (!userId) { alert('Enter a user ID'); return; }
-        try {
-            const data = await (await fetch(`/api/v1/notifications/user/${userId}`)).json();
-            document.getElementById('inboxOutput').classList.remove('hidden');
-
-            if (data.data?.content && data.data.content.length > 0) {
-                const icons = { EMAIL: '📧', SMS: '📱', PUSH: '🔔', IN_APP: '📬' };
-                let html = '<div class="notification-list">';
-                data.data.content.forEach(n => {
-                    html += `
-                        <div class="notification-item">
-                            <div class="header-row">
-                                <span><span class="channel-icon">${icons[n.channel] || '📨'}</span> ${n.subject || 'No subject'}</span>
-                                <span class="status-badge status-${n.status?.toLowerCase()}">${n.status}</span>
-                            </div>
-                            <div class="content-preview">${n.content?.substring(0, 100)}...</div>
-                            <div style="font-size:0.8em; color:#666; margin-top:5px;">
-                                ID: ${n.id?.substring(0, 8)}... | ${new Date(n.createdAt).toLocaleString()}
-                            </div>
-                        </div>`;
-                });
-                html += '</div>';
-                document.getElementById('inboxContent').innerHTML = html;
-            } else {
-                document.getElementById('inboxContent').innerHTML = '<div class="json-output">' + formatJson(data) + '</div>';
-            }
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function getInboxUnreadCount() {
-        const userId = document.getElementById('inboxUserId').value;
+      async function getUnreadCount() {
+        const userId = document.getElementById("inboxUserId").value;
         if (!userId) return;
         try {
-            const data = await (await fetch(`/api/v1/notifications/user/${userId}/unread-count`)).json();
-            document.getElementById('inboxOutput').classList.remove('hidden');
-            document.getElementById('inboxContent').innerHTML = `
-                <div style="text-align:center; padding:20px;">
-                    <div style="font-size:3em; color:#667eea;">${data.data || 0}</div>
-                    <div style="color:#888;">Unread Notifications</div>
-                </div>`;
-        } catch (e) { alert('Error: ' + e.message); }
-    }
+          const data = await fetchJson(
+            `${API_BASE}/api/v1/notifications/user/${userId}/unread-count`,
+          );
+          document.getElementById("inboxContent").innerHTML =
+            `<div class="text-center py-4">🔔 <span class="text-2xl font-bold text-orange-400">${data.data || 0}</span> notification(s) non lue(s)</div>`;
+        } catch (e) {
+          addLog(`❌ ${e.message}`, "error");
+        }
+      }
 
-    async function markAllRead() {
-        const userId = document.getElementById('inboxUserId').value;
+      async function markAllRead() {
+        const userId = document.getElementById("inboxUserId").value;
         if (!userId) return;
         try {
-            await fetch(`/api/v1/notifications/user/${userId}/read-all`, { method: 'PATCH' });
-            alert('All notifications marked as read!');
-            getUserInbox();
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    // ───────────── Chapter 4: Monitor ─────────────
-
-    async function loadAllNotifications() {
-        try {
-            const data = await (await fetch('/api/v1/notifications?status=SENT&page=0&size=50')).json();
-            let list = [];
-            if (data.data?.content) list = data.data.content;
-            else if (Array.isArray(data.data)) list = data.data;
-            else if (Array.isArray(data)) list = data;
-            displayNotifications(list);
-            document.getElementById('notificationsMonitorOutput').classList.remove('hidden');
-        } catch (e) { alert('Error loading notifications: ' + e.message); }
-    }
-
-    async function loadNotificationsByUser() {
-        const userId = document.getElementById('filterUserId').value;
-        if (!userId) { alert('Enter a User ID'); return; }
-        try {
-            const data = await (await fetch(`/api/v1/notifications/user/${userId}`)).json();
-            let list = [];
-            if (data.data?.content) list = data.data.content;
-            else if (Array.isArray(data.data)) list = data.data;
-            else if (Array.isArray(data)) list = data;
-            displayNotifications(list);
-            document.getElementById('notificationsMonitorOutput').classList.remove('hidden');
-        } catch (e) { alert('Error loading notifications: ' + e.message); }
-    }
-
-    function displayNotifications(notifications) {
-        const container = document.getElementById('notificationsList');
-        container.innerHTML = '';
-
-        if (!Array.isArray(notifications)) {
-            container.innerHTML = '<div style="text-align:center; color:#e74c3c; padding:20px;">Invalid data format</div>';
-            return;
+          await fetch(
+            `${API_BASE}/api/v1/notifications/user/${userId}/read-all`,
+            { method: "PATCH" },
+          );
+          addLog("✓ Tout marqué comme lu");
+          getUserInbox();
+        } catch (e) {
+          addLog(`❌ Erreur: ${e.message}`, "error");
         }
-        if (notifications.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">No notifications found &mdash; send one in Chapter 3!</div>';
-            return;
+      }
+
+      // Monitor
+      async function loadAllNotifications() {
+        try {
+          const data = await fetchJson(
+            `${API_BASE}/api/v1/notifications?status=SENT&page=0&size=30`,
+          );
+          const items = data.data?.content || [];
+          if (items.length === 0) {
+            document.getElementById("monitorList").innerHTML =
+              '<div class="text-gray-500 text-center py-4">📭 Aucune notification trouvée</div>';
+          } else {
+            document.getElementById("monitorList").innerHTML = items
+              .map(
+                (n) => `
+                        <div class="bg-black/50 rounded-lg p-3">
+                            <div class="flex justify-between"><span class="font-mono text-xs text-orange-400">${n.channel}</span><span class="text-xs">${n.status}</span></div>
+                            <div class="text-sm mt-1">${n.content?.substring(0, 100)}${n.content?.length > 100 ? "..." : ""}</div>
+                            <div class="text-xs text-gray-500 mt-1">Utilisateur: ${n.userId?.substring(0, 8)}... | ${new Date(n.createdAt).toLocaleTimeString()}</div>
+                        </div>
+                    `,
+              )
+              .join("");
+          }
+          addLog(`📡 ${items.length} notification(s) chargée(s)`);
+        } catch (e) {
+          document.getElementById("monitorList").innerHTML =
+            `<div class="text-red-400">Erreur: ${e.message}</div>`;
+          addLog(`❌ ${e.message}`, "error");
         }
+      }
 
-        const icons = { EMAIL: '📧', SMS: '📱', PUSH: '🔔', IN_APP: '💬' };
-        notifications.forEach(n => {
-            const card = document.createElement('div');
-            card.className = 'notification-card';
-            const statusClass = (n.status || 'PENDING').toUpperCase();
-            card.innerHTML = `
-                <div class="header">
-                    <span class="channel-badge ${n.channel}">${icons[n.channel] || '📨'} ${n.channel}</span>
-                    <span class="status-badge ${statusClass}">${n.status || 'PENDING'}</span>
-                </div>
-                <div class="content">${n.content || n.message || 'No content'}</div>
-                <div class="meta">
-                    <span><strong>ID:</strong> ${n.id}</span>
-                    <span><strong>User:</strong> ${n.userId}</span>
-                    <span><strong>Priority:</strong> ${n.priority || 'NORMAL'}</span>
-                    <span><strong>Created:</strong> ${new Date(n.createdAt).toLocaleString()}</span>
-                </div>`;
-            container.appendChild(card);
-        });
-    }
-
-    function clearNotifications() {
-        document.getElementById('notificationsList').innerHTML = '';
-        document.getElementById('notificationsMonitorOutput').classList.add('hidden');
-    }
-</script>
-</body>
+      function clearMonitor() {
+        document.getElementById("monitorList").innerHTML =
+          '<div class="text-gray-500 text-center py-4">📭 Liste vidée</div>';
+      }
+    </script>
+  </body>
 </html>

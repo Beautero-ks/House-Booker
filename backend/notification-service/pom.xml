@@ -1,28 +1,30 @@
- <?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
-    =====================================================
-    POM.XML - Maven Project Configuration
-    =====================================================
+    =========================================================================
+    POM.XML - Configuration Maven du microservice Notification (HouseBooker)
+    =========================================================================
     
-    This file tells Maven:
-    1. What dependencies (libraries) our project needs
-    2. How to build the project
-    3. What version of Java to use
+    Ce fichier définit :
+    1. Les dépendances (bibliothèques) nécessaires au service
+    2. La configuration de compilation et d'empaquetage
+    3. Les versions de Java et des librairies
     
-    Think of it as a "shopping list" for your project's libraries.
+    Il est conçu pour s'intégrer dans l'architecture microservices de HouseBooker :
+    - Découverte de services via Eureka
+    - Communication asynchrone via Kafka
+    - Stockage des notifications dans PostgreSQL
+    - Exposition d'API REST derrière l'API Gateway
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
          https://maven.apache.org/xsd/maven-4.0.0.xsd">
     
-    <!-- Maven model version (always 4.0.0) -->
     <modelVersion>4.0.0</modelVersion>
     
     <!--
-        Parent POM: Spring Boot Starter Parent
-        This gives us sensible defaults for Spring Boot applications.
-        It pre-configures many things so we don't have to.
+        Parent : Spring Boot Starter Parent
+        Fournit les configurations par défaut pour une application Spring Boot.
     -->
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -31,105 +33,77 @@
         <relativePath/>
     </parent>
     
-    <!--
-        Project Coordinates: Unique identifier for our project
-        - groupId: Usually your company/organization domain reversed
-        - artifactId: The name of this specific project
-        - version: Current version of the project
-    -->
-    <groupId>com.notification</groupId>
-    <artifactId>notification-system</artifactId>
+    <!-- Coordonnées du projet HouseBooker - Notification Service -->
+    <groupId>com.housebooker</groupId>
+    <artifactId>notification-service</artifactId>
     <version>1.0.0</version>
-    <name>notification-system</name>
-    <description>A scalable notification system supporting multiple channels</description>
+    <name>notification-service</name>
+    <description>Microservice de notifications pour HouseBooker (emails, in-app, etc.)</description>
     
-    <!--
-        Properties: Variables we can reuse throughout this file
-        Using properties makes it easy to update versions in one place
-    -->
+    <!-- Propriétés réutilisables -->
     <properties>
-        <!-- Java version: We're using Java 21 (LTS - Long Term Support) -->
         <java.version>21</java.version>
-        
-        <!-- Library versions -->
+        <spring-cloud.version>2023.0.0</spring-cloud.version>  <!-- Spring Cloud BOM version -->
         <springdoc.version>2.3.0</springdoc.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
     </properties>
     
     <!--
-        Dependencies: The libraries our project needs
-        Each dependency is like adding a tool to your toolbox
+        Gestion des dépendances Spring Cloud
+        Cela permet d'importer le BOM (Bill of Materials) pour que toutes les librairies
+        Spring Cloud aient des versions compatibles entre elles.
     -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
     <dependencies>
         
-        <!-- ==================== CORE SPRING BOOT ==================== -->
+        <!-- ==================== SPRING BOOT CORE ==================== -->
         
-        <!--
-            Spring Boot Starter Web
-            - Provides everything needed for building REST APIs
-            - Includes: Spring MVC, Jackson (JSON), Tomcat server
-            - This is what lets us create @RestController endpoints
-        -->
+        <!-- Web : pour les API REST (Spring MVC, Tomcat intégré) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         
-        <!--
-            Spring Boot Starter Validation
-            - Provides @Valid, @NotNull, @NotBlank, etc.
-            - Helps us validate incoming request data
-            - Example: @NotBlank(message = "User ID is required")
-        -->
+        <!-- Validation : @Valid, @NotNull, etc. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         
-        <!-- ==================== DATABASE ==================== -->
+        <!-- ==================== BASE DE DONNÉES ==================== -->
         
-        <!--
-            Spring Boot Starter Data JPA
-            - JPA = Java Persistence API (for database operations)
-            - Lets us use @Entity classes that map to database tables
-            - Provides Repository interfaces for CRUD operations
-            - No need to write SQL for basic operations!
-        -->
+        <!-- JPA (Hibernate) pour l'accès à la base de données -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         
-        <!--
-            PostgreSQL Driver
-            - Allows Java to connect to PostgreSQL database
-            - "runtime" scope means it's only needed when running, not compiling
-        -->
+        <!-- Driver PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-
-        <!--
-            H2 Database (for development/testing)
-            - In-memory database for quick development
-            - No external dependencies required
-            - Used with spring-boot.run.profiles=dev
-        -->
+        
+        <!-- H2 pour les tests et le développement local (base mémoire) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
         
-        <!--
-            Flyway Database Migration
-            - Manages database schema changes over time
-            - Runs SQL scripts in order (V1__, V2__, etc.)
-            - Keeps track of which migrations have been applied
-            - Great for team collaboration and deployments
-        -->
+        <!-- Flyway : migrations de schéma de base de données -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -140,135 +114,98 @@
             <version>10.10.0</version>
         </dependency>
         
-        <!-- ==================== CACHING & RATE LIMITING ==================== -->
+        <!-- ==================== SPRING CLOUD (ARCHITECTURE MICROSERVICES) ==================== -->
         
         <!--
-            Spring Boot Starter Data Redis
-            - Redis is an in-memory data store (super fast!)
-            - We use it for:
-              1. Rate limiting (tracking how many requests per user)
-              2. Caching (storing frequently accessed data)
-            - Operations take microseconds instead of milliseconds
+            Eureka Discovery Client
+            Permet au service de s'enregistrer auprès du serveur Eureka
+            et de découvrir les autres services.
+            Essentiel pour que l'API Gateway puisse router les requêtes vers ce service.
         -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
+
+ 
         
-        <!--
-            Spring Boot Starter Cache
-            - Provides @Cacheable, @CacheEvict, @CachePut annotations
-            - Enables caching abstraction over Redis
-            - Required for our caching implementation
-        -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-cache</artifactId>
-        </dependency>
+        <!-- ==================== MESSAGERIE ASYNCHRONE (KAFKA) ==================== -->
         
-        <!-- ==================== MESSAGE QUEUE ==================== -->
-        
-        <!--
-            Spring Kafka
-            - Kafka is a distributed message queue
-            - We use it to:
-              1. Decouple notification sending from the API
-              2. Handle traffic spikes (queue absorbs load)
-              3. Retry failed notifications
-            - Producer sends messages, Consumer receives them
-        -->
+        <!-- Spring Kafka : pour consommer les événements métier des autres services -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
         
-        <!-- ==================== API DOCUMENTATION ==================== -->
+        <!-- ==================== CACHE & RATE LIMITING ==================== -->
         
-        <!--
-            SpringDoc OpenAPI (Swagger)
-            - Automatically generates API documentation
-            - Provides interactive UI to test endpoints
-            - Access at: http://localhost:8080/swagger-ui.html
-        -->
+        <!-- Redis : pour le cache et la limite de débit -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        
+        <!-- Abstraction cache Spring -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        
+        <!-- ==================== DOCUMENTATION API ==================== -->
+        
+        <!-- SpringDoc OpenAPI (Swagger UI) -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
         </dependency>
         
-        <!-- ==================== MONITORING ==================== -->
+        <!-- ==================== SURVEILLANCE (MONITORING) ==================== -->
         
-        <!--
-            Spring Boot Actuator
-            - Provides production-ready features:
-              - Health checks (/actuator/health)
-              - Metrics (/actuator/metrics)
-              - Info about the app (/actuator/info)
-            - Essential for monitoring in production
-        -->
+        <!-- Actuator : endpoints de santé, métriques, etc. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-
+        
+        <!-- Prometheus : exposition des métriques pour la supervision -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         
-        <!-- ==================== DEVELOPER PRODUCTIVITY ==================== -->
+        <!-- ==================== PRODUCTIVITÉ DÉVELOPPEUR ==================== -->
         
-        <!--
-            Lombok
-            - Reduces boilerplate code using annotations
-            - @Data = generates getters, setters, toString, equals, hashCode
-            - @Builder = generates builder pattern
-            - @Slf4j = generates logger
-            - Code is generated at compile time, not in your source files
-        -->
+        <!-- Lombok : réduction du code boilerplate (@Data, @Slf4j, @Builder...) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
         
-        <!--
-            MapStruct
-            - Generates code to convert between objects (e.g., Entity to DTO)
-            - Much faster than doing it manually or using reflection
-            - Example: NotificationMapper converts Notification to NotificationResponse
-        -->
+        <!-- MapStruct : mapping objet -> objet (Entity <-> DTO) -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
-
+        
+        <!-- Générateur d'UUID (pour les identifiants techniques) -->
         <dependency>
             <groupId>com.github.f4b6a3</groupId>
             <artifactId>uuid-creator</artifactId>
             <version>6.0.0</version>
         </dependency>
         
-        <!-- ==================== TESTING ==================== -->
+        <!-- ==================== TESTS ==================== -->
         
-        <!--
-            Spring Boot Starter Test
-            - Includes JUnit 5, Mockito, AssertJ
-            - Everything you need for unit and integration tests
-            - "test" scope means it's only available during testing
-        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
         
-        <!--
-            Spring Kafka Test
-            - Provides embedded Kafka for testing
-            - No need to run real Kafka during tests
-        -->
+        <!-- Support Kafka pour les tests (Embedded Kafka) -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
@@ -277,22 +214,14 @@
         
     </dependencies>
     
-    <!--
-        Build Configuration
-        Tells Maven how to compile and package our application
-    -->
     <build>
         <plugins>
-            <!--
-                Spring Boot Maven Plugin
-                - Creates executable JAR file
-                - Allows running with: mvn spring-boot:run
-            -->
+            <!-- Plugin Spring Boot pour créer un JAR exécutable -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <!-- Exclude Lombok from final JAR (not needed at runtime) -->
+                    <!-- Exclut Lombok du JAR final (non nécessaire à l'exécution) -->
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -302,11 +231,7 @@
                 </configuration>
             </plugin>
             
-            <!--
-                Maven Compiler Plugin
-                - Configures Java compilation
-                - Sets up annotation processors (Lombok, MapStruct)
-            -->
+            <!-- Plugin de compilation Java avec prise en charge des annotation processors -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -315,18 +240,19 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <annotationProcessorPaths>
-                        <!-- Lombok must come before MapStruct -->
+                        <!-- Lombok d'abord -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
+                        <!-- MapStruct ensuite -->
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${mapstruct.version}</version>
                         </path>
-                        <!-- This makes MapStruct work with Lombok -->
+                        <!-- Liaison Lombok-MapStruct pour qu'ils fonctionnent ensemble -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>

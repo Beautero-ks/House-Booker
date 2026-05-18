@@ -1,16 +1,18 @@
 package com.notification.repository;
 
-// =====================================================
-// NotificationRepository.java - Data Access for Notifications
-// =====================================================
+// =========================================================================
+// NotificationRepository.java - Accès aux données des notifications
+// =========================================================================
 //
-// This is the most important repository!
-// It handles all notification queries.
+// Ce repository gère toutes les requêtes liées aux notifications.
+// Il étend JpaRepository pour bénéficier des opérations CRUD de base.
 //
 
 import com.notification.model.entity.Notification;
 import com.notification.model.enums.ChannelType;
 import com.notification.model.enums.NotificationStatus;
+
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,37 +23,31 @@ import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Repository for Notification entity operations.
- * 
- * This repository has more complex queries because notifications
- * are the core of our system and we query them in many ways.
+ * Repository pour l'entité Notification.
+ * Contient des méthodes d'accès aux données adaptées aux besoins du service.
  */
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
-    // ==================== User Inbox Queries ====================
+    // ==================== Boîte de réception utilisateur ====================
     
     /**
-     * Find notifications for a user, ordered by creation time.
-     * 
-     * This is for the user's notification inbox.
-     * 
-     * Parameters:
-     * - userId: The user whose notifications to find
-     * - pageable: Pagination info (page number, size, sorting)
-     * 
-     * Returns Page<Notification> for pagination support.
+     * Récupère les notifications d'un utilisateur, triées de la plus récente à la plus ancienne.
+     * @param userId identifiant de l'utilisateur
+     * @param pageable informations de pagination
+     * @return page de notifications
      */
     Page<Notification> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
     
     /**
-     * Find notifications for a user filtered by channel.
-     * 
-     * Example: Show only email notifications
+     * Récupère les notifications d'un utilisateur filtrées par canal.
+     * @param userId identifiant utilisateur
+     * @param channel canal (EMAIL, SMS, PUSH, IN_APP)
+     * @param pageable pagination
+     * @return page de notifications
      */
     Page<Notification> findByUserIdAndChannelOrderByCreatedAtDesc(
         UUID userId, 
@@ -60,9 +56,11 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     );
     
     /**
-     * Find notifications for a user filtered by status.
-     * 
-     * Example: Show only delivered notifications
+     * Récupère les notifications d'un utilisateur filtrées par statut.
+     * @param userId identifiant utilisateur
+     * @param status statut (PENDING, SENT, DELIVERED, etc.)
+     * @param pageable pagination
+     * @return page de notifications
      */
     Page<Notification> findByUserIdAndStatusOrderByCreatedAtDesc(
         UUID userId, 
@@ -71,9 +69,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     );
     
     /**
-     * Find notifications by status and channel (for admin/monitoring).
-     * 
-     * Used to check queue status for specific channels.
+     * Récupère les notifications par statut et canal (pour l'administration / monitoring).
      */
     Page<Notification> findByStatusAndChannelOrderByCreatedAtDesc(
         NotificationStatus status, 
@@ -82,7 +78,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     );
     
     /**
-     * Find notifications by status (for admin/monitoring).
+     * Récupère les notifications par statut (pour l'administration).
      */
     Page<Notification> findByStatusOrderByCreatedAtDesc(
         NotificationStatus status, 
@@ -90,28 +86,28 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     );
     
     /**
-     * Count unread notifications for a user (in-app only).
-     * 
-     * Used for showing the "unread badge" count.
-     * 
-     * A notification is "unread" if:
-     * - Channel is IN_APP (only in-app has read tracking)
-     * - Status is DELIVERED (sent but not read)
+     * Compte les notifications non lues pour un utilisateur (uniquement canal IN_APP).
+     * Une notification est considérée comme non lue si :
+     * - le canal est IN_APP
+     * - le statut est DELIVERED (envoyée mais pas encore lue)
+     * @param userId identifiant utilisateur
+     * @return nombre de notifications non lues
      */
-    @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId " +
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.userId = :userId " +
            "AND n.channel = 'IN_APP' AND n.status = 'DELIVERED'")
     long countUnreadForUser(@Param("userId") UUID userId);
     
-    // ==================== Processing Queries ====================
+    // ==================== Traitement des notifications ====================
     
     /**
-     * Find notifications that are ready to be processed.
-     * 
-     * A notification is ready if:
-     * - Status is PENDING
-     * - No scheduled retry time OR retry time has passed
-     * 
-     * We order by priority (HIGH first) then by creation time.
+     * Trouve les notifications prêtes à être traitées.
+     * Une notification est prête si :
+     * - statut = PENDING
+     * - pas de date de nouvelle tentative OU la date est passée
+     * Le tri s'effectue par priorité (la plus haute d'abord), puis par date de création.
+     * @param now date/heure courante
+     * @param pageable pagination (pour limiter le nombre de notifications à traiter en une fois)
+     * @return liste des notifications prêtes
      */
     @Query("SELECT n FROM Notification n WHERE n.status = 'PENDING' " +
            "AND (n.nextRetryAt IS NULL OR n.nextRetryAt <= :now) " +
@@ -122,36 +118,30 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     );
     
     /**
-     * Find stuck notifications.
-     * 
-     * A notification is "stuck" if it's been PROCESSING for too long
-     * (worker crashed or something went wrong).
-     * 
-     * We reset these to PENDING so they can be processed again.
+     * Trouve les notifications bloquées (statuées PROCESSING depuis trop longtemps).
+     * Ces notifications seront réinitialisées à PENDING pour être retraitées.
+     * @param cutoffTime date limite : toute notification PROCESSING créée avant cette date est considérée bloquée
+     * @return liste des notifications bloquées
      */
     @Query("SELECT n FROM Notification n WHERE n.status = 'PROCESSING' " +
            "AND n.createdAt < :cutoffTime")
     List<Notification> findStuckNotifications(@Param("cutoffTime") OffsetDateTime cutoffTime);
     
     /**
-     * Find notifications that need retry.
+     * Trouve les notifications qui doivent être réessayées (leur date de nouvelle tentative est arrivée).
+     * @param now date/heure courante
+     * @return liste des notifications à réessayer
      */
     @Query("SELECT n FROM Notification n WHERE n.status = 'PENDING' " +
            "AND n.nextRetryAt IS NOT NULL AND n.nextRetryAt <= :now")
     List<Notification> findDueForRetry(@Param("now") OffsetDateTime now);
     
-    // ==================== Bulk Updates ====================
-    //
-    // @Modifying tells Spring this query changes data (not just reads).
-    // It's required for UPDATE/DELETE queries.
-    //
+    // ==================== Mises à jour par lots ====================
     
     /**
-     * Reset stuck notifications to PENDING status.
-     * 
-     * Called by a scheduled cleanup job to handle crashed workers.
-     * 
-     * @return Number of notifications reset
+     * Réinitialise les notifications bloquées (PROCESSING) à l'état PENDING.
+     * @param cutoffTime date limite (notifications créées avant cette date)
+     * @return nombre de notifications réinitialisées
      */
     @Modifying
     @Query("UPDATE Notification n SET n.status = 'PENDING' " +
@@ -159,47 +149,48 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     int resetStuckNotifications(@Param("cutoffTime") OffsetDateTime cutoffTime);
     
     /**
-     * Mark all notifications as read for a user (in-app).
-     * 
-     * Used for "Mark all as read" feature.
+     * Marque toutes les notifications IN_APP d'un utilisateur comme lues.
+     * @param userId identifiant utilisateur
+     * @param now date/heure de marquage
+     * @return nombre de notifications mises à jour
      */
     @Modifying
     @Query("UPDATE Notification n SET n.status = 'READ', n.readAt = :now " +
-           "WHERE n.user.id = :userId AND n.channel = 'IN_APP' " +
+           "WHERE n.userId = :userId AND n.channel = 'IN_APP' " +
            "AND n.status = 'DELIVERED'")
     int markAllAsReadForUser(
         @Param("userId") UUID userId, 
         @Param("now") OffsetDateTime now
     );
     
-    // ==================== Analytics Queries ====================
+    // ==================== Requêtes analytiques ====================
     
     /**
-     * Count notifications by status.
-     * 
-     * Useful for dashboard: "500 pending, 10000 delivered, 50 failed"
+     * Compte les notifications par statut.
      */
     long countByStatus(NotificationStatus status);
     
     /**
-     * Count notifications by channel.
+     * Compte les notifications par canal.
      */
     long countByChannel(ChannelType channel);
     
     /**
-     * Count notifications created after a certain time.
-     * 
-     * Useful for: "1000 notifications in the last hour"
+     * Compte les notifications créées après une certaine date.
+     * @param time date de début
+     * @return nombre de notifications
      */
     long countByCreatedAtAfter(OffsetDateTime time);
     
     /**
-     * Count notifications for a user by channel since a given time.
-     * 
-     * Used for rate limiting: "How many emails did we send to this
-     * user in the last hour?"
+     * Compte le nombre de notifications envoyées à un utilisateur sur un canal donné depuis une certaine date.
+     * Utile pour la limitation de débit (rate limiting).
+     * @param userId identifiant utilisateur
+     * @param channel canal
+     * @param since date de début
+     * @return nombre de notifications
      */
-    @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId " +
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.userId = :userId " +
            "AND n.channel = :channel AND n.createdAt >= :since " +
            "AND n.status NOT IN ('FAILED')")
     long countByUserIdAndChannelSince(
@@ -207,11 +198,4 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
         @Param("channel") ChannelType channel,
         @Param("since") OffsetDateTime since
     );
-
-    /**
-     * Find notification by ID with user eagerly loaded.
-     * Used for processing notifications where we need to access user properties.
-     */
-    @Query("SELECT n FROM Notification n JOIN FETCH n.user WHERE n.id = :id")
-    Optional<Notification> findByIdWithUser(@Param("id") UUID id);
 }
