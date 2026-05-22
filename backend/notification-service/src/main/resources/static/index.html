@@ -470,7 +470,7 @@
         <div class="card" id="userCard">
             <h2>👥 User Management</h2>
             <p style="color: #888; margin-bottom: 15px;">
-                Users are the recipients of notifications. Each user can have an email, phone, and device token
+                Users are the recipients of notifications. Each notificationUser can have an email, phone, and device token
                 for different channels (Email, SMS, Push).
             </p>
 
@@ -483,7 +483,7 @@
             <!-- Create User -->
             <h3>➕ Create New User</h3>
             <p style="color:#666; font-size:0.85em; margin-bottom:10px;">
-                A user needs at least an <strong>email</strong>. Add a phone for SMS and a device token for push notifications.
+                A notificationUser needs at least an <strong>email</strong>. Add a phone for SMS and a device token for push notifications.
             </p>
             <div class="form-row">
                 <div class="form-group">
@@ -558,7 +558,7 @@
             <h2>🎨 Template Management</h2>
             <p style="color: #888; margin-bottom: 15px;">
                 Templates let you define reusable messages with <code style="color:#7ee787;">{{variables}}</code>.
-                For example, a welcome email template can greet each user by name.
+                For example, a welcome email template can greet each notificationUser by name.
             </p>
 
             <div class="tabs">
@@ -626,7 +626,7 @@
             <h2><span class="step-num">STEP 1</span> 📨 Send Notification</h2>
             <p style="color: #888; margin-bottom: 15px;">
                 <code style="color:#7ee787;">POST /api/v1/notifications</code> &mdash;
-                Choose a user, pick a channel, and fire the request.
+                Choose a notificationUser, pick a channel, and fire the request.
             </p>
 
             <div class="tabs">
@@ -769,7 +769,7 @@
         <div class="card" id="step7">
             <h2><span class="step-num">STEP 7</span> 📬 User Inbox</h2>
             <p style="color: #888; margin-bottom: 15px;">
-                Once delivered, the notification lands in the user's inbox.
+                Once delivered, the notification lands in the notificationUser's inbox.
                 Check what was received, count unread items, or mark everything as read.
             </p>
 
@@ -1007,7 +1007,7 @@
     async function deleteUser() {
         const userId = document.getElementById('updateUserId').value;
         if (!userId) { alert('Enter a User ID in the Update section above'); return; }
-        if (!confirm(`Delete user ${userId}? This cannot be undone.`)) return;
+        if (!confirm(`Delete notificationUser ${userId}? This cannot be undone.`)) return;
         try { showOutput('userOutput', 'userJson', await (await fetch(`/api/v1/users/${userId}`, { method: 'DELETE' })).json()); }
         catch (e) { alert('Error: ' + e.message); }
     }
@@ -1075,11 +1075,11 @@
 
         showOutput('requestOutput', 'requestJson', request);
         addLog(1, '📨', 'HTTP POST /api/v1/notifications');
-        addLog(1, '📤', `Sending ${request.channel} notification to user ${request.userId.substring(0,8)}...`);
+        addLog(1, '📤', `Sending ${request.channel} notification to notificationUser ${request.userId.substring(0,8)}...`);
 
         try {
             updatePipeline(2);
-            addLog(2, '🔍', 'Validating user exists...');
+            addLog(2, '🔍', 'Validating notificationUser exists...');
 
             const response = await fetch('/api/v1/notifications', {
                 method: 'POST',
@@ -1119,7 +1119,7 @@
     }
 
     async function sendBulkNotification() {
-        const userIds = prompt('Enter user IDs (comma-separated):');
+        const userIds = prompt('Enter notificationUser IDs (comma-separated):');
         if (!userIds) return;
 
         const request = {
@@ -1167,9 +1167,9 @@
 
     async function getUserInbox() {
         const userId = document.getElementById('inboxUserId').value;
-        if (!userId) { alert('Enter a user ID'); return; }
+        if (!userId) { alert('Enter a notificationUser ID'); return; }
         try {
-            const data = await (await fetch(`/api/v1/notifications/user/${userId}`)).json();
+            const data = await (await fetch(`/api/v1/notifications/notificationUser/${userId}`)).json();
             document.getElementById('inboxOutput').classList.remove('hidden');
 
             if (data.data?.content && data.data.content.length > 0) {
@@ -1200,7 +1200,7 @@
         const userId = document.getElementById('inboxUserId').value;
         if (!userId) return;
         try {
-            const data = await (await fetch(`/api/v1/notifications/user/${userId}/unread-count`)).json();
+            const data = await (await fetch(`/api/v1/notifications/notificationUser/${userId}/unread-count`)).json();
             document.getElementById('inboxOutput').classList.remove('hidden');
             document.getElementById('inboxContent').innerHTML = `
                 <div style="text-align:center; padding:20px;">
@@ -1214,7 +1214,7 @@
         const userId = document.getElementById('inboxUserId').value;
         if (!userId) return;
         try {
-            await fetch(`/api/v1/notifications/user/${userId}/read-all`, { method: 'PATCH' });
+            await fetch(`/api/v1/notifications/notificationUser/${userId}/read-all`, { method: 'PATCH' });
             alert('All notifications marked as read!');
             getUserInbox();
         } catch (e) { alert('Error: ' + e.message); }
@@ -1238,7 +1238,7 @@
         const userId = document.getElementById('filterUserId').value;
         if (!userId) { alert('Enter a User ID'); return; }
         try {
-            const data = await (await fetch(`/api/v1/notifications/user/${userId}`)).json();
+            const data = await (await fetch(`/api/v1/notifications/notificationUser/${userId}`)).json();
             let list = [];
             if (data.data?.content) list = data.data.content;
             else if (Array.isArray(data.data)) list = data.data;

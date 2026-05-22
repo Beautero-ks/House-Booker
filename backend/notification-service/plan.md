@@ -43,10 +43,10 @@ A notification system sends alerts/messages to users through different channels:
 
 | Requirement | Description | Example |
 |------------|-------------|---------|
-| Send notifications | Deliver messages via different channels | Send welcome email to new user |
+| Send notifications | Deliver messages via different channels | Send welcome email to new notificationUser |
 | Multiple channels | Support Email, SMS, Push, In-App | User gets SMS for OTP, email for receipts |
 | User preferences | Let users choose what they want | "Don't send me marketing emails" |
-| Rate limiting | Prevent spam | Max 5 SMS per hour per user |
+| Rate limiting | Prevent spam | Max 5 SMS per hour per notificationUser |
 | Retry failed sends | Don't lose notifications | Retry email if SendGrid is down |
 | Track status | Know if notification was delivered | "Email sent at 10:30 AM" |
 | Event deduplication | Prevent duplicate notifications | Same event ID sent twice = only one notification |
@@ -168,7 +168,7 @@ We will NOT implement these (but mention them for awareness):
 │  ─────────────────────────────                                       │
 │  POST /api/v1/notifications                                          │
 │  {                                                                   │
-│    "userId": "user-123",                                             │
+│    "userId": "notificationUser-123",                                             │
 │    "channel": "EMAIL",                                               │
 │    "templateId": "welcome-email",                                    │
 │    "data": { "userName": "John" }                                    │
@@ -179,12 +179,12 @@ We will NOT implement these (but mention them for awareness):
 │  ├── Is userId valid?                                                │
 │  ├── Does template exist?                                            │
 │  ├── Is channel supported?                                           │
-│  └── Is user rate limited?                                           │
+│  └── Is notificationUser rate limited?                                           │
 │                                                                      │
-│  Step 3: Check user preferences                                      │
+│  Step 3: Check notificationUser preferences                                      │
 │  ─────────────────────────────                                       │
-│  ├── Has user enabled EMAIL notifications?                           │
-│  └── Is user in "quiet hours"?                                       │
+│  ├── Has notificationUser enabled EMAIL notifications?                           │
+│  └── Is notificationUser in "quiet hours"?                                       │
 │                                                                      │
 │  Step 4: Save to database                                            │
 │  ─────────────────────────────                                       │
@@ -228,7 +228,7 @@ We will NOT implement these (but mention them for awareness):
 │                                                                      │
 │  Problem: Without limits, we could spam users                        │
 │  ────────                                                            │
-│  - Bug sends 1000 emails to same user                                │
+│  - Bug sends 1000 emails to same notificationUser                                │
 │  - Attacker floods our system                                        │
 │  - We exceed SendGrid/Twilio limits (and pay more!)                  │
 │                                                                      │
@@ -260,7 +260,7 @@ We will NOT implement these (but mention them for awareness):
 │  10:01 - User sends email (1→0 tokens) ✓                             │
 │                                                                      │
 │  We store token count in Redis (fast!):                              │
-│  Key: "rate_limit:EMAIL:user-123" → Value: "3" (tokens left)         │
+│  Key: "rate_limit:EMAIL:notificationUser-123" → Value: "3" (tokens left)         │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -383,7 +383,7 @@ We will NOT implement these (but mention them for awareness):
 │                                                                      │
 │  POST /api/v1/notifications                                          │
 │  {                                                                   │
-│    "userId": "user-123",                                             │
+│    "userId": "notificationUser-123",                                             │
 │    "channel": "EMAIL",                                               │
 │    "eventId": "order-confirmation-456",                              │
 │    "subject": "Order Confirmed",                                     │
@@ -478,10 +478,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =====================================================
 -- TABLE: users
--- Purpose: Store user information for sending notifications
+-- Purpose: Store notificationUser information for sending notifications
 -- =====================================================
 CREATE TABLE users (
-    -- Primary key: Unique identifier for each user
+    -- Primary key: Unique identifier for each notificationUser
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     
     -- Email address for sending email notifications
@@ -508,7 +508,7 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE TABLE user_preferences (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     
-    -- Which user this preference belongs to
+    -- Which notificationUser this preference belongs to
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     
     -- Which channel (EMAIL, SMS, PUSH, IN_APP)
@@ -524,7 +524,7 @@ CREATE TABLE user_preferences (
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    -- Each user can only have one preference per channel
+    -- Each notificationUser can only have one preference per channel
     UNIQUE(user_id, channel)
 );
 
@@ -576,7 +576,7 @@ CREATE TABLE notifications (
     -- Current state of the notification
     -- PENDING  → Just created, waiting to be processed
     -- SENT     → Successfully sent to provider (SendGrid/Twilio)
-    -- DELIVERED→ Confirmed delivered to user
+    -- DELIVERED→ Confirmed delivered to notificationUser
     -- FAILED   → All retries exhausted, gave up
     status VARCHAR(20) DEFAULT 'PENDING',
     
@@ -671,7 +671,7 @@ CREATE INDEX idx_notifications_retry ON notifications(next_retry_at)
 │  ─────────────                                                       │
 │  POST   /api/v1/notifications           → Send a notification        │
 │  GET    /api/v1/notifications/{id}      → Get notification status    │
-│  GET    /api/v1/notifications/user/{id} → Get user's notifications   │
+│  GET    /api/v1/notifications/notificationUser/{id} → Get notificationUser's notifications   │
 │  PUT    /api/v1/notifications/{id}/read → Mark as read               │
 │                                                                      │
 │  TEMPLATES                                                           │
@@ -684,7 +684,7 @@ CREATE INDEX idx_notifications_retry ON notifications(next_retry_at)
 │                                                                      │
 │  USER PREFERENCES                                                    │
 │  ────────────────                                                    │
-│  GET    /api/v1/users/{id}/preferences  → Get user preferences       │
+│  GET    /api/v1/users/{id}/preferences  → Get notificationUser preferences       │
 │  PUT    /api/v1/users/{id}/preferences  → Update preferences         │
 │                                                                      │
 │  HEALTH (for monitoring)                                             │
@@ -738,7 +738,7 @@ Response: 200 OK
 
 #### Get User's Notifications (Inbox)
 ```http
-GET /api/v1/notifications/user/550e8400-e29b-41d4-a716-446655440000?page=0&size=10
+GET /api/v1/notifications/notificationUser/550e8400-e29b-41d4-a716-446655440000?page=0&size=10
 
 Response: 200 OK
 {
@@ -856,7 +856,7 @@ Response: 200 OK
 │  Assumptions (for a medium-sized app):                               │
 │  ──────────────────────────────────────                              │
 │  • 1 million users                                                   │
-│  • Each user receives 3 notifications per day on average             │
+│  • Each notificationUser receives 3 notifications per day on average             │
 │  • Peak traffic is 5x the average                                    │
 │                                                                      │
 │  Daily Volume:                                                       │
@@ -1166,7 +1166,7 @@ notification-system/
 │  Phase 5: Advanced Features (Day 6-7)                                │
 │  ────────────────────────────────────                                │
 │  □ Implement retry mechanism                                         │
-│  □ Add user preferences                                              │
+│  □ Add notificationUser preferences                                              │
 │  □ Add basic tests                                                   │
 │  □ Write README documentation                                        │
 │                                                                      │
@@ -1269,7 +1269,7 @@ volumes:
 ### 9.3 Testing the API
 
 ```bash
-# Test 1: Create a user (you'd need this endpoint or seed data)
+# Test 1: Create a notificationUser (you'd need this endpoint or seed data)
 
 # Test 2: Send a notification
 curl -X POST http://localhost:8080/api/v1/notifications \
@@ -1285,8 +1285,8 @@ curl -X POST http://localhost:8080/api/v1/notifications \
 # Test 3: Check notification status
 curl http://localhost:8080/api/v1/notifications/{notification-id}
 
-# Test 4: Get user's notifications
-curl http://localhost:8080/api/v1/notifications/user/{user-id}
+# Test 4: Get notificationUser's notifications
+curl http://localhost:8080/api/v1/notifications/notificationUser/{notificationUser-id}
 ```
 
 ---

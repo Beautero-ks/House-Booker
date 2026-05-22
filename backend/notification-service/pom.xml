@@ -146,7 +146,7 @@
             Spring Boot Starter Data Redis
             - Redis is an in-memory data store (super fast!)
             - We use it for:
-              1. Rate limiting (tracking how many requests per user)
+              1. Rate limiting (tracking how many requests per notificationUser)
               2. Caching (storing frequently accessed data)
             - Operations take microseconds instead of milliseconds
         -->

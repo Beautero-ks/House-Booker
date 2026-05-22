@@ -14,7 +14,7 @@ A comprehensive guide to testing the Notification System API using **HTTPie** - 
 6. [Health Check Endpoints](#health-check-endpoints)
 7. [Notification Endpoints](#notification-endpoints)
 8. [Template Endpoints](#template-endpoints)
-9. [User Endpoints](#user-endpoints)
+9. [User Endpoints](#notificationUser-endpoints)
 10. [OpenAPI Documentation](#openapi-documentation)
 11. [Testing Workflows](#testing-workflows)
 12. [Error Handling](#error-handling)
@@ -480,14 +480,14 @@ http POST :8080/api/v1/notifications \
   templateName=welcome-email \
   templateVariables:='{"userName": "John Doe"}' \
   priority=HIGH \
-  eventId=user-registration-12345
+  eventId=notificationUser-registration-12345
 ```
 
 **Request Body Breakdown:**
 
 | Field | Type | Required | Validation | Description |
 |-------|------|----------|------------|-------------|
-| `userId` | UUID | ✅ Yes | Must exist in `users` table | Target user's ID |
+| `userId` | UUID | ✅ Yes | Must exist in `users` table | Target notificationUser's ID |
 | `channel` | Enum | ✅ Yes | EMAIL, SMS, PUSH, IN_APP | Delivery channel |
 | `templateName` | String | ⚠️ Conditional | Must exist and be active | Template to use |
 | `templateVariables` | Object | ❌ No | Keys must match template variables | Variable values |
@@ -504,7 +504,7 @@ http POST :8080/api/v1/notifications \
    └─▶ NotificationService.sendNotification()
        ├─▶ Check deduplication (DeduplicationService.isDuplicate)
        │   └─▶ If duplicate: return FAILED status immediately
-       ├─▶ Validate user exists (UserRepository.findById)
+       ├─▶ Validate notificationUser exists (UserRepository.findById)
        ├─▶ Check rate limit (RateLimiterService - Token Bucket)
        ├─▶ Load template (NotificationTemplateRepository.findByNameAndActive)
        ├─▶ Render template (replace {{variables}})
@@ -546,7 +546,7 @@ http POST :8080/api/v1/notifications \
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | UUID | Unique notification identifier for tracking |
-| `userId` | UUID | Target user (copied from request) |
+| `userId` | UUID | Target notificationUser (copied from request) |
 | `channel` | String | Delivery channel used |
 | `priority` | String | Priority level |
 | `subject` | String | Rendered subject (template variables replaced) |
@@ -580,7 +580,7 @@ http POST :8080/api/v1/notifications \
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `userId` | UUID | ✅ Yes | Target user's ID |
+| `userId` | UUID | ✅ Yes | Target notificationUser's ID |
 | `channel` | Enum | ✅ Yes | Must be EMAIL |
 | `subject` | String | ✅ Yes* | Email subject line |
 | `content` | String | ✅ Yes* | Email body text |
@@ -657,7 +657,7 @@ Result:   "Your OTP code is 847293. Valid for 5 minutes."
 
 ### 4. Send Push Notification
 
-**Purpose:** Send a push notification to user's mobile device.
+**Purpose:** Send a push notification to notificationUser's mobile device.
 
 **Endpoint Details:**
 
@@ -698,7 +698,7 @@ http POST :8080/api/v1/notifications \
 
 ### 5. Send In-App Notification
 
-**Purpose:** Send a notification to user's in-app notification center.
+**Purpose:** Send a notification to notificationUser's in-app notification center.
 
 **Endpoint Details:**
 
@@ -723,7 +723,7 @@ http POST :8080/api/v1/notifications \
 - User sees them on next app visit
 - Typically displayed as badge/bell icon
 - LOW priority appropriate (not time-sensitive)
-- Can be marked as READ by user
+- Can be marked as READ by notificationUser
 
 **Expected Response (200 OK):**
 ```json
@@ -762,7 +762,7 @@ http POST :8080/api/v1/notifications/bulk \
 
 | Field | Type | Required | Max Size | Description |
 |-------|------|----------|----------|-------------|
-| `userIds` | UUID[] | ✅ Yes | 1000 | Array of target user IDs |
+| `userIds` | UUID[] | ✅ Yes | 1000 | Array of target notificationUser IDs |
 | `channel` | Enum | ✅ Yes | - | Single channel for all |
 | `templateName` | String | ⚠️ Conditional | - | Template to use |
 | `templateVariables` | Object | ❌ No | - | Same params for all users |
@@ -773,8 +773,8 @@ http POST :8080/api/v1/notifications/bulk \
 ```
 For each userId in userIds:
   ├─▶ Check deduplication (DeduplicationService.isDuplicate)
-  │   └─▶ If duplicate: skip user, increment failed count
-  ├─▶ Validate user exists
+  │   └─▶ If duplicate: skip notificationUser, increment failed count
+  ├─▶ Validate notificationUser exists
   ├─▶ Check rate limit
   ├─▶ Create individual notification
   └─▶ Publish to Kafka topic
@@ -858,7 +858,7 @@ http :8080/api/v1/notifications/c57aaec7-80a4-4948-84b8-6d9582737410
 |-------|------|-------------|
 | `sentAt` | ISO 8601 | When notification was sent to channel |
 | `deliveredAt` | ISO 8601 | When delivery was confirmed |
-| `readAt` | ISO 8601 | When user read the notification |
+| `readAt` | ISO 8601 | When notificationUser read the notification |
 | `errorMessage` | String | Error details if FAILED |
 
 **Error Response (404 Not Found):**
@@ -874,11 +874,11 @@ http :8080/api/v1/notifications/c57aaec7-80a4-4948-84b8-6d9582737410
 
 ### 8. Get User Notifications (Paginated)
 
-**Purpose:** Retrieve all notifications for a specific user with pagination.
+**Purpose:** Retrieve all notifications for a specific notificationUser with pagination.
 
 **Request:**
 ```bash
-http :8080/api/v1/notifications/user/550e8400-e29b-41d4-a716-446655440001 \
+http :8080/api/v1/notifications/notificationUser/550e8400-e29b-41d4-a716-446655440001 \
   page==0 \
   size==10
 ```
@@ -939,7 +939,7 @@ http :8080/api/v1/notifications/user/550e8400-e29b-41d4-a716-446655440001 \
 | `content` | Array | Notifications for current page |
 | `pageNumber` | Integer | Current page (0-indexed) |
 | `pageSize` | Integer | Items per page |
-| `totalElements` | Integer | Total notifications for user |
+| `totalElements` | Integer | Total notifications for notificationUser |
 | `totalPages` | Integer | Total pages available |
 | `first` | Boolean | Is this the first page? |
 | `last` | Boolean | Is this the last page? |
@@ -953,13 +953,13 @@ http :8080/api/v1/notifications/user/550e8400-e29b-41d4-a716-446655440001 \
 **Request:**
 ```bash
 # Get PENDING notifications
-http :8080/api/v1/notifications/user/550e8400-e29b-41d4-a716-446655440001 \
+http :8080/api/v1/notifications/notificationUser/550e8400-e29b-41d4-a716-446655440001 \
   page==0 \
   size==10 \
   status==PENDING
 
 # Get FAILED notifications (for troubleshooting)
-http :8080/api/v1/notifications/user/550e8400-e29b-41d4-a716-446655440001 \
+http :8080/api/v1/notifications/notificationUser/550e8400-e29b-41d4-a716-446655440001 \
   status==FAILED
 ```
 
@@ -1201,21 +1201,21 @@ http DELETE :8080/api/v1/templates/660e8400-e29b-41d4-a716-446655440004
 
 ## User Endpoints
 
-The User endpoints provide cached user lookups for testing Redis caching functionality. These endpoints demonstrate the caching implementation following Alex Xu's system design principles.
+The User endpoints provide cached notificationUser lookups for testing Redis caching functionality. These endpoints demonstrate the caching implementation following Alex Xu's system design principles.
 
 ### Find User by Email
 
 **Endpoint:** `GET /api/v1/users/email/{email}`
 
-**Purpose:** Retrieve user information by email address with Redis caching.
+**Purpose:** Retrieve notificationUser information by email address with Redis caching.
 
 **Caching:** First request hits database and caches result. Subsequent requests serve from Redis cache without database queries.
 
 ```bash
-# Test with existing user
+# Test with existing notificationUser
 http :8080/api/v1/users/email/john@example.com
 
-# Test with non-existent user (will throw exception, not cached)
+# Test with non-existent notificationUser (will throw exception, not cached)
 http :8080/api/v1/users/email/nonexistent@example.com
 ```
 
@@ -1240,15 +1240,15 @@ http :8080/api/v1/users/email/nonexistent@example.com
 
 **Endpoint:** `GET /api/v1/users/phone/{phone}`
 
-**Purpose:** Retrieve user information by phone number with Redis caching.
+**Purpose:** Retrieve notificationUser information by phone number with Redis caching.
 
 **Caching:** First request hits database and caches result. Subsequent requests serve from Redis cache.
 
 ```bash
-# Test with existing user
+# Test with existing notificationUser
 http :8080/api/v1/users/phone/+1234567890
 
-# Test with non-existent user
+# Test with non-existent notificationUser
 http :8080/api/v1/users/phone/+9999999999
 ```
 
@@ -1427,7 +1427,7 @@ echo "=== Check Kafka UI at http://localhost:8090 ==="
 ### Workflow 4: Test Rate Limiting
 
 ```bash
-# Rate limit is 10 per minute per user per channel
+# Rate limit is 10 per minute per notificationUser per channel
 for i in {1..12}; do
   echo "Request $i:"
   http POST :8080/api/v1/notifications \
@@ -1454,8 +1454,8 @@ http POST :8080/api/v1/notifications/bulk \
   priority=HIGH
 
 # Verify both users received
-http :8080/api/v1/notifications/user/550e8400-e29b-41d4-a716-446655440001 size==1
-http :8080/api/v1/notifications/user/550e8400-e29b-41d4-a716-446655440002 size==1
+http :8080/api/v1/notifications/notificationUser/550e8400-e29b-41d4-a716-446655440001 size==1
+http :8080/api/v1/notifications/notificationUser/550e8400-e29b-41d4-a716-446655440002 size==1
 ```
 
 ---
@@ -1489,7 +1489,7 @@ http POST :8080/api/v1/notifications \
 
 ```bash
 http POST :8080/api/v1/notifications \
-  userId=invalid-user-id \
+  userId=invalid-notificationUser-id \
   channel=EMAIL \
   content="Test"
 ```
@@ -1498,7 +1498,7 @@ http POST :8080/api/v1/notifications \
 ```json
 {
     "success": false,
-    "message": "User not found with id: invalid-user-id",
+    "message": "User not found with id: invalid-notificationUser-id",
     "timestamp": "2026-01-10T10:30:00.000000+05:30"
 }
 ```
@@ -1523,7 +1523,7 @@ http POST :8080/api/v1/notifications \
 
 #### 4. Rate Limit Exceeded (429 Too Many Requests)
 
-**Trigger:** > 10 requests per minute per user per channel
+**Trigger:** > 10 requests per minute per notificationUser per channel
 
 **Response:**
 ```json
@@ -1651,7 +1651,7 @@ docker exec -it notification-redis redis-cli
 # View all rate limit keys
 KEYS rate_limit:*
 
-# Check specific user's rate limit
+# Check specific notificationUser's rate limit
 GET rate_limit:550e8400-e29b-41d4-a716-446655440001:EMAIL
 
 # Clear all rate limits (for testing)
@@ -1705,7 +1705,7 @@ http POST $API_URL/api/v1/notifications \
 | Send in-app | `http POST :8080/api/v1/notifications userId=... channel=IN_APP subject="..." content="..."` |
 | Bulk send | `http POST :8080/api/v1/notifications/bulk userIds:='[...]' channel=... content="..."` |
 | Get notification | `http :8080/api/v1/notifications/{id}` |
-| User notifications | `http :8080/api/v1/notifications/user/{userId} page==0 size==10` |
+| User notifications | `http :8080/api/v1/notifications/notificationUser/{userId} page==0 size==10` |
 | Create template | `http POST :8080/api/v1/templates name=... channel=... bodyTemplate="..."` |
 | Update template | `http PUT :8080/api/v1/templates/{id} name=... channel=... bodyTemplate="..."` |
 | Delete template | `http DELETE :8080/api/v1/templates/{id}` |
@@ -1742,7 +1742,7 @@ http POST :8080/api/v1/notifications \
   channel=EMAIL \
   templateName=welcome-email \
   templateVariables:='{"userName": "John Doe"}' \
-  eventId=user-registration-12345 \
+  eventId=notificationUser-registration-12345 \
   priority=HIGH
 ```
 
@@ -1767,7 +1767,7 @@ http POST :8080/api/v1/notifications \
   channel=EMAIL \
   templateName=welcome-email \
   templateVariables:='{"userName": "John Doe"}' \
-  eventId=user-registration-12345 \
+  eventId=notificationUser-registration-12345 \
   priority=HIGH
 ```
 
@@ -1782,7 +1782,7 @@ http POST :8080/api/v1/notifications \
         "channel": "EMAIL",
         "priority": "HIGH",
         "status": "FAILED",
-        "errorMessage": "Duplicate event: user-registration-12345"
+        "errorMessage": "Duplicate event: notificationUser-registration-12345"
     }
 }
 ```
@@ -1796,7 +1796,7 @@ http POST :8080/api/v1/notifications \
   channel=EMAIL \
   templateName=welcome-email \
   templateVariables:='{"userName": "John Doe"}' \
-  eventId=user-login-67890 \
+  eventId=notificationUser-login-67890 \
   priority=HIGH
 ```
 
@@ -1822,10 +1822,10 @@ docker exec -it notification-redis redis-cli
 KEYS dedupe:event:*
 
 # View specific event key
-GET dedupe:event:user-registration-12345
+GET dedupe:event:notificationUser-registration-12345
 
 # Check TTL
-TTL dedupe:event:user-registration-12345
+TTL dedupe:event:notificationUser-registration-12345
 
 # Expected: Returns remaining seconds until expiration
 ```
@@ -1874,11 +1874,11 @@ http POST :8080/api/v1/notifications/bulk \
 
 ### Deduplication Best Practices
 
-1. **Use Descriptive eventIds:** Include context like `user-{userId}-registration` or `order-{orderId}-confirmation`
+1. **Use Descriptive eventIds:** Include context like `notificationUser-{userId}-registration` or `order-{orderId}-confirmation`
 
 2. **TTL Considerations:** 
    - Short TTL (minutes) for OTP codes
-   - Medium TTL (hours) for user actions
+   - Medium TTL (hours) for notificationUser actions
    - Long TTL (days) for business events
 
 3. **Idempotent Operations:** Use eventId for retry-safe operations

@@ -284,7 +284,7 @@ docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
 | `-i` | Interactive (keep STDIN open) |
 | `-t` | Allocate a pseudo-TTY (terminal) |
 | `-it` | Combine both (interactive terminal) |
-| `-u` | Run as specific user |
+| `-u` | Run as specific notificationUser |
 | `-w` | Set working directory |
 
 #### Examples
@@ -295,7 +295,7 @@ docker exec notification-postgres ls -la
 # Open interactive shell
 docker exec -it notification-postgres bash
 
-# Run command as specific user
+# Run command as specific notificationUser
 docker exec -u postgres notification-postgres whoami
 
 # Run command in specific directory
@@ -332,7 +332,7 @@ docker exec -it notification-postgres psql -U postgres -d notification_db
 | `-it` | Interactive terminal |
 | `notification-postgres` | Container name |
 | `psql` | PostgreSQL command-line tool |
-| `-U postgres` | Connect as user "postgres" |
+| `-U postgres` | Connect as notificationUser "postgres" |
 | `-d notification_db` | Connect to database "notification_db" |
 
 #### Useful psql Commands (Inside psql)

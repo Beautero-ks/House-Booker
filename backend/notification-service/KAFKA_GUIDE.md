@@ -56,16 +56,16 @@ POST /api/v1/notifications
 // NotificationService.sendNotification()
 @Transactional
 public NotificationResponse sendNotification(SendNotificationRequest request) {
-    // 1. Validate user exists
-    User user = userRepository.findById(request.getUserId())
+    // 1. Validate notificationUser exists
+    User notificationUser = userRepository.findById(request.getUserId())
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     // 2. Check rate limits (Redis)
-    boolean allowed = rateLimiter.checkAndIncrement(user.getId(), request.getChannel());
+    boolean allowed = rateLimiter.checkAndIncrement(notificationUser.getId(), request.getChannel());
 
     // 3. Create notification entity
     Notification notification = Notification.builder()
-        .user(user)
+        .notificationUser(notificationUser)
         .channel(request.getChannel())
         .content(request.getContent())
         .status(PENDING)
@@ -163,7 +163,7 @@ private void processNotification(ConsumerRecord<String, String> record, ...) {
 ```java
 // EmailChannelHandler.java
 public boolean sendEmail(Notification notification) {
-    // 1. Get user email from database
+    // 1. Get notificationUser email from database
     String email = notification.getUser().getEmail();
 
     // 2. Render template (if needed)
@@ -178,7 +178,7 @@ public boolean sendEmail(Notification notification) {
 ```java
 // SmsChannelHandler.java
 public boolean sendSms(Notification notification) {
-    // 1. Get user phone from database
+    // 1. Get notificationUser phone from database
     String phone = notification.getUser().getPhone();
 
     // 2. Render template (if needed)
@@ -193,7 +193,7 @@ public boolean sendSms(Notification notification) {
 ```java
 // PushChannelHandler.java
 public boolean sendPush(Notification notification) {
-    // 1. Get user device token from database
+    // 1. Get notificationUser device token from database
     String token = notification.getUser().getDeviceToken();
 
     // 2. Send via FCM/APNs
@@ -205,7 +205,7 @@ public boolean sendPush(Notification notification) {
 ```java
 // InAppChannelHandler.java
 public boolean sendInApp(Notification notification) {
-    // 1. Store in user's notification inbox
+    // 1. Store in notificationUser's notification inbox
     // 2. Mark as delivered immediately
     return true; // Always succeeds
 }
