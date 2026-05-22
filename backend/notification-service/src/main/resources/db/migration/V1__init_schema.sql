@@ -28,14 +28,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- =====================================================
 -- TABLE: users
 -- =====================================================
--- Stores user information for sending notifications.
--- Each user can have an email, phone, and device token.
+-- Stores notificationUser information for sending notifications.
+-- Each notificationUser can have an email, phone, and device token.
 --
 -- In a real system, this would likely be a reference to
--- a user service, but we include it here for simplicity.
+-- a notificationUser service, but we include it here for simplicity.
 --
 CREATE TABLE users (
-    -- Primary Key: Unique identifier for each user
+    -- Primary Key: Unique identifier for each notificationUser
     -- uuid_generate_v4() creates a random UUID
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     
@@ -67,7 +67,7 @@ CREATE INDEX idx_users_phone ON users(phone);
 -- =====================================================
 -- TABLE: user_preferences
 -- =====================================================
--- Stores notification preferences for each user.
+-- Stores notification preferences for each notificationUser.
 -- Users can:
 -- 1. Enable/disable specific channels
 -- 2. Set quiet hours (no notifications during sleep)
@@ -76,7 +76,7 @@ CREATE TABLE user_preferences (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     
     -- Foreign Key: Links to users table
-    -- ON DELETE CASCADE: If user is deleted, preferences are too
+    -- ON DELETE CASCADE: If notificationUser is deleted, preferences are too
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     
     -- Which channel this preference is for
@@ -96,11 +96,11 @@ CREATE TABLE user_preferences (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
     -- Composite unique constraint
-    -- Each user can only have ONE preference per channel
+    -- Each notificationUser can only have ONE preference per channel
     UNIQUE(user_id, channel)
 );
 
--- Index for fast lookup by user
+-- Index for fast lookup by notificationUser
 CREATE INDEX idx_user_preferences_user_id ON user_preferences(user_id);
 
 -- =====================================================
@@ -194,7 +194,7 @@ CREATE TABLE notifications (
     -- PENDING     = Waiting to be processed
     -- PROCESSING  = Currently being sent
     -- SENT        = Successfully sent to provider
-    -- DELIVERED   = Confirmed delivered to user
+    -- DELIVERED   = Confirmed delivered to notificationUser
     -- FAILED      = All retries exhausted
     -- READ        = User has read it (in-app only)
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
@@ -222,7 +222,7 @@ CREATE TABLE notifications (
     -- When was it confirmed delivered?
     delivered_at TIMESTAMP WITH TIME ZONE,
     
-    -- When did the user read it? (in-app only)
+    -- When did the notificationUser read it? (in-app only)
     read_at TIMESTAMP WITH TIME ZONE,
     
     -- When was this record created?
@@ -233,7 +233,7 @@ CREATE TABLE notifications (
 -- Indexes speed up queries but slow down inserts
 -- Only add indexes for columns you query frequently
 
--- Find all notifications for a user (for inbox)
+-- Find all notifications for a notificationUser (for inbox)
 CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 
 -- Filter by status (for processing PENDING notifications)
@@ -247,7 +247,7 @@ CREATE INDEX idx_notifications_channel ON notifications(channel);
 CREATE INDEX idx_notifications_retry ON notifications(next_retry_at) 
     WHERE status = 'PENDING' AND next_retry_at IS NOT NULL;
 
--- For inbox pagination: user's notifications ordered by time
+-- For inbox pagination: notificationUser's notifications ordered by time
 CREATE INDEX idx_notifications_user_created ON notifications(user_id, created_at DESC);
 
 -- =====================================================
@@ -261,7 +261,7 @@ INSERT INTO users (id, email, phone, device_token) VALUES
     ('550e8400-e29b-41d4-a716-446655440002', 'jane@example.com', '+1987654321', 'device_token_jane'),
     ('550e8400-e29b-41d4-a716-446655440003', 'bob@example.com', '+1555555555', NULL);
 
--- Insert user preferences
+-- Insert notificationUser preferences
 INSERT INTO user_preferences (user_id, channel, enabled, quiet_hours_start, quiet_hours_end) VALUES
     ('550e8400-e29b-41d4-a716-446655440001', 'EMAIL', true, NULL, NULL),
     ('550e8400-e29b-41d4-a716-446655440001', 'SMS', true, '22:00', '08:00'),
