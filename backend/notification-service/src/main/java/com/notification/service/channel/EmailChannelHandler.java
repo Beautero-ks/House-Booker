@@ -16,7 +16,7 @@ package com.notification.service.channel;
 //
 
 import com.notification.model.entity.Notification;
-import com.notification.model.entity.User;
+import com.notification.model.entity.NotificationUser;
 import com.notification.model.enums.ChannelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +44,10 @@ public class EmailChannelHandler implements ChannelHandler {
         }
         
         // Check if user has an email address
-        User user = notification.getUser();
-        if (user == null || user.getEmail() == null || user.getEmail().isBlank()) {
+        NotificationUser notificationUser = notification.getNotificationUser();
+        if (notificationUser == null || notificationUser.getEmail() == null || notificationUser.getEmail().isBlank()) {
             log.warn("Cannot send email: User {} has no email address", 
-                user != null ? user.getId() : "null");
+                notificationUser != null ? notificationUser.getId() : "null");
             return false;
         }
         
@@ -56,8 +56,8 @@ public class EmailChannelHandler implements ChannelHandler {
     
     @Override
     public boolean send(Notification notification) {
-        User user = notification.getUser();
-        String email = user.getEmail();
+        NotificationUser notificationUser = notification.getNotificationUser();
+        String email = notificationUser.getEmail();
         
         log.info("========== SENDING EMAIL ==========");
         log.info("To: {}", email);

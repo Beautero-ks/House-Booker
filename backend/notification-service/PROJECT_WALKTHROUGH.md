@@ -188,7 +188,7 @@ Follow this order to understand the project systematically:
 1. model/enums/ChannelType.java       → What channels exist?
 2. model/enums/Priority.java          → What priorities exist?
 3. model/enums/NotificationStatus.java → What statuses exist?
-4. model/entity/User.java             → What is a user?
+4. model/entity/User.java             → What is a notificationUser?
 5. model/entity/NotificationTemplate.java → What is a template?
 6. model/entity/Notification.java     → What is a notification?
 ```
@@ -371,7 +371,7 @@ public enum NotificationStatus {
 | `email` | String | User's email address |
 | `phone` | String | User's phone number |
 | `deviceToken` | String | For push notifications |
-| `createdAt` | Timestamp | When user was created |
+| `createdAt` | Timestamp | When notificationUser was created |
 
 ##### 📄 `Notification.java`
 **Maps to:** `notifications` table
@@ -542,7 +542,7 @@ public class NotificationService {
     
     // Send a single notification
     public NotificationResponse sendNotification(SendNotificationRequest request) {
-        // 1. Validate user exists
+        // 1. Validate notificationUser exists
         // 2. Check rate limit
         // 3. Process template (if used)
         // 4. Create notification entity
@@ -558,7 +558,7 @@ public class NotificationService {
         // 3. Update status (SENT or FAILED)
     }
     
-    // Get user's notifications
+    // Get notificationUser's notifications
     public PagedResponse<NotificationResponse> getUserNotifications(
         UUID userId, int page, int size, NotificationStatus status) {
         // 1. Query database with pagination
@@ -680,14 +680,14 @@ public NotificationResponse sendNotification(SendNotificationRequest request) {
 @Service
 public class UserService {
     
-    // Cache user lookup by email
+    // Cache notificationUser lookup by email
     @Cacheable(value = "users", key = "'email:' + #email")
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
     
-    // Cache user lookup by phone
+    // Cache notificationUser lookup by phone
     @Cacheable(value = "users", key = "'phone:' + #phone")
     public User findByPhone(String phone) {
         return userRepository.findByPhone(phone)
@@ -704,7 +704,7 @@ public class UserService {
 
 **Cache Eviction:**
 ```java
-// Evict cache when user data changes
+// Evict cache when notificationUser data changes
 @CacheEvict(value = "users", key = "'email:' + #oldEmail")
 public void evictUserCacheByEmail(String oldEmail) {
     // Cache entry removed
@@ -718,7 +718,7 @@ Located in: `src/main/java/com/notification/service/channel/`
 ##### 📄 `ChannelHandler.java` (Interface)
 ```java
 public interface ChannelHandler {
-    void send(Notification notification, User user);
+    void send(Notification notification, User notificationUser);
     ChannelType getChannelType();
 }
 ```
@@ -729,10 +729,10 @@ public interface ChannelHandler {
 public class EmailChannelHandler implements ChannelHandler {
     
     @Override
-    public void send(Notification notification, User user) {
+    public void send(Notification notification, User notificationUser) {
         // In real app: Use JavaMail or SendGrid
         // Here: Just log it
-        log.info("Sending EMAIL to {}: {}", user.getEmail(), notification.getSubject());
+        log.info("Sending EMAIL to {}: {}", notificationUser.getEmail(), notification.getSubject());
     }
     
     @Override
@@ -759,9 +759,9 @@ public class ChannelDispatcher {
     }
     
     // Route to correct handler
-    public void dispatch(Notification notification, User user) {
+    public void dispatch(Notification notification, User notificationUser) {
         ChannelHandler handler = handlers.get(notification.getChannel());
-        handler.send(notification, user);
+        handler.send(notification, notificationUser);
     }
 }
 ```
@@ -826,8 +826,8 @@ public class NotificationController {
         // ...
     }
     
-    // GET /api/v1/notifications/user/{userId}
-    @GetMapping("/user/{userId}")
+    // GET /api/v1/notifications/notificationUser/{userId}
+    @GetMapping("/notificationUser/{userId}")
     public ResponseEntity<ApiResponse<PagedResponse<NotificationResponse>>> getUserNotifications(
             @PathVariable UUID userId,
             @RequestParam(defaultValue = "0") int page,
@@ -863,15 +863,15 @@ public class UserController {
     // GET /api/v1/users/email/{email}
     @GetMapping("/email/{email}")
     public ResponseEntity<ApiResponse<User>> getUserByEmail(@PathVariable String email) {
-        User user = userService.findByEmail(email);  // @Cacheable
-        return ResponseEntity.ok(ApiResponse.success("User found", user));
+        User notificationUser = userService.findByEmail(email);  // @Cacheable
+        return ResponseEntity.ok(ApiResponse.success("User found", notificationUser));
     }
     
     // GET /api/v1/users/phone/{phone}
     @GetMapping("/phone/{phone}")
     public ResponseEntity<ApiResponse<User>> getUserByPhone(@PathVariable String phone) {
-        User user = userService.findByPhone(phone);  // @Cacheable
-        return ResponseEntity.ok(ApiResponse.success("User found", user));
+        User notificationUser = userService.findByPhone(phone);  // @Cacheable
+        return ResponseEntity.ok(ApiResponse.success("User found", notificationUser));
     }
     
     // GET /api/v1/users/push-eligible
@@ -1072,7 +1072,7 @@ public class RetryScheduler {
 │                          SERVICE LAYER                                      │
 │  NotificationService.sendNotification()                                    │
 │                                                                            │
-│  Step 1: Validate user exists                                              │
+│  Step 1: Validate notificationUser exists                                              │
 │          └─> UserRepository.findById(userId)                               │
 │                                                                            │
 │  Step 2: Check rate limit                                                  │
@@ -1114,7 +1114,7 @@ public class RetryScheduler {
 └──────────────────────────────────┘    │                                  │
                                         │  Step 2: Load from database      │
                                         │                                  │
-                                        │  Step 3: Get user details        │
+                                        │  Step 3: Get notificationUser details        │
                                         │                                  │
                                         │  Step 4: Dispatch to channel     │
                                         │          └─> ChannelDispatcher   │
@@ -1226,7 +1226,7 @@ notification:
       in-app: notifications.in-app     # In-app notifications
       dlq: notifications.dlq           # Dead Letter Queue
   rate-limit:
-    requests-per-minute: 10     # Max 10 notifications per user per minute
+    requests-per-minute: 10     # Max 10 notifications per notificationUser per minute
   retry:
     max-attempts: 3             # Retry failed notifications 3 times
 ```

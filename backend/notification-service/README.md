@@ -29,7 +29,7 @@ A notification service that accepts requests via REST API, persists them, and as
 |---------|-------------|
 | Multi-channel delivery | `EMAIL`, `SMS`, `PUSH`, `IN_APP` — each with its own Kafka topic and handler |
 | Async processing | Kafka decouples the API from delivery; the API returns `201` immediately |
-| Rate limiting | Redis token-bucket counters per user per channel |
+| Rate limiting | Redis token-bucket counters per notificationUser per channel |
 | Template rendering | Named templates with `{{variable}}` substitution |
 | Retry with backoff | Failed deliveries retry up to 3 times with `5^n` minute delays |
 | Event deduplication | Optional `eventId` checked against Redis with 24h TTL |
@@ -102,10 +102,10 @@ curl -s http://localhost:8080/actuator/health
 | `POST` | `/api/v1/notifications` | Send a single notification |
 | `POST` | `/api/v1/notifications/bulk` | Send bulk notifications |
 | `GET` | `/api/v1/notifications/{id}` | Get notification by ID |
-| `GET` | `/api/v1/notifications/user/{userId}` | User inbox (paginated) |
-| `GET` | `/api/v1/notifications/user/{userId}/unread-count` | Unread count |
+| `GET` | `/api/v1/notifications/notificationUser/{userId}` | User inbox (paginated) |
+| `GET` | `/api/v1/notifications/notificationUser/{userId}/unread-count` | Unread count |
 | `PATCH` | `/api/v1/notifications/{id}/read` | Mark as read |
-| `PATCH` | `/api/v1/notifications/user/{userId}/read-all` | Mark all as read |
+| `PATCH` | `/api/v1/notifications/notificationUser/{userId}/read-all` | Mark all as read |
 
 ### Example: Send with direct content
 
@@ -150,7 +150,7 @@ curl -X POST http://localhost:8080/api/v1/notifications \
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/users` | Create user (if not exists) |
+| `POST` | `/api/v1/users` | Create notificationUser (if not exists) |
 | `GET` | `/api/v1/users` | List all |
 | `GET` | `/api/v1/users/email/{email}` | Find by email (cached) |
 | `GET` | `/api/v1/users/phone/{phone}` | Find by phone (cached) |
@@ -258,7 +258,7 @@ Prevents the same business event from creating duplicate notifications.
 
 ## Rate Limiting
 
-Prevents notification spam per user per channel.
+Prevents notification spam per notificationUser per channel.
 
 | Aspect | Detail |
 |--------|--------|
@@ -288,7 +288,7 @@ Migration file: `src/main/resources/db/migration/V1__init_schema.sql`
 | `notification_templates` | Reusable message templates |
 | `notifications` | Every notification with status, retry count, timestamps |
 
-Indexes cover: user inbox pagination, status/channel filtering, retry scheduling, and user lookups.
+Indexes cover: notificationUser inbox pagination, status/channel filtering, retry scheduling, and notificationUser lookups.
 
 ## Project Structure
 

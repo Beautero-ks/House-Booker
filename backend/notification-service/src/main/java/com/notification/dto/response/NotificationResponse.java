@@ -87,7 +87,7 @@ public class NotificationResponse {
             .id(notification.getId())
             // Get the user ID without loading the full User object
             // This is why we use LAZY loading on relationships
-            .userId(notification.getUser() != null ? notification.getUser().getId() : null)
+            .userId(notification.getNotificationUser() != null ? notification.getNotificationUser().getId() : null)
             .channel(notification.getChannel())
             .priority(notification.getPriority())
             .subject(notification.getSubject())

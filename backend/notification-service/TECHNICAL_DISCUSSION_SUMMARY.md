@@ -214,7 +214,7 @@ Your system implements **Alex Xu's recommended patterns**:
 **Real-World Validation:**
 - **Uber**: Sends trip IDs, not full trip objects
 - **Netflix**: Event streaming with references, not full data
-- **LinkedIn**: Activity events with user IDs
+- **LinkedIn**: Activity events with notificationUser IDs
 
 ### Decision Framework
 Alex Xu's approach: **Choose based on scale requirements**
@@ -279,7 +279,7 @@ public void bookSeats(BookingRequest request) {
     // 3. Send FULL booking to Kafka for processing
     kafkaTemplate.send("bookings.confirmation", booking); // Full object!
     
-    // 4. Immediate response to user
+    // 4. Immediate response to notificationUser
     return BookingResponse.success(booking);
 }
 ```

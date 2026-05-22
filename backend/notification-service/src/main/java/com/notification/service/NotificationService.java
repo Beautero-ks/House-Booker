@@ -21,7 +21,7 @@ import com.notification.dto.response.PagedResponse;
 import com.notification.exception.NotificationException;
 import com.notification.exception.ResourceNotFoundException;
 import com.notification.model.entity.Notification;
-import com.notification.model.entity.User;
+import com.notification.model.entity.NotificationUser;
 import com.notification.model.enums.ChannelType;
 import com.notification.model.enums.NotificationStatus;
 import com.notification.repository.NotificationRepository;
@@ -36,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -126,7 +125,7 @@ public class NotificationService {
         log.debug("Processing notification request for user: {}", request.getUserId());
         
         // Step 1: Validate user exists (cached via Redis - avoids DB hit per request)
-        User user = userService.findById(request.getUserId());
+        NotificationUser notificationUser = userService.findById(request.getUserId());
         
         // Step 2: Check for duplicates (if eventId provided)
         if (request.getEventId() != null && !request.getEventId().isBlank()) {
@@ -135,7 +134,7 @@ public class NotificationService {
                 // Return a response indicating the notification was not sent due to deduplication
                 return NotificationResponse.builder()
                     .id(null) // No notification created
-                    .userId(user.getId())
+                    .userId(notificationUser.getId())
                     .channel(request.getChannel())
                     .priority(request.getPriority())
                     .status(NotificationStatus.FAILED)
@@ -145,7 +144,7 @@ public class NotificationService {
         }
         
         // Step 3: Check rate limit (throws exception if exceeded)
-        rateLimiterService.checkAndIncrement(user.getId(), request.getChannel());
+        rateLimiterService.checkAndIncrement(notificationUser.getId(), request.getChannel());
         
         // Step 3: Get content (from template or direct)
         String subject;
@@ -182,7 +181,7 @@ public class NotificationService {
         
         // Step 4: Create notification record in the DB
         Notification notification = Notification.builder()
-            .user(user)
+            .notificationUser(notificationUser)
             .channel(request.getChannel())
             .priority(request.getPriority())
             .subject(subject)
@@ -192,7 +191,7 @@ public class NotificationService {
         
         notification = notificationRepository.save(notification);
         
-        log.debug("Created notification {} for user {}", notification.getId(), user.getId());
+        log.debug("Created notification {} for user {}", notification.getId(), notificationUser.getId());
         
         // Step 5: Send to Kafka for async processing
         sendToKafka(notification);
@@ -239,7 +238,7 @@ public class NotificationService {
         for (UUID userId : request.getUserIds()) {
             try {
                 // Find user (cached via Redis)
-                User user = userService.findById(userId);
+                NotificationUser notificationUser = userService.findById(userId);
                 
                 // Check rate limit (skip if exceeded, don't fail whole batch)
                 if (rateLimiterService.isRateLimited(userId, request.getChannel())) {
@@ -252,7 +251,7 @@ public class NotificationService {
                 
                 // Create notification
                 Notification notification = Notification.builder()
-                    .user(user)
+                    .notificationUser(notificationUser)
                     .channel(request.getChannel())
                     .priority(request.getPriority())
                     .subject(subject)

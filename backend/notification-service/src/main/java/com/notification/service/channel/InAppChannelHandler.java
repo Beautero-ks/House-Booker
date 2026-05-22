@@ -41,13 +41,13 @@ public class InAppChannelHandler implements ChannelHandler {
     public boolean canHandle(Notification notification) {
         // In-app notifications just need a valid user
         return ChannelHandler.super.canHandle(notification) &&
-               notification.getUser() != null;
+               notification.getNotificationUser() != null;
     }
     
     @Override
     public boolean send(Notification notification) {
         log.info("========== IN-APP NOTIFICATION ==========");
-        log.info("User ID: {}", notification.getUser().getId());
+        log.info("User ID: {}", notification.getNotificationUser().getId());
         log.info("Subject: {}", notification.getSubject());
         log.info("Content: {}", notification.getContent());
         log.info("==========================================");
@@ -74,7 +74,7 @@ public class InAppChannelHandler implements ChannelHandler {
         //
         
         // In-app always succeeds (already in database)
-        log.info("In-app notification delivered to user {}", notification.getUser().getId());
+        log.info("In-app notification delivered to user {}", notification.getNotificationUser().getId());
         return true;
     }
 }
