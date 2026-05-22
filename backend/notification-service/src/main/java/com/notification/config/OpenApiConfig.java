@@ -48,7 +48,7 @@ public class OpenApiConfig {
                     - **In-App** - Store notifications for in-app inbox
                     
                     ## Features
-                    - Rate limiting per user and channel
+                    - Rate limiting per notificationUser and channel
                     - Template-based messaging
                     - Retry with exponential backoff
                     - Priority-based processing

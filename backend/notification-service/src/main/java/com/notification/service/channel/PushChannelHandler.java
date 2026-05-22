@@ -17,7 +17,7 @@ package com.notification.service.channel;
 //
 
 import com.notification.model.entity.Notification;
-import com.notification.model.entity.User;
+import com.notification.model.entity.NotificationUser;
 import com.notification.model.enums.ChannelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +45,10 @@ public class PushChannelHandler implements ChannelHandler {
         }
         
         // Check if user has a device token
-        User user = notification.getUser();
-        if (user == null || user.getDeviceToken() == null || user.getDeviceToken().isBlank()) {
+        NotificationUser notificationUser = notification.getNotificationUser();
+        if (notificationUser == null || notificationUser.getDeviceToken() == null || notificationUser.getDeviceToken().isBlank()) {
             log.warn("Cannot send push: User {} has no device token", 
-                user != null ? user.getId() : "null");
+                notificationUser != null ? notificationUser.getId() : "null");
             return false;
         }
         
@@ -57,8 +57,8 @@ public class PushChannelHandler implements ChannelHandler {
     
     @Override
     public boolean send(Notification notification) {
-        User user = notification.getUser();
-        String deviceToken = user.getDeviceToken();
+        NotificationUser notificationUser = notification.getNotificationUser();
+        String deviceToken = notificationUser.getDeviceToken();
         
         log.info("========== SENDING PUSH NOTIFICATION ==========");
         log.info("Device Token: {}...", deviceToken.substring(0, Math.min(20, deviceToken.length())));

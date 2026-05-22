@@ -209,7 +209,7 @@ SendNotificationRequest {
 #### Step 2.1: Validate User Exists
 ```java
 // Query: SELECT * FROM users WHERE id = ?
-User user = userRepository.findById(request.getUserId())
+User notificationUser = userRepository.findById(request.getUserId())
     .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getUserId()));
 ```
 
@@ -380,7 +380,7 @@ ProcessedTemplate {
 #### Step 2.5: Create Notification Record
 ```java
 Notification notification = Notification.builder()
-    .user(user)
+    .notificationUser(notificationUser)
     .channel(request.getChannel())
     .priority(request.getPriority())
     .subject(processedSubject)
@@ -591,7 +591,7 @@ WHERE id = '7f3b8c2a-1234-5678-9abc-def012345678'
 ```
 Notification {
     id: 7f3b8c2a-1234-5678-9abc-def012345678
-    user: User{id: 550e8400..., email: "john@example.com"}
+    notificationUser: User{id: 550e8400..., email: "john@example.com"}
     channel: EMAIL
     subject: "Welcome, John Doe!"
     content: "Hi John Doe, click here to activate..."
@@ -664,7 +664,7 @@ EmailChannelHandler.send(notification)
 **▶ INPUT:**
 ```
 Notification {
-    user.email: "john@example.com"
+    notificationUser.email: "john@example.com"
     subject: "Welcome, John Doe!"
     content: "Hi John Doe, click here to activate..."
 }
@@ -674,11 +674,11 @@ Notification {
 ```java
 @Override
 public boolean canHandle(Notification notification) {
-    // Check if user has an email address
-    User user = notification.getUser();
-    if (user == null || user.getEmail() == null || user.getEmail().isBlank()) {
+    // Check if notificationUser has an email address
+    User notificationUser = notification.getUser();
+    if (notificationUser == null || notificationUser.getEmail() == null || notificationUser.getEmail().isBlank()) {
         log.warn("Cannot send email: User {} has no email address", 
-            user != null ? user.getId() : "null");
+            notificationUser != null ? notificationUser.getId() : "null");
         return false;
     }
     return true;
@@ -686,8 +686,8 @@ public boolean canHandle(Notification notification) {
 
 @Override
 public boolean send(Notification notification) {
-    User user = notification.getUser();
-    String email = user.getEmail();
+    User notificationUser = notification.getUser();
+    String email = notificationUser.getEmail();
     
     log.info("========== SENDING EMAIL ==========");
     log.info("To: {}", email);
@@ -788,7 +788,7 @@ Notification {
 | `/api/v1/notifications` | POST | `SendNotificationRequest` JSON | `NotificationResponse` wrapped in `ApiResponse` |
 | `/api/v1/notifications/bulk` | POST | `BulkNotificationRequest` JSON | `BulkNotificationResponse` |
 | `/api/v1/notifications/{id}` | GET | UUID path param | `NotificationResponse` |
-| `/api/v1/notifications/user/{userId}` | GET | UUID + pagination params | `PagedResponse<NotificationResponse>` |
+| `/api/v1/notifications/notificationUser/{userId}` | GET | UUID + pagination params | `PagedResponse<NotificationResponse>` |
 | `/api/v1/notifications/{id}/read` | PATCH | UUID path param | `NotificationResponse` |
 
 #### TemplateController.java
@@ -869,7 +869,7 @@ Notification {
 │ NotificationResponse                                                 │
 ├─────────────────────────────────────────────────────────────────────┤
 │ + id: UUID                        Notification ID                   │
-│ + userId: UUID                    Recipient user ID                 │
+│ + userId: UUID                    Recipient notificationUser ID                 │
 │ + channel: ChannelType            Delivery channel                  │
 │ + priority: Priority              Processing priority               │
 │ + subject: String                 Processed subject                 │
@@ -880,7 +880,7 @@ Notification {
 │ + createdAt: OffsetDateTime       When created                      │
 │ + sentAt: OffsetDateTime          When sent to provider             │
 │ + deliveredAt: OffsetDateTime     When confirmed delivered          │
-│ + readAt: OffsetDateTime          When user read (in-app only)      │
+│ + readAt: OffsetDateTime          When notificationUser read (in-app only)      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -921,7 +921,7 @@ Notification {
 │ getUserNotifications(UUID, Pageable)                                 │
 │   IN:  UUID userId, Pageable (page, size)                           │
 │   OUT: PagedResponse<NotificationResponse>                          │
-│   DOES: Fetches paginated notifications for user                    │
+│   DOES: Fetches paginated notifications for notificationUser                    │
 │                                                                      │
 │ markAsRead(UUID)                                                     │
 │   IN:  UUID notificationId                                           │
@@ -1087,7 +1087,7 @@ Notification {
 │channel: EMAIL   │ │channel: SMS     │ │channel: PUSH    │ │channel: IN_APP  │
 │                 │ │                 │ │                 │ │                 │
 │canHandle:       │ │canHandle:       │ │canHandle:       │ │canHandle:       │
-│ user.email!=null│ │ user.phone!=null│ │ user.device     │ │ user!=null      │
+│ notificationUser.email!=null│ │ notificationUser.phone!=null│ │ notificationUser.device     │ │ notificationUser!=null      │
 │                 │ │                 │ │   Token!=null   │ │                 │
 │send:            │ │send:            │ │send:            │ │send:            │
 │ → SendGrid      │ │ → Twilio        │ │ → FCM/APNs      │ │ → Already in DB │
@@ -1134,7 +1134,7 @@ Notification {
 
 6. Handler Execution
    EmailChannelHandler.send()
-   ├── Validate: user.email != null ✓
+   ├── Validate: notificationUser.email != null ✓
    └── Send via provider (SendGrid/SES/SMTP)
 
 7. External API Call
@@ -1185,7 +1185,7 @@ Notification {
 
 6. Handler Execution
    SmsChannelHandler.send()
-   ├── Validate: user.phone != null ✓
+   ├── Validate: notificationUser.phone != null ✓
    ├── Truncate if > 160 chars (add "...")
    └── Send via provider (Twilio/Nexmo)
 
@@ -1235,7 +1235,7 @@ Notification {
 
 6. Handler Execution
    PushChannelHandler.send()
-   ├── Validate: user.deviceToken != null ✓
+   ├── Validate: notificationUser.deviceToken != null ✓
    └── Send via FCM/APNs
 
 7. External API Call (FCM)
@@ -1290,14 +1290,14 @@ Notification {
 
 6. Handler Execution
    InAppChannelHandler.send()
-   ├── Validate: user != null ✓
+   ├── Validate: notificationUser != null ✓
    └── Mark as delivered (already in DB!)
 
 7. Status Update
    UPDATE notifications SET status='DELIVERED', delivered_at=NOW()
 
 8. User Fetches Inbox
-   GET /api/v1/notifications/user/{userId}
+   GET /api/v1/notifications/notificationUser/{userId}
    → Returns list of in-app notifications
 
 9. User Reads Notification

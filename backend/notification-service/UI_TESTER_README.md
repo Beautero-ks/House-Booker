@@ -17,11 +17,11 @@ A comprehensive web interface to test all notification system endpoints end-to-e
 
 ### 📚 Notification History & Management
 - **Get Notification by ID** - Retrieve specific notification details
-- **User Inbox** - View all notifications for a user
+- **User Inbox** - View all notifications for a notificationUser
 - **Unread Count** - Check unread notification count
 - **Mark as Read** - Mark individual notifications as read
-- **Mark All as Read** - Mark all user notifications as read
-- **History Search** - Filter notifications by user and channel
+- **Mark All as Read** - Mark all notificationUser notifications as read
+- **History Search** - Filter notifications by notificationUser and channel
 
 ### 🎨 Template Management
 - **Create Templates** - Add new notification templates
@@ -46,10 +46,10 @@ A comprehensive web interface to test all notification system endpoints end-to-e
 | **Notifications** | `/api/v1/notifications` | POST | Send Single |
 | **Notifications** | `/api/v1/notifications/bulk` | POST | Send Bulk |
 | **Notifications** | `/api/v1/notifications/{id}` | GET | Get by ID |
-| **Notifications** | `/api/v1/notifications/user/{userId}` | GET | User Inbox |
-| **Notifications** | `/api/v1/notifications/user/{userId}/unread-count` | GET | Unread Count |
+| **Notifications** | `/api/v1/notifications/notificationUser/{userId}` | GET | User Inbox |
+| **Notifications** | `/api/v1/notifications/notificationUser/{userId}/unread-count` | GET | Unread Count |
 | **Notifications** | `/api/v1/notifications/{id}/read` | PATCH | Mark as Read |
-| **Notifications** | `/api/v1/notifications/user/{userId}/read-all` | PATCH | Mark All as Read |
+| **Notifications** | `/api/v1/notifications/notificationUser/{userId}/read-all` | PATCH | Mark All as Read |
 | **Templates** | `/api/v1/templates` | POST | Create Template |
 | **Templates** | `/api/v1/templates` | GET | List Templates |
 | **Templates** | `/api/v1/templates/{id}` | GET | Get by ID |
@@ -94,14 +94,14 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 ### 2. Bulk Notification Campaign
 1. Go to "Send Bulk" tab
-2. Enter multiple user IDs (comma-separated)
+2. Enter multiple notificationUser IDs (comma-separated)
 3. Configure notification content
 4. Click "Send Bulk Notifications"
 5. Review bulk response summary
 
 ### 3. User Inbox Management
 1. Go to "History" tab
-2. Enter user ID in "User Inbox" section
+2. Enter notificationUser ID in "User Inbox" section
 3. Click "Get User Inbox" to see all notifications
 4. Click "Get Unread Count" for unread summary
 5. Use "Mark as Read" to update notification status
@@ -132,7 +132,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
    - The UI will load automatically
 
 3. **Test notifications:**
-   - Use the pre-filled test user ID: `550e8400-e29b-41d4-a716-446655440001`
+   - Use the pre-filled test notificationUser ID: `550e8400-e29b-41d4-a716-446655440001`
    - Try different channels and priorities
    - Check the response and status
 
@@ -164,7 +164,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
    - Send twice to test deduplication
 
 4. **Bulk Push Notifications:**
-   - Add multiple user IDs
+   - Add multiple notificationUser IDs
    - Channel: Push
    - Content: "System maintenance in 30 minutes"
 
@@ -174,7 +174,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 |----------|--------|---------|
 | `/api/v1/notifications` | POST | Send single notification |
 | `/api/v1/notifications/bulk` | POST | Send bulk notifications |
-| `/api/v1/notifications/user/{userId}` | GET | Get user notifications |
+| `/api/v1/notifications/notificationUser/{userId}` | GET | Get notificationUser notifications |
 | `/api/v1/templates` | GET | List templates |
 | `/api/v1/health` | GET | Basic health check |
 | `/api/v1/health/detailed` | GET | Detailed health check |
@@ -188,7 +188,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 ### Rate Limit Errors
 - Wait for the rate limit window to reset (1 hour)
-- Or use a different user ID
+- Or use a different notificationUser ID
 - Check Redis for rate limit counters
 
 ### Template Errors

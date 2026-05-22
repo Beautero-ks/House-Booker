@@ -56,12 +56,12 @@ import java.util.UUID;
  *   User user = new User(id, email, phone, ...);
  */
 @Entity                          // Marks this class as a JPA entity
-@Table(name = "users")           // Maps to the "users" table
+@Table(name = "notification_users")           // Maps to the "notification_users" table
 @Data                            // Lombok: getters, setters, toString, etc.
 @Builder                         // Lombok: builder pattern
 @NoArgsConstructor               // Lombok: no-arg constructor
 @AllArgsConstructor              // Lombok: all-args constructor
-public class User {
+public class NotificationUser {
 
     // ==================== Primary Key ====================
     
@@ -209,7 +209,7 @@ public class User {
      */
     public void addPreference(UserPreference preference) {
         preferences.add(preference);
-        preference.setUser(this);
+        preference.setNotificationUser(this);
     }
     
     /**
@@ -217,6 +217,6 @@ public class User {
      */
     public void removePreference(UserPreference preference) {
         preferences.remove(preference);
-        preference.setUser(null);
+        preference.setNotificationUser(null);
     }
 }

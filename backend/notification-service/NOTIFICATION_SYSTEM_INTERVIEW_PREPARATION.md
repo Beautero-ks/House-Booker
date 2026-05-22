@@ -88,7 +88,7 @@
 *The key technical highlights are:*
 - *Asynchronous processing using Kafka for decoupling and reliability*
 - *Rate limiting with Redis using the Token Bucket algorithm*
-- *Redis caching for user lookups and notification templates to reduce database load*
+- *Redis caching for notificationUser lookups and notification templates to reduce database load*
 - *Template system for reusable message content*
 - *Retry mechanism with exponential backoff for failed deliveries*
 - *Clean layered architecture following SOLID principles*
@@ -216,14 +216,14 @@ Pick ONE area based on interviewer interest:
 | Step | Component | Action | Data Flow Details |
 |------|-----------|--------|-------------------|
 | 1 | `NotificationController` | Receives POST request, validates input | **Input:** JSON request body<br>```json<br>{<br>  "userId": "550e8400-e29b-41d4-a716-446655440001",<br>  "channel": "EMAIL",<br>  "templateName": "welcome-email",<br>  "templateVariables": {"userName": "John"}<br>}<br>```<br>**Validation:** Bean Validation on `SendNotificationRequest` DTO |
-| 2 | `NotificationService` | Validates user (cached), checks dedup + rate limit via Redis | **User Lookup:** `userService.findById(userId)` (cached in Redis with key `"users::id:{id}"`)<br>**Dedup Check:** `deduplicationService.isDuplicate(eventId)` (Redis key `"event:{eventId}"`)<br>**Rate Limit Check:** `rateLimiterService.checkAndIncrement(userId, channel)`<br>**Redis Key:** `"ratelimit:{userId}:{channel}"`<br>**Throws:** `RateLimitExceededException` if limit exceeded |
+| 2 | `NotificationService` | Validates notificationUser (cached), checks dedup + rate limit via Redis | **User Lookup:** `userService.findById(userId)` (cached in Redis with key `"users::id:{id}"`)<br>**Dedup Check:** `deduplicationService.isDuplicate(eventId)` (Redis key `"event:{eventId}"`)<br>**Rate Limit Check:** `rateLimiterService.checkAndIncrement(userId, channel)`<br>**Redis Key:** `"ratelimit:{userId}:{channel}"`<br>**Throws:** `RateLimitExceededException` if limit exceeded |
 | 3 | `TemplateService` | Processes template (cached lookup) | **Input:** `templateName`, `templateVariables`<br>**Template Lookup:** `templateService.getTemplateByName(name)` (cached with key `"templates::name:{name}"`)<br>**Processing:** Variable substitution in template content<br>**Output:** `subject`, `content` strings<br>**Example:** Template `"Welcome {{userName}}!"` → `"Welcome John!"` |
-| 4 | `NotificationRepository` | Saves notification with PENDING status | **Entity Creation:**<br>```java<br>Notification notification = Notification.builder()<br>    .user(user)<br>    .channel(request.getChannel())<br>    .priority(request.getPriority())<br>    .subject(subject)<br>    .content(content)<br>    .status(NotificationStatus.PENDING)<br>    .build();<br>```<br>**Database:** ACID transaction ensures durability |
+| 4 | `NotificationRepository` | Saves notification with PENDING status | **Entity Creation:**<br>```java<br>Notification notification = Notification.builder()<br>    .notificationUser(notificationUser)<br>    .channel(request.getChannel())<br>    .priority(request.getPriority())<br>    .subject(subject)<br>    .content(content)<br>    .status(NotificationStatus.PENDING)<br>    .build();<br>```<br>**Database:** ACID transaction ensures durability |
 | 5 | `KafkaTemplate` | Publishes notification ID to Kafka topic | **Message Key:** `notification.getId().toString()`<br>**Message Value:** `notification.getId().toString()`<br>**Topic:** Channel-specific (e.g., `notifications.email`)<br>**Purpose:** Only ID sent to avoid large messages |
 | 6 | **API Response** | Returns 201 Created with notification ID | **Response:**<br>```json<br>{<br>  "success": true,<br>  "message": "Notification queued successfully",<br>  "data": {<br>    "id": "550e8400-e29b-41d4-a716-446655440002",<br>    "status": "PENDING"<br>  }<br>}<br>```<br>**HTTP Status:** 201 (Created) - notification record created, delivery happens async |
 | 7 | `NotificationConsumer` | Picks up message from Kafka | **Consumer Record:** `ConsumerRecord<String, String>`<br>**Value:** Notification ID string<br>**Processing:** Parse UUID, fetch from database<br>**Status Update:** `PENDING` → `PROCESSING` |
 | 8 | `ChannelDispatcher` | Routes to correct handler (Email/SMS/Push/In-App) | **Routing Logic:**<br>```java<br>ChannelHandler handler = handlers.get(notification.getChannel());<br>return handler.send(notification);<br>```<br>**Strategy Pattern:** O(1) lookup via HashMap |
-| 9 | `EmailChannelHandler` (etc.) | Sends via external provider (SendGrid/Twilio) | **Handler Selection:** Based on `notification.getChannel()`<br>**External API Call:** SendGrid/Twilio/Firebase/etc.<br>**Data Passed:** `user.email`, `notification.subject`, `notification.content`<br>**Return:** `true` (success) or `false` (failure) |
+| 9 | `EmailChannelHandler` (etc.) | Sends via external provider (SendGrid/Twilio) | **Handler Selection:** Based on `notification.getChannel()`<br>**External API Call:** SendGrid/Twilio/Firebase/etc.<br>**Data Passed:** `notificationUser.email`, `notification.subject`, `notification.content`<br>**Return:** `true` (success) or `false` (failure) |
 | 10 | `NotificationRepository` | Updates status to SENT or schedules retry | **Success:** `status = SENT`<br>**Failure:** `status = PENDING`, `retry_count++`, `next_retry_at` set with exponential backoff |
 
 ### Detailed Data Flow Example
@@ -256,7 +256,7 @@ POST /api/v1/notifications
 **3. Database Persistence:**
 ```sql
 INSERT INTO notifications (id, user_id, channel, subject, content, status, created_at)
-VALUES ('uuid', 'user-uuid', 'EMAIL', 'Welcome to Our Platform', 'Hi John, ...', 'PENDING', NOW());
+VALUES ('uuid', 'notificationUser-uuid', 'EMAIL', 'Welcome to Our Platform', 'Hi John, ...', 'PENDING', NOW());
 ```
 
 **4. Kafka Publishing:**
@@ -307,7 +307,7 @@ How it works:
                   ▼
 ┌────────────────────────────────────────────┐
 │  Get current count from Redis              │
-│  Example: 7 (user sent 7 emails this hour) │
+│  Example: 7 (notificationUser sent 7 emails this hour) │
 └─────────────────┬──────────────────────────┘
                   ▼
 ┌────────────────────────────────────────────┐
@@ -630,10 +630,10 @@ CREATE TABLE notifications (
 - **Microservices Ready**: Perfect for distributed architectures
 
 #### Why Separate User Preferences?
-- **Flexibility**: Each user can have different preferences per channel
+- **Flexibility**: Each notificationUser can have different preferences per channel
 - **Scalability**: Preferences change less frequently than notifications
 - **Compliance**: Easy to implement "Do Not Disturb" features
-- **Analytics**: Track preference patterns across user base
+- **Analytics**: Track preference patterns across notificationUser base
 
 #### Why Template System?
 - **Consistency**: Standardized messaging across the platform
@@ -644,10 +644,10 @@ CREATE TABLE notifications (
 
 #### Why Comprehensive Notification Tracking?
 - **Audit Trail**: Complete history of all notifications sent
-- **Analytics**: Track delivery rates, user engagement, failures
+- **Analytics**: Track delivery rates, notificationUser engagement, failures
 - **Debugging**: Detailed error messages and retry information
 - **Compliance**: Prove notifications were sent (legal requirements)
-- **Business Intelligence**: Understand user behavior patterns
+- **Business Intelligence**: Understand notificationUser behavior patterns
 
 #### Status Flow Design
 ```
@@ -659,7 +659,7 @@ PENDING → PROCESSING → SENT → DELIVERED
 - **PENDING**: Queued for processing
 - **PROCESSING**: Currently being sent (prevents duplicate processing)
 - **SENT**: Successfully delivered to provider (SMS gateway, email service)
-- **DELIVERED**: Confirmed received by user (webhook/callback)
+- **DELIVERED**: Confirmed received by notificationUser (webhook/callback)
 - **FAILED**: All retries exhausted
 - **READ**: User opened/acknowledged (in-app notifications only)
 
@@ -686,7 +686,7 @@ CREATE INDEX idx_notifications_channel ON notifications(channel);
 ```
 
 **Why These Indexes?**
-- **User Inbox**: `user_id + created_at DESC` - Fast pagination for user's notification history
+- **User Inbox**: `user_id + created_at DESC` - Fast pagination for notificationUser's notification history
 - **Queue Processing**: `status` - Quickly find PENDING notifications to process
 - **Retry Logic**: Partial index on `next_retry_at` - Only index rows that need retry
 - **Analytics**: `channel` - Group notifications by delivery method
@@ -699,8 +699,8 @@ CREATE INDEX idx_notifications_channel ON notifications(channel);
 - **BOOLEAN**: Simple true/false flags (vs CHAR(1) 'Y'/'N')
 
 #### Constraints & Validation
-- **UNIQUE(email)**: Prevent duplicate user accounts
-- **UNIQUE(user_id, channel)**: One preference per user per channel
+- **UNIQUE(email)**: Prevent duplicate notificationUser accounts
+- **UNIQUE(user_id, channel)**: One preference per notificationUser per channel
 - **UNIQUE(name)**: Template names must be unique
 - **NOT NULL**: Critical fields that must always have values
 - **FOREIGN KEY**: Maintain referential integrity
@@ -710,7 +710,7 @@ CREATE INDEX idx_notifications_channel ON notifications(channel);
 
 #### Read-Heavy Workload
 - **Notification System**: 90% reads (checking preferences, templates) vs 10% writes
-- **User Inbox**: Frequent queries for user's notification history
+- **User Inbox**: Frequent queries for notificationUser's notification history
 - **Analytics**: Aggregate queries on notification data
 
 #### Write Patterns
@@ -808,7 +808,7 @@ CREATE INDEX idx_notifications_channel ON notifications(channel);
 
 "I identified bottlenecks layer by layer:
 
-1. **User lookup:** Each request was hitting PostgreSQL. I added `@Cacheable` to `UserService.findById()` so user lookups go to Redis (~0.5ms vs ~5ms DB).
+1. **User lookup:** Each request was hitting PostgreSQL. I added `@Cacheable` to `UserService.findById()` so notificationUser lookups go to Redis (~0.5ms vs ~5ms DB).
 
 2. **DB connection pool:** Increased HikariCP from 10 to 50. At 5ms per query, 50 connections supports ~10k queries/sec.
 
@@ -896,7 +896,7 @@ BASE_URL=http://localhost:8080 TARGET_PATH=/api/v1/notifications METHOD=POST k6 
 }
 
 // Transformation in NotificationService.sendNotification():
-User user = userService.findById(request.getUserId()); // Redis-cached lookup
+User notificationUser = userService.findById(request.getUserId()); // Redis-cached lookup
 
 String subject = templateService.processTemplate(request.getTemplateName(),
     request.getTemplateVariables()).getSubject(); // Template processing
@@ -904,7 +904,7 @@ String subject = templateService.processTemplate(request.getTemplateName(),
 // Output: Notification Entity
 Notification notification = Notification.builder()
     .id(UUID.randomUUID()) // Generated
-    .user(user) // Foreign key relationship
+    .notificationUser(notificationUser) // Foreign key relationship
     .channel(ChannelType.EMAIL) // Enum conversion
     .priority(Priority.HIGH) // Enum conversion
     .subject(subject) // Processed from template
@@ -1275,7 +1275,7 @@ I chose Kafka over RabbitMQ because:
 **Answer:**
 "I implemented the **Token Bucket algorithm** using Redis:
 
-1. Each user+channel combination has a Redis key like `ratelimit:user123:EMAIL`
+1. Each notificationUser+channel combination has a Redis key like `ratelimit:user123:EMAIL`
 2. The value is a counter of notifications sent in the current hour
 3. When a request comes in, I check: is counter < limit?
 4. If yes: increment counter and proceed
@@ -1353,7 +1353,7 @@ This ensures **at-least-once delivery** - we might send duplicates, but we'll ne
 
 3. **Builder Pattern:**
    - Used for constructing `Notification` and `ApiResponse` objects
-   - Makes object creation readable: `Notification.builder().user(user).channel(EMAIL).build()`
+   - Makes object creation readable: `Notification.builder().notificationUser(notificationUser).channel(EMAIL).build()`
 
 4. **Template Method Pattern (implicit):**
    - `ChannelHandler.canHandle()` has a default implementation
@@ -1419,8 +1419,8 @@ That's it. Spring auto-discovers the new handler, the dispatcher registers it au
 **Answer:**
 "I have 4 main tables:
 
-1. **users:** Basic user info (email, phone, device_token)
-2. **user_preferences:** Channel preferences per user (enabled/disabled, quiet hours)
+1. **users:** Basic notificationUser info (email, phone, device_token)
+2. **user_preferences:** Channel preferences per notificationUser (enabled/disabled, quiet hours)
 3. **notification_templates:** Reusable message templates with variable placeholders
 4. **notifications:** The core table - one row per notification sent
 
@@ -1613,7 +1613,7 @@ Also, Redis gives me:
 **Answer:**
 "I have a few options:
 
-1. **Fail open (current):** If Redis is unavailable, allow the request. Better user experience, but rate limiting is bypassed.
+1. **Fail open (current):** If Redis is unavailable, allow the request. Better notificationUser experience, but rate limiting is bypassed.
 
 2. **Fail closed:** Reject all requests if Redis is down. Safer, but poor UX.
 
@@ -1640,14 +1640,14 @@ For production, I'd recommend:
 
 **Why these specifically:**
 - **User lookups by ID:** Called on every notification send; Redis cache eliminates a DB round-trip per request
-- **User lookups by email/phone:** Called frequently during user operations, users don't change often
+- **User lookups by email/phone:** Called frequently during notificationUser operations, users don't change often
 - **Device tokens:** Push notifications need to find all users with tokens, expensive query
 - **Templates:** Reusable content, read-heavy, write-rare
 
 **Cache strategy:**
 - **TTL:** 1 hour for all cached data
 - **Serialization:** Jackson with default typing for complex objects
-- **Eviction:** @CacheEvict when data changes (user email update, template modification)
+- **Eviction:** @CacheEvict when data changes (notificationUser email update, template modification)
 - **Cache misses:** Only successful lookups are cached, exceptions are not"
 
 ---
@@ -1657,7 +1657,7 @@ For production, I'd recommend:
 **Answer:**
 "I use cache eviction strategies:
 
-**For user data:**
+**For notificationUser data:**
 ```java
 @CacheEvict(value = "users", key = "'email:' + #oldEmail")
 public void evictUserCacheByEmail(String oldEmail) {
@@ -1733,7 +1733,7 @@ http :8080/api/v1/users/email/john@example.com
 
 **Failed Lookup Testing:**
 ```bash
-# Non-existent user
+# Non-existent notificationUser
 http :8080/api/v1/users/email/nonexistent@example.com
 # Returns 404, no cache entry created
 # Redis keys still shows only successful lookups
@@ -1741,7 +1741,7 @@ http :8080/api/v1/users/email/nonexistent@example.com
 
 **Cache Eviction Testing:**
 ```bash
-# Update user email (would trigger @CacheEvict)
+# Update notificationUser email (would trigger @CacheEvict)
 # Verify old cache key is removed, new one is created
 ```"
 
@@ -1829,8 +1829,8 @@ public ResponseEntity<ApiResponse<Map<String, String>>> handleValidation(...) {
 **Answer:**
 "For bulk notifications, I use a **best-effort** approach:
 
-1. Process each user independently in a loop
-2. Catch exceptions per-user, don't fail the whole batch
+1. Process each notificationUser independently in a loop
+2. Catch exceptions per-notificationUser, don't fail the whole batch
 3. Track successes and failures separately
 4. Return a detailed report
 
@@ -2146,7 +2146,7 @@ US-East-1               EU-West-1                AP-Southeast-1
 #### GDPR (Europe)
 - **Data Location**: EU-West-1 (Ireland) primary
 - **Data Processing**: Consent management, right to erasure
-- **Cross-Border**: Explicit user consent required
+- **Cross-Border**: Explicit notificationUser consent required
 - **Retention**: Configurable per regulation requirements
 
 #### CCPA (California)
