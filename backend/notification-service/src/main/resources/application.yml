@@ -33,26 +33,6 @@ server:
 spring:
   application:
     name: notification-system   # Name of our application (shows in logs)
-
-  # ==================== Mail (SMTP / Mailpit) ====================
-  #
-  # Local default:
-  # - SMTP: localhost:1025
-  # - Mailpit UI: http://localhost:8025
-  #
-  # If the app runs inside Docker on the same compose network, set:
-  # SPRING_MAIL_HOST=mailpit
-  mail:
-    host: ${SPRING_MAIL_HOST:${MAIL_HOST:localhost}}
-    port: ${SPRING_MAIL_PORT:${MAIL_PORT:1025}}
-    username: ${SPRING_MAIL_USERNAME:}
-    password: ${SPRING_MAIL_PASSWORD:}
-    properties:
-      mail:
-        smtp:
-          auth: ${SPRING_MAIL_SMTP_AUTH:false}
-          starttls:
-            enable: ${SPRING_MAIL_SMTP_STARTTLS_ENABLE:false}
   
   # ==================== Database (PostgreSQL) ====================
   #
@@ -62,8 +42,8 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/notification_db
     #     └── jdbc:postgresql://HOST:PORT/DATABASE_NAME
-    username: admin
-    password: admin123
+    username: postgres
+    password: root
     
     # HikariCP is the connection pool (manages database connections)
     # Formula: pool-size ≈ (core_count * 2) + spinning_disks
@@ -125,7 +105,7 @@ spring:
   # ==================== Kafka (Message Queue) ====================
   kafka:
     # Bootstrap servers = initial Kafka brokers to connect to
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
     
     # Producer: Our API uses this to send messages to Kafka
     producer:
@@ -285,5 +265,13 @@ notification:
   dedupe:
     ttl-seconds: 86400                   # Keep event IDs for 24 hours (86400 seconds)
 
-  mail:
-    from: ${NOTIFICATION_MAIL_FROM:no-reply@housebooker.local}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
