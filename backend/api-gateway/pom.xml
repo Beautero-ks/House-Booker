@@ -44,9 +44,16 @@
 			<artifactId>spring-cloud-starter-gateway-server-webmvc</artifactId>
 		</dependency>
 
+		<!-- Pour trouver les microservices via Eureka -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+		<!-- Le moteur de routage réactif -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-gateway</artifactId>
 		</dependency>
 
 		<dependency>

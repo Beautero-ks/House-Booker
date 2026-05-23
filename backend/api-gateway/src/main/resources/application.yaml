@@ -7,6 +7,73 @@ spring:
   application:
     name: api-gateway
 
+  cloud:
+    gateway:
+      # Optionnel : active le routage automatique si vous ne spécifiez pas les routes en dessous
+      server:
+        webflux:
+          discovery:
+            locator:
+              lower-case-service-id: true
+              enabled: true
+          routes:
+            # Route pour le Auth-Service
+                    - id: auth-service-route
+                      uri: lb://auth-service # "lb://" indique à la Gateway d'utiliser le Load Balancer d'Eureka
+                      predicates:
+                        - Path=/graphql/auth/**
+                      filters:
+                        - RewritePath=/graphql/auth(?<segment>/?.*), /graphql$\{segment}
+
+                    # Route pour le User-Service
+                    - id: user-service-route
+                      uri: lb://user-service
+                      predicates:
+                        - Path=/graphql/user/**
+                      filters:
+                        - RewritePath=/graphql/user(?<segment>/?.*), /graphql$\{segment}
+
+                    # Route pour le House-Service
+                    - id: house-service-route
+                      uri: lb://house-service
+                      predicates:
+                        - Path=/graphql/house/**
+                      filters:
+                        - RewritePath=/graphql/house(?<segment>/?.*), /graphql$\{segment}
+
+                    # Route pour le Booking-Service
+                    - id: booking-service-route
+                      uri: lb://booking-service
+                      predicates:
+                        - Path=/graphql/booking/**
+                      filters:
+                        - RewritePath=/graphql/booking(?<segment>/?.*), /graphql$\{segment}
+
+                    # Route pour le Review-Service
+                    - id: review-service-route
+                      uri: lb://review-service
+                      predicates:
+                        - Path=/graphql/api/v1/review/**
+                      filters:
+                        - RewritePath=/graphql/review(?<segment>/?.*), /graphql$\{segment}
+
+                    # Route pour le Payment-Service
+                    - id: payment-service-route
+                      uri: lb://payment-service
+                      predicates:
+                        - Path=/graphql/api/v1/payment/**
+                      filters:
+                        - RewritePath=/graphql/payment(?<segment>/?.*), /graphql$\{segment}
+
+                    # Route pour le Notification-Service
+                    - id: notification-service-route
+                      uri: lb://notification-service
+                      predicates:
+                        - Path=/graphql/notification/**
+                      filters:
+                        - RewritePath=/graphql/notification(?<segment>/?.*), /graphql$\{segment}
+
+
 eureka:
   client:
     service-url:
