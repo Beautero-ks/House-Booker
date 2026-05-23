@@ -308,7 +308,7 @@ public class NotificationService {
         }
         
         Page<Notification> page = notificationRepository
-            .findByUserIdOrderByCreatedAtDesc(userId, pageable);
+            .findByNotificationUserIdOrderByCreatedAtDesc(userId, pageable);
         
         return PagedResponse.from(page, NotificationResponse::from);
     }
@@ -327,7 +327,7 @@ public class NotificationService {
         }
         
         Page<Notification> page = notificationRepository
-            .findByUserIdAndChannelOrderByCreatedAtDesc(userId, channel, pageable);
+            .findByNotificationUserIdAndChannelOrderByCreatedAtDesc(userId, channel, pageable);
         
         return PagedResponse.from(page, NotificationResponse::from);
     }
