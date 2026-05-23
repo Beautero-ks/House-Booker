@@ -25,7 +25,7 @@ public interface UserPreferenceRepository extends JpaRepository<UserPreference, 
      * Returns a list because each user can have multiple preferences
      * (one per channel).
      */
-    List<UserPreference> findByUserId(UUID userId);
+    List<UserPreference> findByNotificationUserId(UUID userId);
     
     /**
      * Find a specific preference for a user and channel.
@@ -34,7 +34,7 @@ public interface UserPreferenceRepository extends JpaRepository<UserPreference, 
      * 1. Is this channel enabled?
      * 2. Are we in quiet hours?
      */
-    Optional<UserPreference> findByUserIdAndChannel(UUID userId, ChannelType channel);
+    Optional<UserPreference> findByNotificationUserIdAndChannel(UUID userId, ChannelType channel);
     
     /**
      * Check if a user has enabled a specific channel.
@@ -42,12 +42,12 @@ public interface UserPreferenceRepository extends JpaRepository<UserPreference, 
      * More efficient than loading the full preference object
      * when we only need a yes/no answer.
      */
-    boolean existsByUserIdAndChannelAndEnabledTrue(UUID userId, ChannelType channel);
+    boolean existsByNotificationUserIdAndChannelAndEnabledTrue(UUID userId, ChannelType channel);
     
     /**
      * Delete all preferences for a user.
      * 
      * Used when resetting a user's preferences to defaults.
      */
-    void deleteByUserId(UUID userId);
+    void deleteByNotificationUserId(UUID userId);
 }
