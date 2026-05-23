@@ -13,7 +13,7 @@
 
 # ==================== Server Configuration ====================
 server:
-  port: 8080                    # The port our API will listen on
+  port: 8085                    # The port our API will listen on
   
   # Tomcat tuning for 10k req/sec
   tomcat:
@@ -43,7 +43,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/notification_db
     #     └── jdbc:postgresql://HOST:PORT/DATABASE_NAME
     username: postgres
-    password: postgres
+    password: root
     
     # HikariCP is the connection pool (manages database connections)
     # Formula: pool-size ≈ (core_count * 2) + spinning_disks
@@ -61,7 +61,7 @@ spring:
   jpa:
     # Don't auto-generate schema, Flyway handles this
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     
     # Show SQL queries in logs (set to true for debugging)
     show-sql: false
@@ -93,7 +93,8 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true   # If database exists, create baseline
-  
+    repair-by-default: true
+
   # ==================== Redis (Cache & Rate Limiting) ====================
   data:
     redis:
@@ -160,6 +161,9 @@ spring:
       # Match concurrency to total partition count across topics
       concurrency: 10
 
+kafka:
+  topics:
+    user-created: user.created
 # ==================== Logging Configuration ====================
 #
 # Log levels: TRACE < DEBUG < INFO < WARN < ERROR

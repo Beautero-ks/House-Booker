@@ -130,7 +130,7 @@ public class NotificationUser {
      * @JsonIgnore - Exclude from JSON serialization to prevent lazy loading issues
      */
     @OneToMany(
-        mappedBy = "user",
+        mappedBy = "notificationUser",
         cascade = CascadeType.ALL,
         orphanRemoval = true,
         fetch = FetchType.LAZY
@@ -150,7 +150,7 @@ public class NotificationUser {
      * @JsonIgnore - Exclude from JSON serialization to prevent lazy loading issues
      */
     @OneToMany(
-        mappedBy = "user",
+        mappedBy = "notificationUser",
         cascade = CascadeType.ALL,
         fetch = FetchType.LAZY
     )

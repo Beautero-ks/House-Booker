@@ -188,4 +188,24 @@ public class UserService {
         logger.info("Created new user with email: {}", email);
         return savedNotificationUser;
     }
+
+    @Transactional
+    public NotificationUser syncUser(
+            UUID id,
+            String email,
+            String phone
+    ) {
+
+        return userRepository.findById(id)
+                .orElseGet(() -> {
+
+                    NotificationUser user = NotificationUser.builder()
+                            .id(id)
+                            .email(email)
+                            .phone(phone)
+                            .build();
+
+                    return userRepository.save(user);
+                });
+    }
 }
