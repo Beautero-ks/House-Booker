@@ -36,9 +36,10 @@ public class TokenService {
     private long refreshTokenExpiration;
 
     // ===== ACCESS TOKEN (15 min) =====
-    public String generateAccessToken(String userId) {
+    public String generateAccessToken(User user) {
         return Jwts.builder()
-                .setSubject(userId)
+                .setSubject(user.getId().toString())
+                .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

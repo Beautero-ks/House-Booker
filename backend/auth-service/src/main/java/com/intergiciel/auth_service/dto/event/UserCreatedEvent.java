@@ -1,11 +1,7 @@
 package com.intergiciel.auth_service.dto.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Event publié sur le topic Kafka "user.created"
@@ -13,10 +9,6 @@ import java.time.Instant;
  *   - User-Service    → stocke les infos utilisateur
  *   - Notification-Service → envoie le mail OTP
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class UserCreatedEvent {
 
     // Identifiant de l'événement pour la traçabilité
@@ -31,10 +23,48 @@ public class UserCreatedEvent {
     // Payload principal
     private UserData data;
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    public UserCreatedEvent() {
+    }
+
+    public UserCreatedEvent(String eventId, String eventType, String timestamp, UserData data) {
+        this.eventId = eventId;
+        this.eventType = eventType;
+        this.timestamp = timestamp;
+        this.data = data;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public UserData getData() {
+        return data;
+    }
+
+    public void setData(UserData data) {
+        this.data = data;
+    }
+
     public static class UserData {
 
         // Infos utilisateur → consommé par User-Service
@@ -46,23 +76,86 @@ public class UserCreatedEvent {
         // Infos OTP → consommé par Notification-Service pour envoyer le mail
         private String otpCode;
         private int otpExpiresInMinutes;
+
+        public UserData() {
+        }
+
+        public UserData(String userId, String name, String email, String phoneNumber,
+                        String otpCode, int otpExpiresInMinutes) {
+            this.userId = userId;
+            this.name = name;
+            this.email = email;
+            this.phoneNumber = phoneNumber;
+            this.otpCode = otpCode;
+            this.otpExpiresInMinutes = otpExpiresInMinutes;
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public void setUserId(String userId) {
+            this.userId = userId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getPhoneNumber() {
+            return phoneNumber;
+        }
+
+        public void setPhoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+        }
+
+        public String getOtpCode() {
+            return otpCode;
+        }
+
+        public void setOtpCode(String otpCode) {
+            this.otpCode = otpCode;
+        }
+
+        public int getOtpExpiresInMinutes() {
+            return otpExpiresInMinutes;
+        }
+
+        public void setOtpExpiresInMinutes(int otpExpiresInMinutes) {
+            this.otpExpiresInMinutes = otpExpiresInMinutes;
+        }
     }
 
     // Factory method pour construire l'event facilement
     public static UserCreatedEvent of(String userId, String name, String email,
                                        String phoneNumber, String otpCode, int expiresInMinutes) {
-        return UserCreatedEvent.builder()
-                .eventId(java.util.UUID.randomUUID().toString())
-                .eventType("USER_CREATED")
-                .timestamp(Instant.now().toString())
-                .data(UserData.builder()
-                        .userId(userId)
-                        .name(name)
-                        .email(email)
-                        .phoneNumber(phoneNumber)
-                        .otpCode(otpCode)
-                        .otpExpiresInMinutes(expiresInMinutes)
-                        .build())
-                .build();
+        UserData data = new UserData(
+                userId,
+                name,
+                email,
+                phoneNumber,
+                otpCode,
+                expiresInMinutes
+        );
+
+        return new UserCreatedEvent(
+                UUID.randomUUID().toString(),
+                "USER_CREATED",
+                Instant.now().toString(),
+                data
+        );
     }
 }

@@ -1,6 +1,8 @@
 package com.intergiciel.auth_service.controller;
 
+import com.intergiciel.auth_service.dto.LoginInput;
 import com.intergiciel.auth_service.dto.request.*;
+import com.intergiciel.auth_service.dto.request.GoogleAuthInput;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
 import com.intergiciel.auth_service.service.AuthService;
 import jakarta.validation.Valid;
@@ -82,7 +84,7 @@ public class AuthResolver {
      */
     @MutationMapping
     public AuthResponse login(@Argument @Valid LoginInput input) {
-        log.info("[AuthResolver] mutation login → {}", input.getEmail());
+        log.info("[AuthResolver] mutation login → {}", input.email());
         return authService.login(input);
     }
 
@@ -110,5 +112,19 @@ public class AuthResolver {
     public AuthResponse resendOtp(@Argument String userId) {
         log.info("[AuthResolver] mutation resendOtp → userId={}", userId);
         return authService.resendOtp(userId);
+    }
+
+    /**
+     * mutation {
+     *   googleLogin(input: { idToken: "..." }) {
+     *     success message accessToken refreshToken
+     *     user { id name email isVerified }
+     *   }
+     * }
+     */
+    @MutationMapping
+    public AuthResponse googleLogin(@Argument @Valid GoogleAuthInput input) {
+        log.info("[AuthResolver] mutation googleLogin");
+        return authService.loginWithGoogle(input.getIdToken());
     }
 }

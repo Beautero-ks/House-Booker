@@ -1,7 +1,9 @@
 package com.intergiciel.auth_service.entity;
 
+import com.intergiciel.auth_service.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -27,10 +29,28 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
 
     private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    @ColumnDefault("'USER'")
+    @Builder.Default
+    private UserRole role = UserRole.USER;
+
+    /** Identifiant unique Google (sub). Null pour les comptes LOCAL. */
+    @Column(unique = true)
+    private String googleId;
+
+    /**
+     * Fournisseur d'identité : "LOCAL" (email+password) ou "GOOGLE" (OAuth2).
+     * Par défaut : LOCAL pour les comptes créés via le formulaire d'inscription.
+     */
+    @Column(nullable = false)
+    @Builder.Default
+    private String provider = "LOCAL";
 
     @Column(nullable = false)
     @Builder.Default

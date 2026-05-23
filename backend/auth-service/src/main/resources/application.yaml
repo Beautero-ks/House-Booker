@@ -7,9 +7,9 @@ spring:
 
   # ===== POSTGRESQL =====
   datasource:
-    url: jdbc:postgresql://localhost:5432/auth_db
-    username: postgres
-    password: 1234
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin123}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -41,17 +41,43 @@ spring:
       properties:
         spring.json.add.type.headers: false
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:361819434983-cm1se6aefolqdhc0hashnkh6v9rg5ut6.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET:change-me}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Google
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+            user-name-attribute: sub
+
 # ===== SERVER =====
 server:
-  port: 8081
+  port: ${SERVER_PORT:3001}
+
+logging:
+  level:
+    org.apache.kafka: ERROR
+    org.springframework.kafka: ERROR
 
 # ===== EUREKA =====
 eureka:
   client:
+    enabled: false
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
+    fetch-registry: false
+    register-with-eureka: false
   instance:
     prefer-ip-address: true
 
@@ -69,3 +95,13 @@ otp:
 kafka:
   topics:
     user-created: user.created
+
+# ===== GOOGLE OAUTH2 =====
+# ⚠️  Remplace la valeur ci-dessous par ton vrai Client ID
+# → Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs
+google:
+  client-id: ${GOOGLE_CLIENT_ID:361819434983-cm1se6aefolqdhc0hashnkh6v9rg5ut6.apps.googleusercontent.com}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001,http://localhost:5173}
