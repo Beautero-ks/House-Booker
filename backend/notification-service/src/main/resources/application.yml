@@ -264,3 +264,13 @@ notification:
   # Deduplication configuration
   dedupe:
     ttl-seconds: 86400                   # Keep event IDs for 24 hours (86400 seconds)
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
