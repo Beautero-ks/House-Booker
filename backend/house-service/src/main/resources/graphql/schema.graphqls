@@ -1,0 +1,114 @@
+# Définition des scalars personnalisés
+scalar UUID
+scalar DateTime
+
+
+# Énumération pour StatutValidation
+enum StatutValidation {
+    EN_ATTENTE
+    VALIDE
+    REJETE
+}
+
+# Type Logement
+type Logement {
+    id: UUID!
+    titre: String!
+    description: String
+    adresse: String!
+    type: String!
+    prix: Float!
+    latitude: Float
+    longitude: Float
+    disponible: Boolean!
+    proprietaireId: UUID!
+    statutValidation: StatutValidation!
+    dateCreation: DateTime!
+}
+
+type LogementDto {
+    titre: String!
+    description: String
+    adresse: String!
+    type: String!
+    prix: Float!
+    latitude: Float
+    longitude: Float
+    disponible: Boolean!
+    proprietaireId: UUID!
+    statutValidation: StatutValidation!
+    dateCreation: DateTime!
+}
+
+# Input pour la création d'un logement
+input LogementCreateInput {
+    titre: String!
+    description: String
+    adresse: String!
+    type: String!
+    prix: Float!
+    latitude: Float
+    longitude: Float
+    disponible: Boolean!
+    proprietaireId: UUID!
+}
+
+# Input pour la mise à jour d'un logement
+input LogementUpdateInput {
+    titre: String
+    description: String
+    adresse: String
+    type: String
+    prix: Float
+    latitude: Float
+    longitude: Float
+    disponible: Boolean
+}
+
+# Input pour la validation/rejet d'un logement
+input LogementValidationInput {
+    id: UUID!
+    statutValidation: StatutValidation!
+}
+
+# Type Query
+type Query {
+    # Récupérer un logement par ID
+    getById(id: UUID!): LogementDto
+
+    # Récupérer tous les logements
+    getAll: [Logement!]!
+
+    # Rechercher des logements par ville
+    searchByVille(ville: String!): [LogementDto!]!
+
+    # Rechercher des logements par type
+    searchByType(type: String!): [LogementDto!]!
+
+    # Rechercher des logements par plage de prix
+    searchByPrix(min: Float, max: Float): [LogementDto!]!
+
+    # Rechercher des logements par disponibilité
+    searchDisponible(disponible: Boolean!): [LogementDto!]!
+
+    # Récupérer les logements en attente de validation
+    getEnAttente: [LogementDto!]!
+}
+
+# Type Mutation
+type Mutation {
+    # Créer un nouveau logement
+    create(input: LogementCreateInput!): LogementDto!
+
+    # Mettre à jour un logement
+    mettreAJourLogement(id: UUID!, input: LogementUpdateInput!): LogementDto!
+
+    # Supprimer un logement
+    supprimerLogement(id: UUID!): Boolean!
+
+    # Valider un logement
+    validerLogement(id: UUID!): LogementDto!
+
+    # Rejeter un logement
+    rejeterLogement(id: UUID!): LogementDto!
+}
