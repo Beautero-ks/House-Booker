@@ -57,7 +57,7 @@ import java.util.UUID;
  * @Tag is for OpenAPI/Swagger documentation
  */
 @RestController
-@RequestMapping("/api/v1/notifications")
+@RequestMapping("/notifications")
 @Tag(name = "Notifications", description = "Notification management APIs")
 public class NotificationController {
 

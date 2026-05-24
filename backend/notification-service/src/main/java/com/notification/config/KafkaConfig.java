@@ -65,6 +65,9 @@ public class KafkaConfig {
     
     @Value("${notification.kafka.topic.dlq:notifications.dlq}")
     private String dlqTopic;
+
+    @Value("${notification.kafka.replication-factor:2}")
+    private int replicationFactor;
     
     // ==================== Topic Creation ====================
     // 
@@ -76,7 +79,7 @@ public class KafkaConfig {
     public NewTopic emailNotificationsTopic() {
         return TopicBuilder.name(emailTopic)
             .partitions(8)      // 8 partitions for high-volume email
-            .replicas(3)        // 3 replicas for fault tolerance
+            .replicas(replicationFactor)        // 3 replicas for fault tolerance
             .build();
     }
     
@@ -84,7 +87,7 @@ public class KafkaConfig {
     public NewTopic smsNotificationsTopic() {
         return TopicBuilder.name(smsTopic)
             .partitions(4)      // Fewer partitions (SMS is rate-limited by providers)
-            .replicas(3)
+            .replicas(replicationFactor)
             .build();
     }
     
@@ -92,7 +95,7 @@ public class KafkaConfig {
     public NewTopic pushNotificationsTopic() {
         return TopicBuilder.name(pushTopic)
             .partitions(8)      // 8 partitions (push needs to be fast)
-            .replicas(3)
+            .replicas(replicationFactor)
             .build();
     }
     
@@ -100,7 +103,7 @@ public class KafkaConfig {
     public NewTopic inAppNotificationsTopic() {
         return TopicBuilder.name(inAppTopic)
             .partitions(6)
-            .replicas(3)
+            .replicas(replicationFactor)
             .build();
     }
     
@@ -108,7 +111,7 @@ public class KafkaConfig {
     public NewTopic dlqTopic() {
         return TopicBuilder.name(dlqTopic)
             .partitions(1)      // Single partition for DLQ
-            .replicas(3)
+            .replicas(replicationFactor)
             .build();
     }
     

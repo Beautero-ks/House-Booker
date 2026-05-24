@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * guarded or removed in a real deployment.
  */
 @RestController
-@RequestMapping("/api/v1/debug")
+@RequestMapping("/debug")
 @Tag(name = "Debug", description = "Helper endpoints for load testing and diagnostics")
 public class DebugController {
 

@@ -1,7 +1,9 @@
 package com.notification.kafka;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notification.dto.events.UserCreatedEvent;
 import com.notification.model.entity.NotificationUser;
+import com.notification.repository.UserRepository;
 import com.notification.service.NotificationService;
 import com.notification.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +20,9 @@ import java.util.UUID;
 public class AuthEventConsumer {
 
     private final UserService userService;
-
+    private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
+    private final UserRepository notificationUserRepository;
 
     /**
      * Consomme les événements USER_CREATED publiés
@@ -29,12 +32,21 @@ public class AuthEventConsumer {
             topics = "${kafka.topics.user-created}",
             groupId = "notification-service"
     )
-    public void consumeUserCreatedEvent(UserCreatedEvent event) {
+    public void consumeUserCreatedEvent(String messagePayload) {
 
-        log.info("[AuthEventConsumer] USER_CREATED reçu pour {}",
-                event.getData().getEmail());
+        // Log de réception brute pour le débogage
+        log.debug("[AuthEventConsumer] Payload brut reçu de Kafka: {}", messagePayload);
+//        log.info("[AuthEventConsumer] USER_CREATED reçu pour {}",
+//                event.getData().getEmail());
 
         try {
+            // ===========================================
+            // 0. Désérialisation manuelle et sécurisée
+            // ===========================================
+            UserCreatedEvent event = objectMapper.readValue(messagePayload, UserCreatedEvent.class);
+
+            log.info("[AuthEventConsumer] USER_CREATED converti avec succès pour {}",
+                    event.getData().getEmail());
 
             // =========================
             // 1. Synchroniser le user
@@ -49,6 +61,13 @@ public class AuthEventConsumer {
 
             log.info("[AuthEventConsumer] User synchronisé : {}",
                     user.getId());
+            // 1. Convertir l'événement et sauvegarder l'utilisateur dans la table locale 'users'
+            NotificationUser localUser = new NotificationUser();
+            localUser.setId(UUID.fromString(event.getData().getUserId()));
+            localUser.setEmail(event.getData().getEmail());
+
+            // On persiste l'utilisateur d'abord !
+            notificationUserRepository.save(localUser);
 
             // =========================
             // 2. Envoyer notification OTP
