@@ -29,10 +29,15 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(unique = true)
+    private String username;
+
     @Column(nullable = true)
     private String password;
 
     private String phoneNumber;
+
+    private String photoUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
@@ -54,6 +59,10 @@ public class User {
 
     @Column(nullable = false)
     @Builder.Default
+    private boolean enabled = true;
+
+    @Column(nullable = false)
+    @Builder.Default
     private boolean isVerified = false;
 
     @CreationTimestamp
@@ -61,4 +70,6 @@ public class User {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    private LocalDateTime deletedAt;
 }

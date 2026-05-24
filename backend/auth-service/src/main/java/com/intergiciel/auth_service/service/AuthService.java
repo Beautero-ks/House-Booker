@@ -5,6 +5,7 @@ import com.intergiciel.auth_service.dto.request.RegisterInput;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier.GoogleUserInfo;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
+import com.intergiciel.auth_service.dto.response.UserInfo;
 import com.intergiciel.auth_service.entity.User;
 import com.intergiciel.auth_service.enums.UserRole;
 import com.intergiciel.auth_service.repository.UserRepository;
@@ -34,7 +35,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterInput input) {
 
-        if (userRepository.existsByEmail(input.getEmail()))
+        if (userRepository.existsByEmailAndDeletedAtIsNull(input.getEmail()))
             throw new RuntimeException("Un compte avec cet email existe déjà");
 
         User user = User.builder()
@@ -63,7 +64,7 @@ public class AuthService {
                 .message("Compte créé. Un code OTP a été envoyé à " + user.getEmail())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .user(AuthResponse.UserInfo.builder()
+                .user(UserInfo.builder()
                         .id(user.getId().toString())
                         .name(user.getName())
                         .email(user.getEmail())
@@ -105,7 +106,7 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginInput input) {
 
-        User user = userRepository.findByEmail(input.email())
+        User user = userRepository.findByEmailAndDeletedAtIsNull(input.email())
                 .orElseThrow(() -> new RuntimeException("Email ou mot de passe incorrect"));
 
         if (!user.isVerified())
@@ -121,7 +122,7 @@ public class AuthService {
                 .message("Connexion réussie")
                 .accessToken(tokenService.generateAccessToken(user))
                 .refreshToken(tokenService.generateRefreshToken(user))
-                .user(AuthResponse.UserInfo.builder()
+                .user(UserInfo.builder()
                         .id(user.getId().toString())
                         .name(user.getName())
                         .email(user.getEmail())
@@ -180,7 +181,7 @@ public class AuthService {
         GoogleUserInfo googleUser = googleTokenVerifier.verify(idToken);
 
         // 2. Chercher l'utilisateur en base par email
-        User user = userRepository.findByEmail(googleUser.email()).orElse(null);
+        User user = userRepository.findByEmailAndDeletedAtIsNull(googleUser.email()).orElse(null);
 
         boolean isNewUser = (user == null);
 
@@ -225,7 +226,7 @@ public class AuthService {
                 .message(isNewUser ? "Compte Google créé et connecté" : "Connexion Google réussie")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .user(AuthResponse.UserInfo.builder()
+                .user(UserInfo.builder()
                         .id(user.getId().toString())
                         .name(user.getName())
                         .email(user.getEmail())

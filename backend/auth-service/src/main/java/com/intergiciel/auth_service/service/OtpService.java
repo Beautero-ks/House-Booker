@@ -77,6 +77,10 @@ public class OtpService {
         return expirationMinutes;
     }
 
+    @Transactional
+    public void invalidateAllByUserId(UUID userId) {
+        otpRepository.invalidateAllByUserId(userId);
+    }
 
     // Supprime les OTP deja utiliser dans la base de donnees 
     @Scheduled(fixedRate = 600000) // 10 min

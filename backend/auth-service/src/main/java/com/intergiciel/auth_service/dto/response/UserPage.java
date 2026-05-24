@@ -5,14 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthResponse {
-    private boolean success;
-    private String message;
-    private String accessToken;
-    private String refreshToken;
-    private UserInfo user;
+public class UserPage {
+    private List<UserInfo> items;
+    private int page;
+    private int size;
+    private long totalElements;
+    private int totalPages;
 }

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Key;
 import java.time.LocalDateTime;
@@ -121,5 +122,11 @@ public class TokenService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    @Transactional
+    public void revokeRefreshTokensByUserId(UUID userId) {
+        refreshTokenRepository.deleteByUser_Id(userId);
+        log.info("[TokenService] Refresh token révoqué pour l'utilisateur {}", userId);
     }
 }

@@ -11,6 +11,7 @@ import HouseDetailPage from '../pages/HouseDetailPage';
 import LoginPage from '../pages/LoginPage';
 import MessagingPage from '../pages/MessagingPage';
 import OtpPage from '../pages/OtpPage';
+import ProfilePage from '../pages/profile/ProfilePage';
 import RegisterPage from '../pages/RegisterPage';
 import ReviewPage from '../pages/ReviewPage';
 import SearchPage from '../pages/SearchPage';
@@ -38,9 +39,8 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute />}>
           <Route path={ROUTES.BOOKING} element={<BookingPage />} />
           <Route path={ROUTES.DASHBOARD} element={<DashboardOwnerPage />} />
-          <Route path={ROUTES.ADMIN} element={<DashboardAdminPage />} />
           <Route path={ROUTES.MESSAGES} element={<MessagingPage />} />
-          <Route path={ROUTES.PROFILE} element={<PlaceholderPage titleKey="nav_profile" />} />
+          <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
         </Route>
 
         <Route path="*" element={<PlaceholderPage title="Page 404" />} />

@@ -5,7 +5,6 @@
 # ─────────────────────────────────────────────────────────────
 # TYPES DE RÉPONSE
 # ─────────────────────────────────────────────────────────────
-
 type AuthResponse {
     success:      Boolean!
     message:      String!
@@ -13,21 +12,36 @@ type AuthResponse {
     refreshToken: String
     user:         UserInfo
 }
-
 type UserInfo {
     id:          String!
     name:        String!
     email:       String!
+    username:    String
     phoneNumber: String
+    photoUrl:    String
     isVerified:  Boolean!
+    enabled:     Boolean!
     role:        String
+    provider:    String
+    updatedAt:   String
     createdAt:   String
+}
+type UserResponse {
+    success: Boolean!
+    message: String!
+    user:    UserInfo
+}
+
+type UsersResponse {
+    success: Boolean!
+    message: String!
+    users:   [UserInfo]
+    total:   Int
 }
 
 # ─────────────────────────────────────────────────────────────
-# INPUTS
+# INPUTS AUTH
 # ─────────────────────────────────────────────────────────────
-
 input RegisterInput {
     name:        String!
     email:       String!
@@ -54,22 +68,60 @@ input GoogleAuthInput {
 }
 
 # ─────────────────────────────────────────────────────────────
+# INPUTS USER
+# ─────────────────────────────────────────────────────────────
+input UpdateProfileInput {
+    name:        String
+    username:    String
+    phoneNumber: String
+    photoUrl:    String
+}
+
+input ChangePasswordInput {
+    currentPassword: String!
+    newPassword:     String!
+}
+
+input DeleteAccountInput {
+    password: String!
+}
+
+input AssignRoleInput {
+    userId: String!
+    role:   String!
+}
+
+input RemoveRoleInput {
+    userId: String!
+    role:   String!
+}
+
+# ─────────────────────────────────────────────────────────────
 # QUERY
 # ─────────────────────────────────────────────────────────────
-
 type Query {
-    healthCheck: String!
+    healthCheck:    String!
+    getCurrentUser: UserInfo
+    getUserById(id: String!): UserInfo
+    getUsers(page: Int, size: Int): UsersResponse
 }
 
 # ─────────────────────────────────────────────────────────────
 # MUTATIONS
 # ─────────────────────────────────────────────────────────────
-
 type Mutation {
+    # Auth
     register(input: RegisterInput!):         AuthResponse!
     verifyOtp(input: VerifyOtpInput!):       AuthResponse!
     login(input: LoginInput!):               AuthResponse!
     refreshToken(input: RefreshTokenInput!): AuthResponse!
     resendOtp(userId: String!):              AuthResponse!
-    googleLogin(input: GoogleAuthInput!):   AuthResponse!
+    googleLogin(input: GoogleAuthInput!):    AuthResponse!
+
+    # User management
+    updateProfile(input: UpdateProfileInput!):   UserResponse!
+    changePassword(input: ChangePasswordInput!): UserResponse!
+    deleteAccount(input: DeleteAccountInput!):   UserResponse!
+    assignRole(input: AssignRoleInput!):          UserResponse!
+    removeRole(input: RemoveRoleInput!):          UserResponse!
 }
