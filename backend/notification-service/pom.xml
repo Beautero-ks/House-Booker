@@ -50,7 +50,7 @@
     <properties>
         <!-- Java version: We're using Java 21 (LTS - Long Term Support) -->
         <java.version>21</java.version>
-        
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
         <!-- Library versions -->
         <springdoc.version>2.3.0</springdoc.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
@@ -287,7 +287,18 @@
         </dependency>
         
     </dependencies>
-    
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <!--
         Build Configuration
         Tells Maven how to compile and package our application

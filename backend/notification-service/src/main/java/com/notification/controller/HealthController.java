@@ -34,7 +34,7 @@ import java.util.Map;
  * Health check controller for monitoring.
  */
 @RestController
-@RequestMapping("/api/v1/health")
+@RequestMapping("/health")
 @Tag(name = "Health", description = "Health check endpoints")
 public class HealthController {
 

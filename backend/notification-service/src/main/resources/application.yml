@@ -13,7 +13,9 @@
 
 # ==================== Server Configuration ====================
 server:
-  port: 8085                    # The port our API will listen on
+  port: 8085                  # The port our API will listen on
+  servlet:
+    context-path: /api/v1     # Base path for all endpoints (e.g., /api/v1/notifications)
   
   # Tomcat tuning for 10k req/sec
   tomcat:
@@ -61,7 +63,7 @@ spring:
   jpa:
     # Don't auto-generate schema, Flyway handles this
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     
     # Show SQL queries in logs (set to true for debugging)
     show-sql: false
@@ -106,43 +108,23 @@ spring:
   kafka:
     # Bootstrap servers = initial Kafka brokers to connect to
     bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
-    
-    # Producer: Our API uses this to send messages to Kafka
+
     producer:
       # How to convert notification ID to bytes for Kafka
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      
-      # Wait for leader acknowledgment (tradeoff: slightly less durable, 5x faster)
-      acks: 1                    # Wait for leader only (acks=all adds ~5ms per send)
-      
-      # Retry settings for failed sends
+      acks: all
       retries: 3
-      
-      # Batching: accumulate messages before sending to maximize throughput
-      batch-size: 65536          # 64KB batch size (default 16KB)
-      buffer-memory: 67108864    # 64MB total buffer memory
-      
+      batch-size: 65536
+      buffer-memory: 67108864
       properties:
-        # If broker doesn't respond, retry after 1 second
         retry.backoff.ms: 1000
-        
-        # Linger: wait up to 5ms to fill a batch before sending
-        # Tradeoff: adds 0-5ms latency but dramatically increases throughput
         linger.ms: 5
-        
-        # Compress messages to reduce network I/O
         compression.type: lz4
-        
-        # Enable idempotence to prevent duplicate messages
         enable.idempotence: true
-    
-    # Consumer: Worker uses this to receive messages from Kafka
+
     consumer:
-      # Consumer group ID (consumers in same group share the work)
       group-id: notification-consumer-group
-      
-      # How to convert bytes from Kafka to notification objects
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       
@@ -150,10 +132,9 @@ spring:
       auto-offset-reset: earliest
       
       properties:
-        # Trust our notification message package
-        spring.json.trusted.packages: com.notification.messaging.message
-    
-    # Listener settings (for @KafkaListener methods)
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: "com.notification.dto.events.UserCreatedEvent"
+
     listener:
       # Manual commit = we control when messages are marked as processed
       ack-mode: manual
@@ -164,6 +145,7 @@ spring:
 kafka:
   topics:
     user-created: user.created
+
 # ==================== Logging Configuration ====================
 #
 # Log levels: TRACE < DEBUG < INFO < WARN < ERROR
@@ -239,7 +221,8 @@ notification:
       in-app: notifications.in-app         # In-app notifications topic
       # Dead Letter Queue for failed messages
       dlq: notifications.dlq
-  
+    replication-factor: 1
+
   # Rate limiting configuration (per user, per channel)
   rate-limit:
     email:
@@ -266,6 +249,7 @@ notification:
     ttl-seconds: 86400                   # Keep event IDs for 24 hours (86400 seconds)
 
 
+
 eureka:
   client:
     service-url:
@@ -274,4 +258,4 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
-
+    ip-address: 127.0.0.1

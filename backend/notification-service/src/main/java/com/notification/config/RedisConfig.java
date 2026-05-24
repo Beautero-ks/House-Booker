@@ -76,7 +76,10 @@ public class RedisConfig {
         // Polymorphic Type Validator sécurisé (remplace l'ancien enableDefaultTyping)
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                 .allowIfBaseType("com.housebooker.notification")
+                .allowIfBaseType("com.notification") // <-- AJOUT CRITIQUE POUR L'ENTITÉ NOTIFICATIONUSER
+                .allowIfSubType("com.notification")  // Assure le support complet des sous-packages d'entités
                 .allowIfSubType("java.util")
+                .allowIfSubType("java.lang")
                 .build();
 
         objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);

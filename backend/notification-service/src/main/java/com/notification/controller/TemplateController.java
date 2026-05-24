@@ -27,7 +27,7 @@ import java.util.UUID;
  * REST Controller for template management.
  */
 @RestController
-@RequestMapping("/api/v1/templates")
+@RequestMapping("/templates")
 @Tag(name = "Templates", description = "Template management APIs")
 public class TemplateController {
 
