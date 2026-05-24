@@ -1,14 +1,15 @@
 spring:
   application:
     name: auth-service
+
   config:
     import: optional:configserver:http://localhost:8888
 
   # ===== POSTGRESQL =====
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/auth_db}
-    username: ${SPRING_DATASOURCE_USERNAME:admin}
-    password: ${SPRING_DATASOURCE_PASSWORD:admin123}
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: postgres
+    password: root
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -25,6 +26,7 @@ spring:
   graphql:
     graphiql:
       enabled: true
+      path: /graphiql
     path: /graphql
     schema:
       printer:
@@ -32,19 +34,20 @@ spring:
 
   # ===== KAFKA =====
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    bootstrap-servers: localhost:9092
+
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.add.type.headers: false
+#        spring.json.add.type.headers: false
         max.block.ms: 3000
         request.timeout.ms: 3000
         delivery.timeout.ms: 5000
 
 # ===== SERVER =====
 server:
-  port: ${SERVER_PORT:3001}
+  port: 8081
 
 # ===== LOGGING =====
 logging:
@@ -55,9 +58,13 @@ logging:
 # ===== EUREKA =====
 eureka:
   client:
-    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
     fetch-registry: true
     register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
 
 # ===== JWT =====
 jwt:
