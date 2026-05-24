@@ -24,9 +24,10 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
+    ip-address: 127.0.0.1
 
 server:
-  port: 8083
+  port: 8084
 
   servlet:
     context-path: /api/v1
