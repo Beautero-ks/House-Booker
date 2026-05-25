@@ -1,6 +1,6 @@
 package com.intergiciel.auth_service.controller;
 
-import com.intergiciel.auth_service.dto.LoginInput;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.intergiciel.auth_service.dto.request.*;
 import com.intergiciel.auth_service.dto.request.GoogleAuthInput;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
@@ -56,7 +56,7 @@ public class AuthResolver {
      * }
      */
     @MutationMapping
-    public AuthResponse register(@Argument @Valid RegisterInput input) {
+    public AuthResponse register(@Argument @Valid RegisterInput input) throws JsonProcessingException {
         log.info("[AuthResolver] mutation register → {}", input.getEmail());
         return authService.register(input);
     }
@@ -84,7 +84,7 @@ public class AuthResolver {
      */
     @MutationMapping
     public AuthResponse login(@Argument @Valid LoginInput input) {
-        log.info("[AuthResolver] mutation login → {}", input.email());
+        log.info("[AuthResolver] mutation login → {}", input.getEmail());
         return authService.login(input);
     }
 
@@ -109,7 +109,7 @@ public class AuthResolver {
      * }
      */
     @MutationMapping
-    public AuthResponse resendOtp(@Argument String userId) {
+    public AuthResponse resendOtp(@Argument String userId) throws JsonProcessingException {
         log.info("[AuthResolver] mutation resendOtp → userId={}", userId);
         return authService.resendOtp(userId);
     }

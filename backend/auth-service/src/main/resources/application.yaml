@@ -20,7 +20,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    open-in-view: false
 
   # ===== GRAPHQL =====
   graphql:
@@ -80,6 +79,7 @@ otp:
 kafka:
   topics:
     user-created: user.created
+    user-verified: user.verified
 
 # ===== CORS =====
 app:
@@ -89,3 +89,4 @@ app:
 google:
   client-id: ${GOOGLE_CLIENT_ID:}
   client-secret: ${GOOGLE_CLIENT_SECRET:}
+

@@ -107,7 +107,7 @@
   location: class com.intergiciel.auth_service.service.AuthService
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[34,36] cannot find symbol
   symbol:   class User
-  location: class com.intergiciel.auth_service.service.EventPublisher
+  location: class com.intergiciel.auth_service.kafka.EventPublisher
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[27,19] cannot find symbol
   symbol:   class RefreshTokenRepository
   location: class com.intergiciel.auth_service.service.TokenService
@@ -217,10 +217,10 @@
   location: class com.intergiciel.auth_service.service.TokenService
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[52,17] cannot find symbol
   symbol:   variable log
-  location: class com.intergiciel.auth_service.service.EventPublisher
+  location: class com.intergiciel.auth_service.kafka.EventPublisher
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[57,17] cannot find symbol
   symbol:   variable log
-  location: class com.intergiciel.auth_service.service.EventPublisher
+  location: class com.intergiciel.auth_service.kafka.EventPublisher
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/exception/GraphQLExceptionHandler.java:[37,13] cannot find symbol
   symbol:   variable log
   location: class com.intergiciel.auth_service.exception.GraphQLExceptionHandler
@@ -331,7 +331,7 @@
 [ERROR]   location: class com.intergiciel.auth_service.service.AuthService
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[34,36] cannot find symbol
 [ERROR]   symbol:   class User
-[ERROR]   location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR]   location: class com.intergiciel.auth_service.kafka.EventPublisher
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/TokenService.java:[27,19] cannot find symbol
 [ERROR]   symbol:   class RefreshTokenRepository
 [ERROR]   location: class com.intergiciel.auth_service.service.TokenService
@@ -441,10 +441,10 @@
 [ERROR]   location: class com.intergiciel.auth_service.service.TokenService
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[52,17] cannot find symbol
 [ERROR]   symbol:   variable log
-[ERROR]   location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR]   location: class com.intergiciel.auth_service.kafka.EventPublisher
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/service/EventPublisher.java:[57,17] cannot find symbol
 [ERROR]   symbol:   variable log
-[ERROR]   location: class com.intergiciel.auth_service.service.EventPublisher
+[ERROR]   location: class com.intergiciel.auth_service.kafka.EventPublisher
 [ERROR] /home/lincol-b/Documents/Intergiciel/projet/House-Booker/backend/auth-service/src/main/java/com/intergiciel/auth_service/exception/GraphQLExceptionHandler.java:[37,13] cannot find symbol
 [ERROR]   symbol:   variable log
 [ERROR]   location: class com.intergiciel.auth_service.exception.GraphQLExceptionHandler

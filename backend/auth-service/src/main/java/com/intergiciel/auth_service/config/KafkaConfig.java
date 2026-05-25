@@ -25,9 +25,12 @@ public class KafkaConfig {
     @Value("${kafka.topics.user-created}")
     private String userCreatedTopic;
 
+    @Value("${kafka.topics.user-verified}$")
+    private String userVerifiedTopic;
+
     // ===== PRODUCER CONFIG =====
     @Bean
-    public ProducerFactory<String, UserCreatedEvent> producerFactory() {
+    public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -41,16 +44,24 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, UserCreatedEvent> kafkaTemplate() {
+    public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
+    // ===== CRÉATION DES TOPICS =====
 
-    // ===== CRÉATION DU TOPIC (si inexistant) =====
     @Bean
     public NewTopic userCreatedTopic() {
         return TopicBuilder.name(userCreatedTopic)
                 .partitions(3)       // 3 partitions pour la scalabilité
-                .replicas(1)         // 1 replica (à augmenter en production)
+                .replicas(1)         // 1 replica local (OK pour ton cluster à 1 broker !)
+                .build();
+    }
+
+    @Bean
+    public NewTopic userVerifiedTopic() {
+        return TopicBuilder.name(userVerifiedTopic)
+                .partitions(3)
+                .replicas(1)
                 .build();
     }
 }
