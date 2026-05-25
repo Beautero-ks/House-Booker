@@ -1,9 +1,12 @@
 package com.intergiciel.auth_service.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.intergiciel.auth_service.dto.event.UserVerifiedEvent;
 import com.intergiciel.auth_service.dto.request.LoginInput;
 import com.intergiciel.auth_service.dto.request.RegisterInput;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
 import com.intergiciel.auth_service.entity.User;
+import com.intergiciel.auth_service.kafka.EventPublisher;
 import com.intergiciel.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +24,14 @@ public class AuthService {
     private final UserRepository    userRepository;
     private final OtpService        otpService;
     private final TokenService      tokenService;
-    private final EventPublisher    eventPublisher;
+    private final EventPublisher eventPublisher;
     private final PasswordEncoder   passwordEncoder;
 
     // ─────────────────────────────────────────────────
     // mutation register
     // ─────────────────────────────────────────────────
     @Transactional
-    public AuthResponse register(RegisterInput input) {
+    public AuthResponse register(RegisterInput input) throws JsonProcessingException {
 
         if (userRepository.existsByEmail(input.getEmail()))
             throw new RuntimeException("Un compte avec cet email existe déjà");
@@ -83,9 +86,23 @@ public class AuthService {
         otpService.verify(userUUID, code);
 
         user.setVerified(true);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         log.info("[AuthService] Compte vérifié : {}", user.getEmail());
+
+        // =================================────────────────================
+        // PUBLICATION KAFKA : On prévient le service de notification !
+        // =================================================================
+        UserVerifiedEvent event = UserVerifiedEvent.builder()
+                .eventName("USER_VERIFIED")
+                .data(UserVerifiedEvent.DataPayload.builder()
+                        .userId(savedUser.getId().toString())
+                        .name(savedUser.getName()) // ou savedUser.getName() selon ton entité
+                        .email(savedUser.getEmail())
+                        .build())
+                .build();
+
+        eventPublisher.publishUserVerified(event);
 
         return AuthResponse.builder()
                 .success(true)
@@ -146,7 +163,7 @@ public class AuthService {
     // mutation resendOtp
     // ─────────────────────────────────────────────────
     @Transactional
-    public AuthResponse resendOtp(String userId) {
+    public AuthResponse resendOtp(String userId) throws JsonProcessingException {
 
         User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));

@@ -1,5 +1,6 @@
 package com.intergiciel.auth_service.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.intergiciel.auth_service.dto.request.*;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
 import com.intergiciel.auth_service.service.AuthService;
@@ -54,7 +55,7 @@ public class AuthResolver {
      * }
      */
     @MutationMapping
-    public AuthResponse register(@Argument @Valid RegisterInput input) {
+    public AuthResponse register(@Argument @Valid RegisterInput input) throws JsonProcessingException {
         log.info("[AuthResolver] mutation register → {}", input.getEmail());
         return authService.register(input);
     }
@@ -107,7 +108,7 @@ public class AuthResolver {
      * }
      */
     @MutationMapping
-    public AuthResponse resendOtp(@Argument String userId) {
+    public AuthResponse resendOtp(@Argument String userId) throws JsonProcessingException {
         log.info("[AuthResolver] mutation resendOtp → userId={}", userId);
         return authService.resendOtp(userId);
     }

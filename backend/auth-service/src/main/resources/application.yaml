@@ -70,3 +70,4 @@ otp:
 kafka:
   topics:
     user-created: user.created
+    user-verified: user.verified
