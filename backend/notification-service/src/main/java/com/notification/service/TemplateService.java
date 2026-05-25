@@ -20,6 +20,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.List;
 import java.util.Map;
@@ -38,9 +40,13 @@ public class TemplateService {
     private static final Logger log = LoggerFactory.getLogger(TemplateService.class);
     
     private final NotificationTemplateRepository templateRepository;
+
+    // utilitaire de génération de contenu pour les fichier html dans ressources/templates
+    private final TemplateEngine templateEngine;
     
-    public TemplateService(NotificationTemplateRepository templateRepository) {
+    public TemplateService(NotificationTemplateRepository templateRepository, TemplateEngine templateEngine) {
         this.templateRepository = templateRepository;
+        this.templateEngine = templateEngine;
     }
     
     // ==================== Template CRUD Operations ====================
@@ -238,5 +244,12 @@ public class TemplateService {
         public ChannelType getChannel() { return channel; }
         public String getSubject() { return subject; }
         public String getBody() { return body; }
+    }
+
+    // Generateur des utilitaires html
+    public String generateHtml(String templateName, Map<String, Object> variables) {
+        Context context = new Context();
+        context.setVariables(variables);
+        return templateEngine.process(templateName, context);
     }
 }

@@ -18,8 +18,13 @@ package com.notification.service.channel;
 import com.notification.model.entity.Notification;
 import com.notification.model.entity.NotificationUser;
 import com.notification.model.enums.ChannelType;
+import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 /**
@@ -31,7 +36,12 @@ import org.springframework.stereotype.Component;
 public class EmailChannelHandler implements ChannelHandler {
 
     private static final Logger log = LoggerFactory.getLogger(EmailChannelHandler.class);
-    
+    private final JavaMailSender mailSender;
+
+    public EmailChannelHandler(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
     @Override
     public ChannelType getChannelType() {
         return ChannelType.EMAIL;
@@ -64,37 +74,31 @@ public class EmailChannelHandler implements ChannelHandler {
         log.info("Subject: {}", notification.getSubject());
         log.info("Body: {}", notification.getContent());
         log.info("====================================");
-        
-        // =====================================================
-        // TODO: Integrate with actual email provider
-        // =====================================================
-        // 
-        // Example with SendGrid:
-        //
-        // Email from = new Email("noreply@yourapp.com");
-        // Email to = new Email(email);
-        // Content content = new Content("text/html", notification.getContent());
-        // Mail mail = new Mail(from, notification.getSubject(), to, content);
-        // 
-        // SendGrid sg = new SendGrid(sendGridApiKey);
-        // Request request = new Request();
-        // request.setMethod(Method.POST);
-        // request.setEndpoint("mail/send");
-        // request.setBody(mail.build());
-        // 
-        // Response response = sg.api(request);
-        // return response.getStatusCode() >= 200 && response.getStatusCode() < 300;
-        //
-        
-        // For demo: Simulate 95% success rate
-        boolean success = Math.random() > 0.05;
-        
-        if (success) {
-            log.info("Email sent successfully to {}", email);
-        } else {
-            log.warn("Email failed to send to {} (simulated failure)", email);
+
+        try {
+            // 1. On crée un MimeMessage à la place du SimpleMailMessage
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+            // 2. Le helper avec le flag "true" indique qu'on gère le multipart/HTML
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom("noreply@housebooker.com");
+            helper.setTo(email);
+            helper.setSubject(notification.getSubject());
+
+            // 3. Le second paramètre à "true" est LE paramètre magique qui active le rendu HTML !
+            helper.setText(notification.getContent(), true);
+
+            // Envoi réel
+            mailSender.send(mimeMessage);
+
+            log.info("Email sent successfully to via SMTP: {}", email);
+            return true;
+
+        } catch (Exception e) {
+            log.error("Failed to send email to {} via SMTP server. Error: {}", email, e.getMessage());
+            // Retourner false déclenchera le mécanisme de retry/DLQ géré par ton architecture
+            return false;
         }
-        
-        return success;
     }
 }
