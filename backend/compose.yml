@@ -214,6 +214,13 @@ services:
       - kafka-2
       - kafka-3
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    ports:
+      - "1025:1025" # Port du serveur SMTP (ton code Java va envoyer ici)
+      - "8025:8025" # Port de l'interface Web (tu vas regarder tes e-mails ici)
+    restart: always
 # ==================== VOLUMES PERSISTANTS ====================
 volumes:
   postgres_data:
