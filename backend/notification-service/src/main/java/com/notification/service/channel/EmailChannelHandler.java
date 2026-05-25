@@ -6,15 +6,25 @@ package com.notification.service.channel;
 //
 // Handles sending notifications via email.
 //
+// In a real system, this would integrate with:
+// - SendGrid
+// - Amazon SES
+// - Mailgun
+// - SMTP server
+//
+// For this demo, we just log the email (mock implementation).
+//
+
 import com.notification.model.entity.Notification;
 import com.notification.model.entity.NotificationUser;
 import com.notification.model.enums.ChannelType;
+import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,17 +36,12 @@ import org.springframework.stereotype.Component;
 public class EmailChannelHandler implements ChannelHandler {
 
     private static final Logger log = LoggerFactory.getLogger(EmailChannelHandler.class);
-
     private final JavaMailSender mailSender;
-    private final String fromAddress;
 
-    public EmailChannelHandler(
-            JavaMailSender mailSender,
-            @Value("${notification.mail.from:no-reply@housebooker.local}") String fromAddress) {
+    public EmailChannelHandler(JavaMailSender mailSender) {
         this.mailSender = mailSender;
-        this.fromAddress = fromAddress;
     }
-    
+
     @Override
     public ChannelType getChannelType() {
         return ChannelType.EMAIL;
@@ -63,22 +68,36 @@ public class EmailChannelHandler implements ChannelHandler {
     public boolean send(Notification notification) {
         NotificationUser notificationUser = notification.getNotificationUser();
         String email = notificationUser.getEmail();
-        String subject = notification.getSubject() == null || notification.getSubject().isBlank()
-                ? "Notification HouseBooker"
-                : notification.getSubject();
         
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromAddress);
-        message.setTo(email);
-        message.setSubject(subject);
-        message.setText(notification.getContent());
+        log.info("========== SENDING EMAIL ==========");
+        log.info("To: {}", email);
+        log.info("Subject: {}", notification.getSubject());
+        log.info("Body: {}", notification.getContent());
+        log.info("====================================");
 
         try {
-            mailSender.send(message);
-            log.info("Email sent to {} via SMTP", email);
+            // 1. On crée un MimeMessage à la place du SimpleMailMessage
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+            // 2. Le helper avec le flag "true" indique qu'on gère le multipart/HTML
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom("noreply@housebooker.com");
+            helper.setTo(email);
+            helper.setSubject(notification.getSubject());
+
+            // 3. Le second paramètre à "true" est LE paramètre magique qui active le rendu HTML !
+            helper.setText(notification.getContent(), true);
+
+            // Envoi réel
+            mailSender.send(mimeMessage);
+
+            log.info("Email sent successfully to via SMTP: {}", email);
             return true;
-        } catch (MailException e) {
-            log.error("Email failed to send to {}: {}", email, e.getMessage(), e);
+
+        } catch (Exception e) {
+            log.error("Failed to send email to {} via SMTP server. Error: {}", email, e.getMessage());
+            // Retourner false déclenchera le mécanisme de retry/DLQ géré par ton architecture
             return false;
         }
     }

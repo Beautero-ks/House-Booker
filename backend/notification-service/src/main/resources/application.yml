@@ -142,9 +142,21 @@ spring:
       # Match concurrency to total partition count across topics
       concurrency: 10
 
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+        debug: true
+
 kafka:
   topics:
     user-created: user.created
+    user-verified: user.verified
 
 # ==================== Logging Configuration ====================
 #
@@ -248,7 +260,9 @@ notification:
   dedupe:
     ttl-seconds: 86400                   # Keep event IDs for 24 hours (86400 seconds)
 
-
+# Configuration de l'adresse qui pointe vers le frontend
+app:
+  frontend-url: http://localhost:3000/login
 
 eureka:
   client:
