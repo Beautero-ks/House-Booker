@@ -1,3 +1,91 @@
+server:
+  port: 8083
+
 spring:
   application:
     name: api-gateway
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      # Définition explicite des routes (Rattaché directement à 'gateway')
+      routes:
+        # Route pour le Auth-Service
+        - id: auth-service-public-route
+          uri: lb://auth-service
+          predicates:
+            - Path=/graphql/auth/**
+          filters:
+            - RewritePath=/graphql/auth(?<segment>/?.*), /graphql$\{segment}
+
+        # Route pour le User-Service
+        - id: user-service-protected-route
+          uri: lb://user-service
+          predicates:
+            - Path=/graphql/user/**
+          filters:
+            - JwtAuthenticationFilter
+            - RewritePath=/graphql/user(?<segment>/?.*), /graphql$\{segment}
+
+        # Route pour le House-Service
+        - id: house-service-protected-route
+          uri: lb://house-service
+          predicates:
+            - Path=/graphql/house/**
+          filters:
+            - JwtAuthenticationFilter
+            - RewritePath=/graphql/house(?<segment>/?.*), /graphql$\{segment}
+
+        # Route pour le Booking-Service
+        - id: booking-service-protected-route
+          uri: lb://booking-service
+          predicates:
+            - Path=/graphql/booking/**
+          filters:
+            - JwtAuthenticationFilter
+            - RewritePath=/graphql/booking(?<segment>/?.*), /graphql$\{segment}
+
+        # Route pour le Review-Service
+        - id: review-service-protected-route
+          uri: lb://review-service
+          predicates:
+            - Path=/graphql/api/v1/review/**
+          filters:
+            - JwtAuthenticationFilter
+            - RewritePath=/graphql/review(?<segment>/?.*), /graphql$\{segment}
+
+        # Route pour le Payment-Service
+        - id: payment-service-protected-route
+          uri: lb://payment-service
+          predicates:
+            - Path=/graphql/api/v1/payment/**
+          filters:
+            - JwtAuthenticationFilter
+            - RewritePath=/graphql/payment(?<segment>/?.*), /graphql$\{segment}
+
+        # Route pour le Notification-Service
+        - id: notification-service-protected-route
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notification/**, /api/v1/notifications/**
+          filters:
+            - JwtAuthenticationFilter
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+
+
+jwt:
+  secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
