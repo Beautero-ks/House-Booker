@@ -3,7 +3,7 @@ package com.intergiciel.booking_service.application.service;
 import com.intergiciel.booking_service.application.dto.HouseDto;
 import com.intergiciel.booking_service.domain.events.BookingCancelledEvent;
 import com.intergiciel.booking_service.domain.events.BookingCreatedEvent;
-import com.intergiciel.booking_service.domain.events.publisher.BookingEventPublisher;
+import com.intergiciel.booking_service.kafka.publisher.BookingEventPublisher;
 import com.intergiciel.booking_service.domain.model.Availability;
 import com.intergiciel.booking_service.domain.model.Booking;
 import com.intergiciel.booking_service.domain.model.enums.BookingStatus;
@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -67,6 +66,7 @@ public class BookingService {
                 .endDate(endDate)
                 .status(BookingStatus.PENDING)
                 .totalPrice(totalPrice)
+                .createdAt(OffsetDateTime.now())
                 .build();
 
         booking = bookingRepository.save(booking);

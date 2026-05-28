@@ -1,4 +1,4 @@
-package com.intergiciel.booking_service.config;
+package com.intergiciel.booking_service.shared.config;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;

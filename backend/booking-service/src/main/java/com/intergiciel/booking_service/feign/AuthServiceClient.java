@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.UUID;
 
 @Component
-@FeignClient(name = "user-service", url = "${user-service.url}")
-public interface UserServiceClient {
-    @GetMapping("/api/users/{id}")
-    User getUserById(@PathVariable UUID id);
+@FeignClient(name = "auth-service", url = "${auth-service.url}")
+public interface AuthServiceClient {
+    @GetMapping("/auth/{id}")
+    User findActiveUserById(@PathVariable UUID id);
 }

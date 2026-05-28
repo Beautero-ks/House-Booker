@@ -51,11 +51,11 @@ type HouseDto{
     titre: String!
     description: String!
     adresse: String
-    type: String
-    prix: Int
+    type: String!
+    prix: Float!
     latitude: Float
     longitude: Float
-    disponible: Boolean
+    disponible: Boolean!
     proprietaireId: UUID!
     dateCreation: DateTime
     statutValidation: StatutValidation

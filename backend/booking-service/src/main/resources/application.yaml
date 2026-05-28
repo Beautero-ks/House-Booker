@@ -55,7 +55,17 @@ eureka:
     ip-address: 127.0.0.1
 
 house-service:
-  url: ${HOUSE_SERVICE_URL:http://localhost:8083}
+  url: ${HOUSE_SERVICE_URL:http://localhost:8084}
 
-user-service:
-  url: ${USER_SERVICE_URL:http://localhost:8080}
+auth-service:
+  url: ${AUTH_SERVICE_URL:http://localhost:8081}
+
+kafka:
+  topic:
+    bookings-created: booking.created
+    bookings-cancelled: booking.cancelled
+
+kind: Application
+
+
+

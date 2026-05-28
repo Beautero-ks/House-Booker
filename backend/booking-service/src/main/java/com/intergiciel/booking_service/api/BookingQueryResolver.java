@@ -1,8 +1,10 @@
 package com.intergiciel.booking_service.api;
 
+import com.intergiciel.booking_service.application.dto.HouseDto;
 import com.intergiciel.booking_service.application.service.BookingService;
 import com.intergiciel.booking_service.domain.model.Booking;
 import com.intergiciel.booking_service.domain.model.enums.BookingStatus;
+import com.intergiciel.booking_service.feign.HouseServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookingQueryResolver {
     private final BookingService bookingService;
+    private final HouseServiceClient houseServiceClient;
 
     @QueryMapping
     public Booking booking(@Argument UUID id, @Argument UUID userId,
@@ -47,6 +50,13 @@ public class BookingQueryResolver {
                                      @Argument LocalDate endDate) {
         return bookingService.isHouseAvailable(houseId, startDate, endDate);
     }
+
+//    @QueryMapping  ou @SchemaMapping(typeName = "Query", field = "getHouseById")
+//    public HouseDto getHouseById(@Argument UUID id) {
+//        HouseDto response = houseServiceClient.getHouseById(id);
+//        System.out.println("Réponse reçue de Feign : " + response);
+//        return response;
+//    }
 
     private UUID resolveUserId(UUID userIdFromArguments, String userIdFromContext) {
         if (userIdFromArguments != null) {
