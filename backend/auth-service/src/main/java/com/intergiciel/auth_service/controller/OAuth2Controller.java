@@ -1,5 +1,6 @@
 package com.intergiciel.auth_service.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.intergiciel.auth_service.dto.request.GoogleAuthInput;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
 import com.intergiciel.auth_service.service.AuthService;
@@ -39,7 +40,7 @@ public class OAuth2Controller {
      *      -d '{"idToken":"VOTRE_GOOGLE_ID_TOKEN"}'
      */
     @PostMapping("/google")
-    public ResponseEntity<AuthResponse> loginWithGoogle(@RequestBody @Valid GoogleAuthInput input) {
+    public ResponseEntity<AuthResponse> loginWithGoogle(@RequestBody @Valid GoogleAuthInput input) throws JsonProcessingException {
         log.info("[OAuth2Controller] POST /oauth2/google — vérification du Google ID Token");
         AuthResponse response = authService.loginWithGoogle(input.getIdToken());
         return ResponseEntity.ok(response);

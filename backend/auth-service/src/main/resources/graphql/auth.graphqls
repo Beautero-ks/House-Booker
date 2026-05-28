@@ -5,6 +5,7 @@
 # ─────────────────────────────────────────────────────────────
 # TYPES DE RÉPONSE
 # ─────────────────────────────────────────────────────────────
+
 type AuthResponse {
     success:      Boolean!
     message:      String!
@@ -14,6 +15,7 @@ type AuthResponse {
     "Informations de base sur l'utilisateur concerné"
     user: UserInfo
 }
+
 type UserInfo {
     id:          String!
     name:        String!
@@ -67,11 +69,20 @@ input RegisterInput {
     phoneNumber: String!
 }
 
+"""
+Données requises pour la connexion.
+Prérequis : le compte doit avoir été vérifié via OTP.
+"""
 input LoginInput {
     email:    String!
     password: String!
 }
 
+"""
+Données requises pour vérifier le compte via le code OTP.
+Le code OTP est envoyé par mail au moment de l'inscription.
+Il expire après 10 minutes.
+"""
 input VerifyOtpInput {
 
     """
@@ -82,7 +93,16 @@ input VerifyOtpInput {
     code:   String!
 }
 
+"""
+Données requises pour renouveler l'access token.
+À utiliser quand l'access token (15min) est expiré.
+"""
 input RefreshTokenInput {
+
+    """
+    Token de rafraîchissement — durée de vie : 7 jours.
+    Récupéré dans le champ refreshToken de la réponse du register ou login.
+    """
     refreshToken: String!
 }
 
@@ -123,6 +143,7 @@ input RemoveRoleInput {
 # ─────────────────────────────────────────────────────────────
 # QUERY
 # ─────────────────────────────────────────────────────────────
+
 type Query {
     healthCheck:    String!
     getCurrentUser: UserInfo
@@ -130,9 +151,11 @@ type Query {
     getUsers(page: Int, size: Int): UserPage
 }
 
+
 # ─────────────────────────────────────────────────────────────
 # MUTATIONS
 # ─────────────────────────────────────────────────────────────
+
 type Mutation {
 
     """
@@ -208,6 +231,8 @@ type Mutation {
       - "Utilisateur introuvable" (NOT_FOUND)
     """
     refreshToken(input: RefreshTokenInput!): AuthResponse!
+    resendOtp(userId: String!):              AuthResponse!
+    googleLogin(input: GoogleAuthInput!):   AuthResponse!
 
     """
     Renvoi d'un nouveau code OTP quand l'ancien a expiré.

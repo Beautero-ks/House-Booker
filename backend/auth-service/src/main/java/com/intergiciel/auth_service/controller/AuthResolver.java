@@ -122,9 +122,9 @@ public class AuthResolver {
      *   }
      * }
      */
-    @MutationMapping
-    public AuthResponse googleLogin(@Argument @Valid GoogleAuthInput input) {
-        log.info("[AuthResolver] mutation googleLogin");
-        return authService.loginWithGoogle(input.getIdToken());
-    }
+//    @MutationMapping
+//    public AuthResponse googleLogin(@Argument @Valid GoogleAuthInput input) throws JsonProcessingException {
+//        log.info("[AuthResolver] mutation googleLogin");
+//        return authService.loginWithGoogle(input.getIdToken());
+//    }
 }
