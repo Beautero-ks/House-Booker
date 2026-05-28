@@ -1,5 +1,7 @@
 package com.intergiciel.booking_service.api;
 
+import com.intergiciel.booking_service.application.dto.request.BookingCreateRequest;
+import com.intergiciel.booking_service.application.service.BookingService;
 import com.intergiciel.booking_service.domain.model.Booking;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.ContextValue;
@@ -15,12 +17,17 @@ public class BookingMutationResolver {
     private final com.intergiciel.booking_service.service.BookingService bookingService;
 
     @MutationMapping
-    public Booking cancelBooking(@Argument UUID bookingId,
-                                 @Argument String reason,
+    public Booking createBooking(@Argument BookingCreateRequest input,
                                  @Argument UUID userId,
                                  @ContextValue(name = "userId", required = false) String contextUserId) {
         UUID effectiveUserId = resolveUserId(userId, contextUserId);
-        return bookingService.cancelBooking(bookingId, effectiveUserId, reason);
+
+        return bookingService.createBooking(
+                effectiveUserId,
+                input.getHouseId(),
+                input.getStartDate(),
+                input.getEndDate()
+        );
     }
 
     @MutationMapping
