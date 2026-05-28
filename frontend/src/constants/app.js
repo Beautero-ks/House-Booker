@@ -1,7 +1,8 @@
-const DEFAULT_GOOGLE_CLIENT_ID = '';
+const DEFAULT_GOOGLE_CLIENT_ID = '361819434983-cm1se6aefolqdhc0hashnkh6v9rg5ut6.apps.googleusercontent.com';
 
 export const API_CONFIG = {
-  API_GATEWAY_URL: import.meta.env.VITE_API_GATEWAY_URL || '',
+  GRAPHQL_URL: import.meta.env.VITE_GRAPHQL_URL || '/graphql',
+  API_GATEWAY_URL: import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8083/graphql',
   AUTH_GRAPHQL_URL: import.meta.env.VITE_AUTH_GRAPHQL_URL || '/api/auth/graphql',
   HOUSE_GRAPHQL_URL: import.meta.env.VITE_HOUSE_GRAPHQL_URL || '/api/houses/graphql',
   BOOKING_GRAPHQL_URL: import.meta.env.VITE_BOOKING_GRAPHQL_URL || '/api/bookings/graphql',
