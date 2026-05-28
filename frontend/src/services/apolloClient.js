@@ -5,7 +5,7 @@ import { API_CONFIG } from '../constants/app';
 import { getAccessToken } from '../utils/tokenStorage';
 
 const httpLink = createHttpLink({
-  uri: API_CONFIG.GRAPHQL_URL,
+  uri: API_CONFIG.API_GATEWAY_URL,
 });
 
 const authLink = setContext((_, { headers }) => {
