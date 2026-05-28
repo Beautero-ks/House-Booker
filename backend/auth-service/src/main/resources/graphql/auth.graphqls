@@ -13,7 +13,7 @@ type AuthResponse {
     refreshToken: String
 
     "Informations de base sur l'utilisateur concerné"
-    notificationUser:         UserInfo
+    user:         UserInfo
 }
 
 type UserInfo {
@@ -177,20 +177,4 @@ type Mutation {
     resendOtp(userId: String!):              AuthResponse!
     googleLogin(input: GoogleAuthInput!):   AuthResponse!
 
-    """
-    Renvoi d'un nouveau code OTP quand l'ancien a expiré.
-
-    Flux :
-      1. Vérifie que le compte existe et n'est pas encore vérifié
-      2. Invalide tous les anciens OTPs de cet utilisateur
-      3. Génère un nouveau OTP à 6 chiffres (valable 10 minutes)
-      4. Republie l'event Kafka 'notificationUser.created' avec le nouvel OTP
-           → Notification-Service renvoie le mail avec le nouveau code
-      5. Retourne un message de confirmation
-
-    Erreurs possibles :
-      - "Ce compte est déjà vérifié" (BAD_REQUEST)
-      - "Utilisateur introuvable" (NOT_FOUND)
-    """
-    resendOtp(userId: String!): AuthResponse!
 }

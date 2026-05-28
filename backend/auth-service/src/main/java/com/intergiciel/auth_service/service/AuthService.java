@@ -3,7 +3,6 @@ package com.intergiciel.auth_service.service;
 import com.intergiciel.auth_service.dto.LoginInput;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.intergiciel.auth_service.dto.event.UserVerifiedEvent;
-import com.intergiciel.auth_service.dto.request.LoginInput;
 import com.intergiciel.auth_service.dto.request.RegisterInput;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier.GoogleUserInfo;
@@ -192,7 +191,7 @@ public class AuthService {
     // mutation loginWithGoogle
     // ─────────────────────────────────────────────────
     @Transactional
-    public AuthResponse loginWithGoogle(String idToken) {
+    public AuthResponse loginWithGoogle(String idToken) throws JsonProcessingException{
 
         // 1. Vérifier le Google ID Token et extraire les infos utilisateur
         GoogleUserInfo googleUser = googleTokenVerifier.verify(idToken);
