@@ -13,6 +13,8 @@ export const REGISTER_MUTATION = gql`
         email
         phoneNumber
         isVerified
+        enabled
+        role
         createdAt
       }
     }

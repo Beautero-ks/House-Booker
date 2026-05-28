@@ -1,5 +1,6 @@
 
 const Button = ({ 
+  as: Component = 'button',
   children, 
   variant = 'primary', 
   size = 'md', 
@@ -33,7 +34,7 @@ const Button = ({
   `.trim();
 
   return (
-    <button className={classes} disabled={isLoading} {...props}>
+    <Component {...props} className={classes} disabled={Component === 'button' ? isLoading || props.disabled : undefined}>
       {isLoading && (
         <span
           aria-hidden="true"
@@ -41,7 +42,7 @@ const Button = ({
         />
       )}
       {children}
-    </button>
+    </Component>
   );
 };
 

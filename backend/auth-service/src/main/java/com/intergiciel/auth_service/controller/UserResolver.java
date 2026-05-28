@@ -79,4 +79,25 @@ public class UserResolver {
         log.info("[UserResolver] mutation removeRole → {}", userId);
         return userService.removeRole(userId);
     }
+
+    @MutationMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserInfo blockUser(@Argument String userId) {
+        log.info("[UserResolver] mutation blockUser → {}", userId);
+        return userService.blockUser(userId);
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserInfo unblockUser(@Argument String userId) {
+        log.info("[UserResolver] mutation unblockUser → {}", userId);
+        return userService.unblockUser(userId);
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public AuthResponse deleteUserByAdmin(@Argument String userId) {
+        log.info("[UserResolver] mutation deleteUserByAdmin → {}", userId);
+        return userService.deleteUserByAdmin(userId);
+    }
 }

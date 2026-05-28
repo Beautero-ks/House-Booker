@@ -1,3 +1,35 @@
 spring:
   application:
     name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: auth-graphql
+              uri: ${AUTH_SERVICE_URL:http://localhost:3001}
+              predicates:
+                - Path=/api/auth/graphql
+              filters:
+                - SetPath=/graphql
+            - id: house-graphql
+              uri: ${HOUSE_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/houses/graphql
+              filters:
+                - SetPath=/api/v1/graphql
+            - id: booking-graphql
+              uri: ${BOOKING_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/bookings/graphql
+              filters:
+                - SetPath=/graphql
+            - id: notifications-api
+              uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8085}
+              predicates:
+                - Path=/api/notifications/**
+              filters:
+                - RewritePath=/api/notifications/(?<segment>.*), /api/v1/notifications/$\{segment}
+
+server:
+  port: ${SERVER_PORT:8080}

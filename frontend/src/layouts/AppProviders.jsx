@@ -7,14 +7,20 @@ import { LanguageProvider } from '../context/LanguageContext';
 import client from '../services/apolloClient';
 
 const AppProviders = ({ children }) => {
+  const app = (
+    <LanguageProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </LanguageProvider>
+  );
+
   return (
     <BrowserRouter>
       <ApolloProvider client={client}>
-        <GoogleOAuthProvider clientId={API_CONFIG.GOOGLE_CLIENT_ID}>
-          <LanguageProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </LanguageProvider>
-        </GoogleOAuthProvider>
+        {API_CONFIG.GOOGLE_CLIENT_ID ? (
+          <GoogleOAuthProvider clientId={API_CONFIG.GOOGLE_CLIENT_ID}>
+            {app}
+          </GoogleOAuthProvider>
+        ) : app}
       </ApolloProvider>
     </BrowserRouter>
   );

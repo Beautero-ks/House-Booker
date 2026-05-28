@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { MOCK_HOUSES } from '../constants/mockData';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '../hooks/useAuth';
 import { ROUTES } from '../constants/routes';
 import { formatPrice, calculateNights } from '../utils/formatters';
-import { Check } from 'lucide-react';
+import { Check, ImageOff } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import Loader from '../components/ui/Loader';
+import EmptyState from '../components/common/EmptyState';
+import { getHouseById } from '../services/houseApi';
+import { createBooking } from '../services/bookingApi';
 
 const BookingInfoStep = ({ t, user, onContinue }) => (
   <div className="space-y-6 animate-fade-in">
@@ -71,17 +74,91 @@ const BookingPage = () => {
   const location = useLocation();
   const { t } = useLanguage();
   const { user } = useAuth();
-  
-  const house = MOCK_HOUSES.find(h => h.id === id) || MOCK_HOUSES[0];
+
+  const [house, setHouse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [bookingError, setBookingError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const { guests = 1, checkIn = '', checkOut = '' } = location.state || {};
   
   const [step, setStep] = useState(1); // 1: Info, 2: Payment, 3: Confirmation
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadHouse = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getHouseById(id);
+        if (mounted) setHouse(result);
+      } catch (err) {
+        if (mounted) setError(err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadHouse();
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
   
   // Calculate prices
-  const nights = (checkIn && checkOut) ? calculateNights(checkIn, checkOut) : 2; // default 2 nights for demo
-  const totalNightsPrice = house.price * nights;
+  const nights = (checkIn && checkOut) ? calculateNights(checkIn, checkOut) : 0;
+  const totalNightsPrice = (house?.price || 0) * nights;
   const serviceFee = 1000;
   const total = totalNightsPrice + serviceFee;
+
+  const handlePay = async () => {
+    setBookingError('');
+    if (!user?.id) {
+      setBookingError('Vous devez être connecté pour réserver.');
+      return;
+    }
+    if (!checkIn || !checkOut) {
+      setBookingError('Les dates de réservation sont obligatoires.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await createBooking({
+        userId: user.id,
+        houseId: house.id,
+        startDate: checkIn,
+        endDate: checkOut,
+      });
+      setStep(3);
+    } catch (err) {
+      setBookingError(err.message || 'Impossible de créer la réservation.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-20">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (error || !house) {
+    return (
+      <div className="container mx-auto px-4 py-20">
+        <EmptyState
+          icon={<Check size={48} className="text-gray-300 mb-4" />}
+          title="Réservation indisponible"
+          description={error?.message || 'Le backend n’a pas retourné ce logement.'}
+          action={<Button variant="outline" onClick={() => navigate(ROUTES.SEARCH)}>Retour aux logements</Button>}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
@@ -110,7 +187,13 @@ const BookingPage = () => {
         {/* Dynamic Left Content */}
         <div className="flex-1">
           {step === 1 && <BookingInfoStep t={t} user={user} onContinue={() => setStep(2)} />}
-          {step === 2 && <BookingPaymentStep t={t} total={total} onPay={() => setStep(3)} />}
+          {step === 2 && (
+            <>
+              {bookingError && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{bookingError}</p>}
+              <BookingPaymentStep t={t} total={total} onPay={handlePay} />
+              {submitting && <p className="mt-3 text-sm text-gray-500">Création de la réservation...</p>}
+            </>
+          )}
           {step === 3 && <BookingConfirmationStep house={house} navigate={navigate} t={t} />}
         </div>
 
@@ -121,7 +204,13 @@ const BookingPage = () => {
               <h3 className="text-xl font-bold mb-4">{t('payment_summary')}</h3>
               
               <div className="flex gap-4 mb-6 pb-6 border-b">
-                <img src={house.images[0]} alt={house.title} className="w-24 h-24 object-cover rounded-lg" />
+                {house.images?.[0] ? (
+                  <img src={house.images[0]} alt={house.title} className="w-24 h-24 object-cover rounded-lg" />
+                ) : (
+                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                    <ImageOff size={24} />
+                  </div>
+                )}
                 <div>
                   <h4 className="font-semibold text-gray-900 line-clamp-2">{house.title}</h4>
                   <p className="text-sm text-gray-500">{house.location}</p>

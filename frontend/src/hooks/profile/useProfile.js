@@ -10,7 +10,7 @@ import {
 import { setStoredUser } from '../../utils/tokenStorage';
 
 export const useProfile = () => {
-  const { user: authUser, refreshCurrentUser, logout } = useAuth();
+  const { user: authUser, refreshCurrentUser, updateAuthUser, logout } = useAuth();
 
   const { data, loading, error, refetch } = useQuery(GET_CURRENT_USER_QUERY, {
     fetchPolicy: 'network-only',
@@ -22,6 +22,8 @@ export const useProfile = () => {
   const [deleteAccountMutation] = useMutation(DELETE_ACCOUNT_MUTATION);
 
   const user = useMemo(() => data?.getCurrentUser || authUser, [data, authUser]);
+  const visibleLoading = loading && !user;
+  const visibleError = error && !user ? error : null;
 
   const updateProfile = async (input) => {
     const { data: result } = await updateProfileMutation({ variables: { input } });
@@ -30,7 +32,11 @@ export const useProfile = () => {
       throw new Error('Impossible de mettre à jour le profil');
     }
 
-    setStoredUser(updated);
+    if (updateAuthUser) {
+      updateAuthUser(updated);
+    } else {
+      setStoredUser(updated);
+    }
     if (refreshCurrentUser) {
       await refreshCurrentUser();
     }
@@ -61,8 +67,8 @@ export const useProfile = () => {
 
   return {
     user,
-    loading,
-    error,
+    loading: visibleLoading,
+    error: visibleError,
     refetch,
     updateProfile,
     changePassword,

@@ -4,12 +4,15 @@ import { ROUTES } from '../constants/routes';
 import AuthLayout from '../layouts/AuthLayout';
 import MainLayout from '../layouts/MainLayout';
 import BookingPage from '../pages/BookingPage';
+import CreateHousePage from '../pages/CreateHousePage';
 import DashboardAdminPage from '../pages/DashboardAdminPage';
+import DashboardRedirectPage from '../pages/DashboardRedirectPage';
 import DashboardOwnerPage from '../pages/DashboardOwnerPage';
 import HomePage from '../pages/HomePage';
 import HouseDetailPage from '../pages/HouseDetailPage';
 import LoginPage from '../pages/LoginPage';
 import MessagingPage from '../pages/MessagingPage';
+import MyBookingsPage from '../pages/MyBookingsPage';
 import OtpPage from '../pages/OtpPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import RegisterPage from '../pages/RegisterPage';
@@ -38,9 +41,22 @@ const AppRoutes = () => {
 
         <Route element={<ProtectedRoute />}>
           <Route path={ROUTES.BOOKING} element={<BookingPage />} />
-          <Route path={ROUTES.DASHBOARD} element={<DashboardOwnerPage />} />
           <Route path={ROUTES.MESSAGES} element={<MessagingPage />} />
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+          <Route path={ROUTES.DASHBOARD} element={<DashboardRedirectPage />} />
+          <Route path={ROUTES.MY_BOOKINGS} element={<MyBookingsPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute roles={['PROPRIETAIRE']} />}>
+          <Route path={ROUTES.MY_HOUSES} element={<DashboardOwnerPage />} />
+          <Route path={ROUTES.ADD_HOUSE} element={<CreateHousePage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute roles={['ADMIN']} />}>
+          <Route path={ROUTES.ADMIN} element={<DashboardAdminPage />} />
+          <Route path={ROUTES.ADMIN_USERS} element={<DashboardAdminPage section="users" />} />
+          <Route path={ROUTES.ADMIN_HOUSES} element={<DashboardAdminPage section="houses" />} />
+          <Route path={ROUTES.ADMIN_BOOKINGS} element={<DashboardAdminPage section="bookings" />} />
         </Route>
 
         <Route path="*" element={<PlaceholderPage title="Page 404" />} />

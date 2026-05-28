@@ -8,8 +8,10 @@ import com.google.api.client.json.gson.GsonFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Composant responsable de la vérification d'un Google ID Token.
@@ -37,15 +39,26 @@ public class GoogleTokenVerifier {
      */
     public GoogleUserInfo verify(String idToken) {
         try {
+            if (!StringUtils.hasText(idToken)) {
+                throw new RuntimeException("Le Google ID Token est requis");
+            }
+
+            if (!StringUtils.hasText(googleClientId)) {
+                throw new RuntimeException("GOOGLE_CLIENT_ID n'est pas configuré");
+            }
+
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(),
                     GsonFactory.getDefaultInstance()
             )
                     // ✅ Vérifie que le token a bien été émis pour cette application
-                    .setAudience(Collections.singletonList(googleClientId))
+                    .setAudience(Arrays.stream(googleClientId.split(","))
+                            .map(String::trim)
+                            .filter(StringUtils::hasText)
+                            .toList())
                     .build();
 
-            GoogleIdToken googleIdToken = verifier.verify(idToken);
+            GoogleIdToken googleIdToken = verifier.verify(idToken.trim());
 
             if (googleIdToken == null) {
                 log.warn("[GoogleTokenVerifier] Token Google invalide ou signature non vérifiée");
@@ -60,6 +73,10 @@ public class GoogleTokenVerifier {
             String picture   = (String) payload.get("picture");
             boolean verified = Boolean.TRUE.equals(payload.getEmailVerified());
 
+            if (!StringUtils.hasText(googleId) || !StringUtils.hasText(email)) {
+                throw new RuntimeException("Token Google incomplet");
+            }
+
             if (!verified) {
                 log.warn("[GoogleTokenVerifier] Email non vérifié pour le compte Google : {}", email);
                 throw new RuntimeException("L'adresse email Google n'est pas vérifiée");
@@ -67,7 +84,8 @@ public class GoogleTokenVerifier {
 
             log.info("[GoogleTokenVerifier] Token Google valide → email={}, googleId={}", email, googleId);
 
-            return new GoogleUserInfo(googleId, email, name != null ? name : email, picture);
+            String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
+            return new GoogleUserInfo(googleId, normalizedEmail, StringUtils.hasText(name) ? name : normalizedEmail, picture);
 
         } catch (RuntimeException e) {
             // Propage les RuntimeException métier déjà loguées

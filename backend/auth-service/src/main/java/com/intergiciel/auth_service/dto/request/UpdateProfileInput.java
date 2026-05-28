@@ -11,5 +11,7 @@ public class UpdateProfileInput {
     @Email
     private String email;
 
+    private String phoneNumber;
+
     private String photoUrl;
 }

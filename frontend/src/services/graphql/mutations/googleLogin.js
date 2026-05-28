@@ -12,6 +12,8 @@ export const GOOGLE_LOGIN_MUTATION = gql`
         name
         email
         isVerified
+        enabled
+        role
       }
     }
   }

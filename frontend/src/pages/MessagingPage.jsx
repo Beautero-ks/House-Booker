@@ -1,27 +1,72 @@
-import { useState } from 'react';
-import { MOCK_CONVERSATIONS, MOCK_MESSAGES } from '../constants/mockData';
+import { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
+import { useAuth } from '../hooks/useAuth';
+import { getUserNotifications } from '../services/notificationApi';
 import { Search, Phone, Video, MoreVertical, Send } from 'lucide-react';
+import Loader from '../components/ui/Loader';
 
 const MessagingPage = () => {
   const { t } = useLanguage();
-  const [activeConv, setActiveConv] = useState(MOCK_CONVERSATIONS[0]);
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeConv, setActiveConv] = useState(null);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState(MOCK_MESSAGES);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadNotifications = async () => {
+      setLoading(true);
+      try {
+        const result = await getUserNotifications(user?.id);
+        if (mounted) setNotifications(Array.isArray(result) ? result : []);
+      } catch {
+        if (mounted) setNotifications([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadNotifications();
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
+
+  const conversations = useMemo(() => {
+    return notifications.map((notification) => ({
+      id: notification.id,
+      userName: notification.channel || notification.type || 'Notification',
+      userImage: user?.photoUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
+      houseTitle: notification.title || notification.subject || 'House Booker',
+      lastMessage: notification.message || notification.content || notification.body || '',
+      time: notification.createdAt || notification.sentAt || '',
+      unread: notification.status === 'UNREAD' || notification.read === false ? 1 : 0,
+    }));
+  }, [notifications, user?.photoUrl]);
+
+  useEffect(() => {
+    if (!activeConv && conversations.length > 0) {
+      setActiveConv(conversations[0]);
+    }
+  }, [activeConv, conversations]);
+
+  const messages = useMemo(() => {
+    if (!activeConv) return [];
+    return [{
+      id: activeConv.id,
+      conversationId: activeConv.id,
+      senderId: 'backend',
+      text: activeConv.lastMessage,
+      time: activeConv.time,
+    }];
+  }, [activeConv]);
 
   const handleSend = (e) => {
     e.preventDefault();
     if (!message.trim()) return;
     
-    const newMsg = {
-      id: Date.now().toString(),
-      conversationId: activeConv.id,
-      senderId: 'me',
-      text: message,
-      time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-    };
-    
-    setMessages([...messages, newMsg]);
     setMessage('');
   };
 
@@ -44,11 +89,15 @@ const MessagingPage = () => {
           </div>
           
           <div className="flex-1 overflow-y-auto">
-            {MOCK_CONVERSATIONS.map(conv => (
+            {loading && <Loader />}
+            {!loading && conversations.length === 0 && (
+              <p className="p-4 text-sm text-gray-500">Aucune notification retournée par le backend.</p>
+            )}
+            {conversations.map(conv => (
               <div 
                 key={conv.id}
                 onClick={() => setActiveConv(conv)}
-                className={`flex items-start gap-3 p-4 border-b cursor-pointer transition-colors ${activeConv.id === conv.id ? 'bg-blue-50 border-l-4 border-l-primary' : 'hover:bg-gray-100 border-l-4 border-l-transparent'}`}
+                className={`flex items-start gap-3 p-4 border-b cursor-pointer transition-colors ${activeConv?.id === conv.id ? 'bg-blue-50 border-l-4 border-l-primary' : 'hover:bg-gray-100 border-l-4 border-l-transparent'}`}
               >
                 <div className="relative">
                   <img src={conv.userImage} alt={conv.userName} className="w-12 h-12 rounded-full object-cover" />
@@ -78,9 +127,9 @@ const MessagingPage = () => {
           {/* Chat Header */}
           <div className="p-4 border-b flex justify-between items-center bg-white shadow-sm z-10">
             <div className="flex items-center gap-3">
-              <img src={activeConv.userImage} alt={activeConv.userName} className="w-10 h-10 rounded-full object-cover" />
+              <img src={activeConv?.userImage} alt={activeConv?.userName} className="w-10 h-10 rounded-full object-cover" />
               <div>
-                <h3 className="font-semibold text-gray-900">{activeConv.userName}</h3>
+                <h3 className="font-semibold text-gray-900">{activeConv?.userName || 'Backend'}</h3>
                 <p className="text-xs text-green-500 font-medium">{t('msg_online')}</p>
               </div>
             </div>
@@ -95,7 +144,7 @@ const MessagingPage = () => {
           <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50">
             <div className="text-center text-xs text-gray-400 mb-6">{t('msg_today')}</div>
             
-            {messages.filter(m => m.conversationId === activeConv.id).map(msg => {
+            {messages.filter(m => m.conversationId === activeConv?.id).map(msg => {
               const isMe = msg.senderId === 'me';
               return (
                 <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
@@ -113,10 +162,11 @@ const MessagingPage = () => {
             <form onSubmit={handleSend} className="flex items-center gap-2">
               <input 
                 type="text" 
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder={t('msg_placeholder')} 
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+                placeholder="Réponse locale désactivée tant que le backend messaging n’expose pas d’API"
                 className="flex-1 py-3 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all text-sm"
+                disabled
               />
               <button 
                 type="submit" 

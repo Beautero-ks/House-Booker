@@ -6,7 +6,7 @@ import { getAccessToken, getRefreshToken, setTokens, clearAuth } from '../utils/
 import { REFRESH_TOKEN_MUTATION } from './graphql/mutations/refreshToken';
 
 const httpLink = createHttpLink({
-  uri: API_CONFIG.GRAPHQL_URL,
+  uri: API_CONFIG.AUTH_GRAPHQL_URL,
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -47,6 +47,10 @@ const refreshAccessToken = async () => {
 
 const shouldRefreshToken = ({ graphQLErrors, networkError, operation }) => {
   if (operation.getContext()?.skipRefresh) {
+    return false;
+  }
+
+  if (!getRefreshToken()) {
     return false;
   }
 

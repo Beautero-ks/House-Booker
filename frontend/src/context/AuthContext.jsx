@@ -103,6 +103,16 @@ export function AuthProvider({ children }) {
     return result;
   }, []);
 
+  const updateAuthUser = useCallback((nextUser) => {
+    if (!nextUser) return;
+
+    setStoredUser(nextUser);
+    setUser(nextUser);
+    if (nextUser.isVerified && isAccessTokenValid()) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   const login = useCallback(
     async (email, password) => {
       setLoading(true);
@@ -110,6 +120,7 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await loginMutation({
           variables: { input: { email, password } },
+          context: { skipRefresh: true },
         });
         return handleAuthResponse(data, 'login');
       } catch (err) {
@@ -130,6 +141,7 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await registerMutation({
           variables: { input: { name, email, password, phoneNumber } },
+          context: { skipRefresh: true },
         });
         return handleAuthResponse(data, 'register');
       } catch (err) {
@@ -150,6 +162,7 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await verifyOtpMutation({
           variables: { input: { userId, code } },
+          context: { skipRefresh: true },
         });
         return handleAuthResponse(data, 'verifyOtp');
       } catch (err) {
@@ -179,6 +192,7 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await refreshTokenMutation({
           variables: { input: { refreshToken: currentRefresh } },
+          context: { skipRefresh: true },
         });
 
         const result = data?.refreshToken;
@@ -210,6 +224,7 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await resendOtpMutation({
           variables: { userId },
+          context: { skipRefresh: true },
         });
         if (!data?.resendOtp) {
           throw new Error('Réponse serveur invalide');
@@ -233,6 +248,7 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await googleLoginMutation({
           variables: { input: { idToken } },
+          context: { skipRefresh: true },
         });
         return handleAuthResponse(data, 'googleLogin');
       } catch (err) {
@@ -252,7 +268,7 @@ export function AuthProvider({ children }) {
         if (user?.isVerified) {
           setIsAuthenticated(true);
         }
-        if (!user) {
+        if (!user || !user.role) {
           try {
             await loadCurrentUser();
           } catch {
@@ -262,7 +278,7 @@ export function AuthProvider({ children }) {
       } else if (getRefreshToken()) {
         try {
           await refreshToken();
-          if (!user) {
+          if (!user || !user.role) {
             await loadCurrentUser();
           }
         } catch {
@@ -289,6 +305,7 @@ export function AuthProvider({ children }) {
     googleLogin,
     logout,
     refreshCurrentUser,
+    updateAuthUser,
     setError,
   };
 

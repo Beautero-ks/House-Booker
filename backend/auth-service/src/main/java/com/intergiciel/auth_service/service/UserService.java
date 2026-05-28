@@ -91,6 +91,10 @@ public class UserService {
             user.setName(input.getName());
         }
 
+        if (input.getPhoneNumber() != null) {
+            user.setPhoneNumber(input.getPhoneNumber());
+        }
+
         if (input.getPhotoUrl() != null) {
             user.setPhotoUrl(input.getPhotoUrl());
         }
@@ -172,7 +176,11 @@ public class UserService {
         } catch (IllegalArgumentException ex) {
             throw new BadRequestException("Rôle invalide : " + input.getRole());
         }
+        if (role != UserRole.USER && role != UserRole.PROPRIETAIRE) {
+            throw new BadRequestException("Seuls les rôles USER et PROPRIETAIRE peuvent être attribués");
+        }
 
+        ensureAdminDoesNotActOnSelf(currentUser, target);
         target.setRole(role);
         userRepository.save(target);
 
@@ -195,6 +203,60 @@ public class UserService {
         return UserMapper.toUserInfo(target);
     }
 
+    @Transactional
+    public UserInfo blockUser(String userId) {
+        User currentUser = getAuthenticatedUser();
+        if (!isAdmin(currentUser)) {
+            throw new UnauthorizedException("Accès administrateur requis");
+        }
+
+        User target = findActiveUserById(userId);
+        ensureAdminDoesNotActOnSelf(currentUser, target);
+        target.setEnabled(false);
+        tokenService.revokeRefreshTokensByUserId(target.getId());
+        userRepository.save(target);
+
+        log.info("[UserService] Compte bloqué par admin : {}", target.getEmail());
+        return UserMapper.toUserInfo(target);
+    }
+
+    @Transactional
+    public UserInfo unblockUser(String userId) {
+        User currentUser = getAuthenticatedUser();
+        if (!isAdmin(currentUser)) {
+            throw new UnauthorizedException("Accès administrateur requis");
+        }
+
+        User target = findActiveUserById(userId);
+        target.setEnabled(true);
+        userRepository.save(target);
+
+        log.info("[UserService] Compte débloqué par admin : {}", target.getEmail());
+        return UserMapper.toUserInfo(target);
+    }
+
+    @Transactional
+    public AuthResponse deleteUserByAdmin(String userId) {
+        User currentUser = getAuthenticatedUser();
+        if (!isAdmin(currentUser)) {
+            throw new UnauthorizedException("Accès administrateur requis");
+        }
+
+        User target = findActiveUserById(userId);
+        ensureAdminDoesNotActOnSelf(currentUser, target);
+        tokenService.revokeRefreshTokensByUserId(target.getId());
+        otpService.invalidateAllByUserId(target.getId());
+        target.setEnabled(false);
+        target.setDeletedAt(LocalDateTime.now());
+        userRepository.save(target);
+
+        log.info("[UserService] Compte supprimé par admin : {}", target.getEmail());
+        return AuthResponse.builder()
+                .success(true)
+                .message("Utilisateur supprimé avec succès")
+                .build();
+    }
+
     private User getAuthenticatedUser() {
         return SecurityUtils.getCurrentUser()
                 .orElseThrow(() -> new UnauthorizedException("Authentification requise"));
@@ -211,5 +273,11 @@ public class UserService {
 
     private boolean isAdmin(User user) {
         return user.getRole() == UserRole.ADMIN;
+    }
+
+    private void ensureAdminDoesNotActOnSelf(User currentUser, User target) {
+        if (currentUser.getId().equals(target.getId())) {
+            throw new BadRequestException("Un administrateur ne peut pas effectuer cette action sur son propre compte");
+        }
     }
 }

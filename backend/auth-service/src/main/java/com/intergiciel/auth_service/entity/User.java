@@ -37,6 +37,7 @@ public class User {
 
     private String phoneNumber;
 
+   @Column(name = "photo_url", columnDefinition = "TEXT")
     private String photoUrl;
 
     @Enumerated(EnumType.STRING)

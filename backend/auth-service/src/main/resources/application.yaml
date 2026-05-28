@@ -14,7 +14,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -42,27 +42,6 @@ spring:
         request.timeout.ms: 3000
         delivery.timeout.ms: 5000
 
-  # ===== OAUTH2 =====
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - openid
-              - profile
-              - email
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            client-name: Google
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
-            user-name-attribute: sub
-
 # ===== SERVER =====
 server:
   port: ${SERVER_PORT:3001}
@@ -76,14 +55,14 @@ logging:
 # ===== EUREKA =====
 eureka:
   client:
-    enabled: false
-    fetch-registry: false
-    register-with-eureka: false
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
 
 # ===== JWT =====
 jwt:
   secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
-  access-token-expiration: 900000
+  access-token-expiration: 3600000
   refresh-token-expiration: 604800000
 
 # ===== OTP =====
@@ -101,5 +80,5 @@ app:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
 
 google:
-  client-id: ${GOOGLE_CLIENT_ID:361819434983-cm1se6aefolqdhc0hashnkh6v9rg5ut6.apps.googleusercontent.com}
-  client-secret: ${GOOGLE_CLIENT_SECRET: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m1l1k1j1i1h1g1f1e1d1c1b1a}
+  client-id: ${GOOGLE_CLIENT_ID:}
+  client-secret: ${GOOGLE_CLIENT_SECRET:}
