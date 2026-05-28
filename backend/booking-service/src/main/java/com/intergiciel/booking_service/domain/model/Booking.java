@@ -40,7 +40,6 @@ public class Booking {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.PENDING;
@@ -48,8 +47,10 @@ public class Booking {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
+    @CreatedDate
     private OffsetDateTime createdAt;
-    
+
+    @LastModifiedDate
     private OffsetDateTime updatedAt;
 
     @CreatedBy
@@ -57,23 +58,5 @@ public class Booking {
 
     @LastModifiedBy
     private String lastModifiedBy;
-
-    @PrePersist
-    public void onCreate() {
-        OffsetDateTime now = OffsetDateTime.now();
-
-        if (this.createdAt == null) {
-            this.createdAt = now;
-        }
-
-        if (this.updatedAt == null) {
-            this.updatedAt = now;
-        }
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = OffsetDateTime.now();
-    }
 
 }

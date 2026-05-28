@@ -1,7 +1,7 @@
 package com.intergiciel.booking_service.api;
 
 import com.intergiciel.booking_service.application.dto.HouseDto;
-import com.intergiciel.booking_service.service.BookingService;
+import com.intergiciel.booking_service.application.service.BookingService;
 import com.intergiciel.booking_service.domain.model.Booking;
 import com.intergiciel.booking_service.domain.model.enums.BookingStatus;
 import com.intergiciel.booking_service.feign.HouseServiceClient;
@@ -64,11 +64,6 @@ public class BookingQueryResolver {
                                      @Argument LocalDate startDate,
                                      @Argument LocalDate endDate) {
         return bookingService.isHouseAvailable(houseId, startDate, endDate);
-    }
-
-    @QueryMapping
-    public HouseDto getHouseById(@Argument UUID id) {
-        return houseServiceClient.getHouseById(id);
     }
 
     private UUID resolveUserId(UUID userIdFromArguments, String userIdFromContext) {

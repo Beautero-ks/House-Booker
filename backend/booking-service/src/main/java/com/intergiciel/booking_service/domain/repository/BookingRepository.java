@@ -32,6 +32,15 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             LocalDate startDate
     );
 
+//    @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.houseId = :houseId " +
+//            "AND b.status NOT IN ('CANCELLED', 'REFUNDED') " +
+//            "AND b.startDate < :newEndDate AND b.endDate > :newStartDate")
+//    boolean existsOverlappingBooking(
+//            @Param("houseId") Long houseId,
+//            @Param("newStartDate") LocalDate newStartDate,
+//            @Param("newEndDate") LocalDate newEndDate
+//    );
+//
     // Trouver les réservations pour un logement spécifique
     List<Booking> findByHouseId(UUID houseId);
 

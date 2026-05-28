@@ -1,4 +1,4 @@
-package com.intergiciel.booking_service.domain.events.consumer;
+package com.intergiciel.booking_service.kafka.consumer;
 
 import com.intergiciel.booking_service.domain.events.PaymentCompletedEvent;
 import com.intergiciel.booking_service.domain.model.enums.BookingStatus;

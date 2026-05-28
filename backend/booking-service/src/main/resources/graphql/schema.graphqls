@@ -55,7 +55,7 @@ type HouseDto{
     prix: Float
     latitude: Float
     longitude: Float
-    disponible: Boolean
+    disponible: Boolean!
     proprietaireId: UUID!
     dateCreation: DateTime
     statutValidation: StatutValidation
@@ -76,3 +76,5 @@ type Mutation {
     cancelBookingByOwner(bookingId: UUID!, reason: String, ownerId: UUID): Booking
     deleteBookingByOwner(bookingId: UUID!, ownerId: UUID): Boolean
 }
+
+
