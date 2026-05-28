@@ -2,6 +2,7 @@ package com.intergiciel.booking_service.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,12 +10,13 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "availability")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Availability {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -26,12 +28,21 @@ public class Availability {
     @Column(nullable = false)
     private LocalDate date;
 
-    @Column(nullable = false)
-    private boolean isAvailable = true;
+    @Column(name = "is_available", nullable = false)
+    private boolean available = true;
 
-    public Availability(UUID houseId, LocalDate date, boolean b) {
+    // Convenience constructor used by service code when creating a new availability record
+    public Availability(UUID houseId, LocalDate date, boolean available) {
         this.houseId = houseId;
         this.date = date;
-        this.isAvailable = b;
+        this.available = available;
     }
+//    @Column(nullable = false)
+//    private boolean isAvailable = true;
+//
+//    public Availability(UUID houseId, LocalDate date, boolean b) {
+//        this.houseId = houseId;
+//        this.date = date;
+//        this.isAvailable = b;
+//    }
 }

@@ -18,4 +18,5 @@ List<Logement> findByPrixBetween(Double min, Double max);
 
 List<Logement> findByDisponible(Boolean disponible);
 List<Logement> findByStatutValidation(StatutValidation statut);
+List<Logement> findByProprietaireIdOrderByDateCreationDesc(UUID proprietaireId);
 }

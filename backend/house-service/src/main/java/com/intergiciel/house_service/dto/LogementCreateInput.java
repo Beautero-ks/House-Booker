@@ -14,6 +14,10 @@ public class LogementCreateInput {
     private Double prix;
     private Double latitude;
     private Double longitude;
+    private Integer nombreChambres;
+    private Integer nombreCuisines;
+    private Integer nombreSallesBain;
+    private Integer nombreToilettes;
     private Boolean disponible;
     private String proprietaireId; // UUID en String pour GraphQL
 }

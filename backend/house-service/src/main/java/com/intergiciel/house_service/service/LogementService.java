@@ -1,19 +1,22 @@
 package com.intergiciel.house_service.service;
 import com.intergiciel.house_service.dto.LogementCreateDto;
 import com.intergiciel.house_service.dto.LogementDto;
+import com.intergiciel.house_service.dto.LogementPhotoDto;
 import com.intergiciel.house_service.dto.LogementUpdateDto;
 import com.intergiciel.house_service.entity.StatutValidation;
 import com.intergiciel.house_service.exception.LogementNotFoundException;
 import com.intergiciel.house_service.entity.Logement;
 import com.intergiciel.house_service.mapper.LogementMapper;
+import com.intergiciel.house_service.repository.LogementPhotoRepository;
 import com.intergiciel.house_service.repository.LogementRepository;
+import com.intergiciel.house_service.service.LogementPhotoService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
 
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,6 +26,8 @@ import java.util.stream.Collectors;
 public class LogementService {
 
     private final LogementRepository repository;
+    private final LogementPhotoRepository photoRepository;
+    private final LogementPhotoService photoService;
     private final LogementMapper mapper;
 
     // sauvegarder un logement
@@ -33,51 +38,68 @@ public class LogementService {
     }
 
     public List<LogementDto> findAll() {
-        return repository.findAll().stream()
+        List<LogementDto> logements = repository.findAll().stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
+        attachPhotosToLogements(logements);
+        return logements;
     }
 
     public LogementDto getById(UUID id) {
         Logement logement = findByIdOrThrow(id);
-        return mapper.toDto(logement);
+        LogementDto dto = mapper.toDto(logement);
+        attachPhotosToLogements(List.of(dto));
+        return dto;
     }
 
     public LogementDto update(UUID id, LogementUpdateDto dto) {
         Logement logement = findByIdOrThrow(id);
         mapper.updateEntity(logement, dto);
         Logement updated = repository.save(logement);
-        return mapper.toDto(updated);
+        LogementDto dtoUpdated = mapper.toDto(updated);
+        attachPhotosToLogements(List.of(dtoUpdated));
+        return dtoUpdated;
     }
 
     public void delete(UUID id) {
         Logement logement = findByIdOrThrow(id);
+        photoRepository.deleteByLogementId(id);
         repository.delete(logement);
     }
 
     // ========== Recherche ==========
     public List<LogementDto> searchByVille(String ville) {
-        return repository.findByAdresseContaining(ville).stream()
+        List<LogementDto> logements = repository.findByAdresseContaining(ville).stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
+        attachPhotosToLogements(logements);
+        return logements;
     }
 
     public List<LogementDto> searchByType(String type) {
-        return repository.findByType(type).stream()
+        List<LogementDto> logements = repository.findByType(type).stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
+        attachPhotosToLogements(logements);
+        return logements;
     }
 
     public List<LogementDto> searchByPrix(Double min, Double max) {
-        return repository.findByPrixBetween(min, max).stream()
+        Double effectiveMin = min != null ? min : 0D;
+        Double effectiveMax = max != null ? max : Double.MAX_VALUE;
+        List<LogementDto> logements = repository.findByPrixBetween(effectiveMin, effectiveMax).stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
+        attachPhotosToLogements(logements);
+        return logements;
     }
 
     public List<LogementDto> searchDisponible(Boolean disponible) {
-        return repository.findByDisponible(disponible).stream()
+        List<LogementDto> logements = repository.findByDisponible(disponible).stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
+        attachPhotosToLogements(logements);
+        return logements;
     }
 
     // ========== Validation ==========
@@ -85,27 +107,64 @@ public class LogementService {
         Logement logement = findByIdOrThrow(id);
         logement.setStatutValidation(StatutValidation.VALIDE);
         Logement updated = repository.save(logement);
-        return mapper.toDto(updated);
+        LogementDto dto = mapper.toDto(updated);
+        attachPhotosToLogements(List.of(dto));
+        return dto;
     }
 
     public LogementDto rejeter(UUID id) {
         Logement logement = findByIdOrThrow(id);
         logement.setStatutValidation(StatutValidation.REJETE);
         Logement updated = repository.save(logement);
-        return mapper.toDto(updated);
+        LogementDto dto = mapper.toDto(updated);
+        attachPhotosToLogements(List.of(dto));
+        return dto;
     }
 
     public List<LogementDto> getEnAttente() {
-        return repository.findByStatutValidation(StatutValidation.EN_ATTENTE).stream()
+        List<LogementDto> logements = repository.findByStatutValidation(StatutValidation.EN_ATTENTE).stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
+        attachPhotosToLogements(logements);
+        return logements;
+    }
+
+    public List<LogementDto> getByProprietaireId(UUID proprietaireId) {
+        if (proprietaireId == null) {
+            throw new IllegalArgumentException("L'identifiant du propriétaire est obligatoire.");
+        }
+
+        List<LogementDto> logements = repository.findByProprietaireIdOrderByDateCreationDesc(proprietaireId).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+        attachPhotosToLogements(logements);
+        return logements;
+    }
+
+    public List<LogementDto> getLogementsByUtilisateurId(UUID utilisateurId) {
+        return getByProprietaireId(utilisateurId);
     }
 
     // ========== Méthodes utilitaires ==========
+    private void attachPhotosToLogements(List<LogementDto> logements) {
+        if (logements == null || logements.isEmpty()) {
+            return;
+        }
+
+        List<UUID> logementIds = logements.stream()
+                .map(LogementDto::getId)
+                .collect(Collectors.toList());
+
+        Map<UUID, List<LogementPhotoDto>> photosByLogement = photoService.getPhotosForLogementIds(logementIds);
+        logements.forEach(logement -> {
+            List<LogementPhotoDto> photos = photosByLogement.getOrDefault(logement.getId(), List.of());
+            logement.setPhotos(photos);
+            logement.setPhotoCount(photos.size());
+        });
+    }
+
     private Logement findByIdOrThrow(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new LogementNotFoundException("Logement introuvable avec l'ID: " + id));
     }
 }
-
-

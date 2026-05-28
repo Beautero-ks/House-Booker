@@ -33,33 +33,46 @@ public class GraphQLExceptionHandler extends DataFetcherExceptionResolverAdapter
     @Override
     protected GraphQLError resolveToSingleError(Throwable ex, DataFetchingEnvironment env) {
 
+        if (ex instanceof ResourceNotFoundException) {
+            log.warn("[GraphQLExceptionHandler] Ressource introuvable sur {}: {}",
+                    env.getField().getName(), ex.getMessage());
+            return buildError(env, ex.getMessage(), ErrorType.NOT_FOUND);
+        }
+
+        if (ex instanceof ConflictException) {
+            log.warn("[GraphQLExceptionHandler] Conflit métier sur {}: {}",
+                    env.getField().getName(), ex.getMessage());
+            return buildError(env, ex.getMessage(), ErrorType.BAD_REQUEST);
+        }
+
+        if (ex instanceof BadRequestException) {
+            log.warn("[GraphQLExceptionHandler] Requête invalide sur {}: {}",
+                    env.getField().getName(), ex.getMessage());
+            return buildError(env, ex.getMessage(), ErrorType.BAD_REQUEST);
+        }
+
+        if (ex instanceof UnauthorizedException) {
+            log.warn("[GraphQLExceptionHandler] Accès non autorisé sur {}: {}",
+                    env.getField().getName(), ex.getMessage());
+            return buildError(env, ex.getMessage(), ErrorType.UNAUTHORIZED);
+        }
+
         if (ex instanceof RuntimeException) {
             log.warn("[GraphQLExceptionHandler] Erreur métier sur {}: {}",
                     env.getField().getName(), ex.getMessage());
-
-            return GraphqlErrorBuilder.newError(env)
-                    .message(ex.getMessage())
-                    .errorType(resolveErrorType(ex.getMessage()))
-                    .build();
+            return buildError(env, ex.getMessage(), ErrorType.BAD_REQUEST);
         }
 
         log.error("[GraphQLExceptionHandler] Erreur inattendue sur {}: {}",
                 env.getField().getName(), ex.getMessage(), ex);
 
-        return GraphqlErrorBuilder.newError(env)
-                .message("Une erreur interne est survenue")
-                .errorType(ErrorType.INTERNAL_ERROR)
-                .build();
+        return buildError(env, "Une erreur interne est survenue", ErrorType.INTERNAL_ERROR);
     }
 
-    private ErrorType resolveErrorType(String message) {
-        if (message == null) return ErrorType.INTERNAL_ERROR;
-        if (message.contains("existe déjà"))            return ErrorType.BAD_REQUEST;
-        if (message.contains("introuvable"))            return ErrorType.NOT_FOUND;
-        if (message.contains("invalide")
-         || message.contains("expiré")
-         || message.contains("incorrect")
-         || message.contains("non vérifié"))            return ErrorType.UNAUTHORIZED;
-        return ErrorType.BAD_REQUEST;
+    private GraphQLError buildError(DataFetchingEnvironment env, String message, ErrorType errorType) {
+        return GraphqlErrorBuilder.newError(env)
+                .message(message)
+                .errorType(errorType)
+                .build();
     }
 }

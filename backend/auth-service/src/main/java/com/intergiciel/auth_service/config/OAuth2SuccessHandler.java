@@ -55,7 +55,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         log.info("[OAuth2SuccessHandler] Authentification Google réussie via redirect pour : {}", email);
 
         // Chercher l'utilisateur en base
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userRepository.findByEmailAndDeletedAtIsNull(email);
 
         if (userOpt.isEmpty()) {
             // L'utilisateur n'existe pas encore — créer le compte

@@ -20,6 +20,10 @@ public class Logement {
     private Double prix;
     private Double latitude;
     private Double longitude;
+    private Integer nombreChambres;
+    private Integer nombreCuisines;
+    private Integer nombreSallesBain;
+    private Integer nombreToilettes;
     private Boolean disponible;
     private UUID proprietaireId;
 
@@ -28,10 +32,23 @@ public class Logement {
 
     private OffsetDateTime dateCreation;
 
-    // 👉 constructeur vide (OBLIGATOIRE)
+    @PrePersist
+    public void prePersist() {
+        if (this.statutValidation == null) {
+            this.statutValidation = StatutValidation.EN_ATTENTE;
+        }
+        if (this.dateCreation == null) {
+            this.dateCreation = OffsetDateTime.now();
+        }
+        if (this.disponible == null) {
+            this.disponible = Boolean.TRUE;
+        }
+    }
+
+    // constructeur vide (OBLIGATOIRE)
     public Logement() {}
 
-    // 👉 getters & setters (OBLIGATOIRE)
+    // getters & setters (OBLIGATOIRE)
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -55,6 +72,18 @@ public class Logement {
 
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public Integer getNombreChambres() { return nombreChambres; }
+    public void setNombreChambres(Integer nombreChambres) { this.nombreChambres = nombreChambres; }
+
+    public Integer getNombreCuisines() { return nombreCuisines; }
+    public void setNombreCuisines(Integer nombreCuisines) { this.nombreCuisines = nombreCuisines; }
+
+    public Integer getNombreSallesBain() { return nombreSallesBain; }
+    public void setNombreSallesBain(Integer nombreSallesBain) { this.nombreSallesBain = nombreSallesBain; }
+
+    public Integer getNombreToilettes() { return nombreToilettes; }
+    public void setNombreToilettes(Integer nombreToilettes) { this.nombreToilettes = nombreToilettes; }
 
     public Boolean getDisponible() { return disponible; }
     public void setDisponible(Boolean disponible) { this.disponible = disponible; }

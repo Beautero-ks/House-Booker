@@ -13,6 +13,8 @@ export const LOGIN_MUTATION = gql`
         email
         phoneNumber
         isVerified
+        enabled
+        role
         createdAt
       }
     }

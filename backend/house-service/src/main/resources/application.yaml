@@ -16,6 +16,20 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  # Configuration pour les uploads de fichiers
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
+
+  # Configuration GraphQL
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+    websocket:
+      path: /graphql/websocket
+
 eureka:
   client:
     service-url:
@@ -31,3 +45,9 @@ server:
 
   servlet:
     context-path: /api/v1
+
+# Logging
+logging:
+  level:
+    com.intergiciel.house_service: DEBUG
+    org.springframework.graphql: DEBUG

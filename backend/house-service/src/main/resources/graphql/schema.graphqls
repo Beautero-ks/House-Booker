@@ -1,7 +1,18 @@
 # Définition des scalars personnalisés
 scalar UUID
 scalar DateTime
+scalar Long
 
+
+# Type Photo
+type LogementPhoto {
+    id: UUID!
+    logementId: UUID!
+    fileName: String!
+    contentType: String!
+    photoDataUrl: String
+    createdAt: DateTime!
+}
 
 # Énumération pour StatutValidation
 enum StatutValidation {
@@ -20,6 +31,10 @@ type Logement {
     prix: Float!
     latitude: Float
     longitude: Float
+    nombreChambres: Int
+    nombreCuisines: Int
+    nombreSallesBain: Int
+    nombreToilettes: Int
     disponible: Boolean!
     proprietaireId: UUID!
     statutValidation: StatutValidation!
@@ -27,6 +42,7 @@ type Logement {
 }
 
 type LogementDto {
+    id: UUID!
     titre: String!
     description: String
     adresse: String!
@@ -34,10 +50,37 @@ type LogementDto {
     prix: Float!
     latitude: Float
     longitude: Float
+    nombreChambres: Int
+    nombreCuisines: Int
+    nombreSallesBain: Int
+    nombreToilettes: Int
     disponible: Boolean!
     proprietaireId: UUID!
     statutValidation: StatutValidation!
     dateCreation: DateTime!
+    photos: [LogementPhoto!]!
+    photoCount: Int!
+}
+
+type LogementResponse {
+    id: UUID!
+    titre: String!
+    description: String
+    adresse: String!
+    type: String!
+    prix: Float!
+    latitude: Float
+    longitude: Float
+    nombreChambres: Int
+    nombreCuisines: Int
+    nombreSallesBain: Int
+    nombreToilettes: Int
+    disponible: Boolean!
+    proprietaireId: UUID!
+    statutValidation: String
+    dateCreation: DateTime!
+    photos: [LogementPhoto!]!
+    photoCount: Int!
 }
 
 # Input pour la création d'un logement
@@ -49,6 +92,10 @@ input LogementCreateInput {
     prix: Float!
     latitude: Float
     longitude: Float
+    nombreChambres: Int
+    nombreCuisines: Int
+    nombreSallesBain: Int
+    nombreToilettes: Int
     disponible: Boolean!
     proprietaireId: UUID!
 }
@@ -62,6 +109,10 @@ input LogementUpdateInput {
     prix: Float
     latitude: Float
     longitude: Float
+    nombreChambres: Int
+    nombreCuisines: Int
+    nombreSallesBain: Int
+    nombreToilettes: Int
     disponible: Boolean
 }
 
@@ -77,7 +128,7 @@ type Query {
     getById(id: UUID!): LogementDto
 
     # Récupérer tous les logements
-    getAll: [Logement!]!
+    getAll: [LogementDto!]!
 
     # Rechercher des logements par ville
     searchByVille(ville: String!): [LogementDto!]!
@@ -93,6 +144,24 @@ type Query {
 
     # Récupérer les logements en attente de validation
     getEnAttente: [LogementDto!]!
+
+    # Récupérer les logements d'un propriétaire
+    getByProprietaireId(proprietaireId: UUID!): [LogementDto!]!
+
+    # Récupérer les logements d'un utilisateur propriétaire
+    getLogementsByUtilisateurId(utilisateurId: UUID!): [LogementDto!]!
+
+    # Récupérer les logements du propriétaire connecté côté frontend
+    mesLogements(utilisateurId: UUID!): [LogementDto!]!
+
+    # Récupérer toutes les photos d'un logement
+    getLogementPhotos(logementId: UUID!): [LogementPhoto!]!
+
+    # Récupérer une photo spécifique
+    getPhotoById(photoId: UUID!, logementId: UUID!): LogementPhoto
+
+    # Compter les photos d'un logement
+    countLogementPhotos(logementId: UUID!): Long!
 }
 
 # Type Mutation
@@ -111,4 +180,16 @@ type Mutation {
 
     # Rejeter un logement
     rejeterLogement(id: UUID!): LogementDto!
+
+    # Upload de photos pour un logement (max 4 photos)
+    uploadLogementPhotos(logementId: UUID!, files: [Upload!]!): [LogementPhoto!]!
+
+    # Upload de photos pour un logement et retourne le logement avec ses photos
+    uploadHousePhotos(houseId: UUID!, files: [Upload!]!): LogementResponse!
+
+    # Supprimer une photo spécifique
+    deleteLogementPhoto(photoId: UUID!, logementId: UUID!): Boolean!
+
+    # Supprimer toutes les photos d'un logement
+    deleteAllLogementPhotos(logementId: UUID!): Boolean!
 }

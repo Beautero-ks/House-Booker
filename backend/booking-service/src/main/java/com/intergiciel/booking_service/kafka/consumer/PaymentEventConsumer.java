@@ -14,7 +14,7 @@ public class PaymentEventConsumer {
 
     @KafkaListener(topics = "payment-events")
     public void handlePaymentCompleted(PaymentCompletedEvent event) {
-        bookingRepository.findById(event.bookingId()).ifPresent(booking -> {
+        bookingRepository.findById(event.getBookingId()).ifPresent(booking -> {
             booking.setStatus(BookingStatus.CONFIRMED);
             bookingRepository.save(booking);
         });

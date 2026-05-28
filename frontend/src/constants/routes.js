@@ -14,7 +14,13 @@ export const ROUTES = {
   BOOKING: '/book/:id',
   BOOKING_LINK: (id) => `/book/${id}`,
   DASHBOARD: '/dashboard',
+  MY_BOOKINGS: '/dashboard/reservations',
+  MY_HOUSES: '/dashboard/logements',
+  ADD_HOUSE: '/dashboard/logements/nouveau',
   ADMIN: '/admin',
+  ADMIN_USERS: '/admin/utilisateurs',
+  ADMIN_HOUSES: '/admin/logements',
+  ADMIN_BOOKINGS: '/admin/reservations',
   MESSAGES: '/messages',
   PROFILE: '/profile',
 };

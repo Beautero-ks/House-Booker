@@ -19,6 +19,10 @@ public class LogementCreateDto {
     private Double prix;
     private Double latitude;
     private Double longitude;
+    private Integer nombreChambres;
+    private Integer nombreCuisines;
+    private Integer nombreSallesBain;
+    private Integer nombreToilettes;
     private Boolean disponible;
     private UUID proprietaireId;
 }

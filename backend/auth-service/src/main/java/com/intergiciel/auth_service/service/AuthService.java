@@ -7,15 +7,18 @@ import com.intergiciel.auth_service.dto.request.RegisterInput;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier.GoogleUserInfo;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
+import com.intergiciel.auth_service.dto.response.UserInfo;
 import com.intergiciel.auth_service.entity.User;
 import com.intergiciel.auth_service.kafka.EventPublisher;
 import com.intergiciel.auth_service.enums.UserRole;
+import com.intergiciel.auth_service.exception.UnauthorizedException;
 import com.intergiciel.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.UUID;
 
@@ -37,7 +40,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterInput input) throws JsonProcessingException {
 
-        if (userRepository.existsByEmail(input.getEmail()))
+        if (userRepository.existsByEmailAndDeletedAtIsNull(input.getEmail()))
             throw new RuntimeException("Un compte avec cet email existe déjà");
 
         User user = User.builder()
@@ -66,7 +69,7 @@ public class AuthService {
                 .message("Compte créé. Un code OTP a été envoyé à " + user.getEmail())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .user(AuthResponse.UserInfo.builder()
+                .user(UserInfo.builder()
                         .id(user.getId().toString())
                         .name(user.getName())
                         .email(user.getEmail())
@@ -122,8 +125,10 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginInput input) {
 
-        User user = userRepository.findByEmail(input.email())
+        User user = userRepository.findByEmailAndDeletedAtIsNull(input.email())
                 .orElseThrow(() -> new RuntimeException("Email ou mot de passe incorrect"));
+
+        ensureAccountEnabled(user);
 
         if (!user.isVerified())
             throw new RuntimeException("Compte non vérifié. Vérifiez votre boîte mail.");
@@ -138,7 +143,7 @@ public class AuthService {
                 .message("Connexion réussie")
                 .accessToken(tokenService.generateAccessToken(user))
                 .refreshToken(tokenService.generateRefreshToken(user))
-                .user(AuthResponse.UserInfo.builder()
+                .user(UserInfo.builder()
                         .id(user.getId().toString())
                         .name(user.getName())
                         .email(user.getEmail())
@@ -157,6 +162,8 @@ public class AuthService {
 
         User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        ensureAccountEnabled(user);
 
         return AuthResponse.builder()
                 .success(true)
@@ -196,8 +203,9 @@ public class AuthService {
         // 1. Vérifier le Google ID Token et extraire les infos utilisateur
         GoogleUserInfo googleUser = googleTokenVerifier.verify(idToken);
 
-        // 2. Chercher l'utilisateur en base par email
-        User user = userRepository.findByEmail(googleUser.email()).orElse(null);
+        // 2. Chercher d'abord par sub Google, puis par email pour lier un compte local existant.
+        User user = userRepository.findByGoogleIdAndDeletedAtIsNull(googleUser.googleId())
+                .orElseGet(() -> userRepository.findByEmailAndDeletedAtIsNull(googleUser.email()).orElse(null));
 
         boolean isNewUser = (user == null);
 
@@ -207,6 +215,7 @@ public class AuthService {
                     .name(googleUser.name())
                     .email(googleUser.email())
                     .password(null)                   // Pas de mot de passe pour les comptes Google
+                    .photoUrl(googleUser.picture())
                     .googleId(googleUser.googleId())
                     .provider("GOOGLE")
                     .isVerified(true)                 // Compte Google = déjà vérifié par Google
@@ -221,16 +230,33 @@ public class AuthService {
             eventPublisher.publishUserCreated(user, null, 0);
 
         } else {
+            ensureAccountEnabled(user);
+
             // 3b. Utilisateur existant — lier le compte Google si pas encore fait
-            if (user.getGoogleId() == null) {
+            if (StringUtils.hasText(user.getGoogleId()) && !user.getGoogleId().equals(googleUser.googleId())) {
+                log.warn("[AuthService] Tentative Google refusée : email={} est lié à un autre googleId", user.getEmail());
+                throw new RuntimeException("Ce compte est déjà lié à un autre compte Google");
+            }
+
+            if (!StringUtils.hasText(user.getGoogleId())) {
                 user.setGoogleId(googleUser.googleId());
                 user.setProvider("GOOGLE");
                 user.setVerified(true);               // Vérifier le compte si pas encore fait
-                userRepository.save(user);
                 log.info("[AuthService] Compte Google lié à l'utilisateur existant : {}", user.getEmail());
             } else {
                 log.info("[AuthService] Connexion Google réussie : {}", user.getEmail());
             }
+
+            if (!user.getEmail().equalsIgnoreCase(googleUser.email())) {
+                if (userRepository.existsByEmailAndDeletedAtIsNull(googleUser.email())) {
+                    throw new RuntimeException("Un compte avec cet email Google existe déjà");
+                }
+                user.setEmail(googleUser.email());
+            }
+            if (!StringUtils.hasText(user.getPhotoUrl()) && StringUtils.hasText(googleUser.picture())) {
+                user.setPhotoUrl(googleUser.picture());
+            }
+            userRepository.save(user);
         }
 
         // 4. Générer les tokens JWT internes
@@ -242,13 +268,26 @@ public class AuthService {
                 .message(isNewUser ? "Compte Google créé et connecté" : "Connexion Google réussie")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .user(AuthResponse.UserInfo.builder()
+                .user(UserInfo.builder()
                         .id(user.getId().toString())
                         .name(user.getName())
                         .email(user.getEmail())
-                        .isVerified(true)
+                        .username(user.getUsername())
+                        .phoneNumber(user.getPhoneNumber())
+                        .photoUrl(user.getPhotoUrl())
+                        .isVerified(user.isVerified())
+                        .enabled(user.isEnabled())
+                        .provider(user.getProvider())
                         .role(user.getRole().name())
+                        .createdAt(user.getCreatedAt() == null ? null : user.getCreatedAt().toString())
+                        .updatedAt(user.getUpdatedAt() == null ? null : user.getUpdatedAt().toString())
                         .build())
                 .build();
+    }
+
+    private void ensureAccountEnabled(User user) {
+        if (!user.isEnabled()) {
+            throw new UnauthorizedException("Votre compte est bloqué");
+        }
     }
 }

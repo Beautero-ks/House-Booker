@@ -27,7 +27,7 @@ public class AdminAccountInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        userRepository.findByEmail(DEFAULT_ADMIN_EMAIL).ifPresentOrElse(existing -> {
+        userRepository.findByEmailAndDeletedAtIsNull(DEFAULT_ADMIN_EMAIL).ifPresentOrElse(existing -> {
             boolean updated = false;
 
             if (existing.getRole() == null || !UserRole.ADMIN.equals(existing.getRole())) {

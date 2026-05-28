@@ -1,0 +1,5 @@
+spring:
+  cloud:
+    inetutils:
+      default-hostname: localhost
+      default-ip-address: 127.0.0.1

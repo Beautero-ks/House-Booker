@@ -15,18 +15,4 @@ public class AuthResponse {
     private String accessToken;
     private String refreshToken;
     private UserInfo user;
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class UserInfo {
-        private String id;
-        private String name;
-        private String email;
-        private String phoneNumber;
-        private boolean isVerified;
-        private String role;
-        private String createdAt;
-    }
 }

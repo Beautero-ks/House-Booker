@@ -6,6 +6,7 @@ const Input = forwardRef(({
   id, 
   icon: Icon,
   className = '', 
+  inputClassName = '',
   ...props 
 }, ref) => {
   return (
@@ -31,7 +32,7 @@ const Input = forwardRef(({
               ? 'border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500 placeholder-red-300' 
               : 'border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] placeholder-gray-400'
             }
-            py-2
+            py-2 ${inputClassName}
           `}
           {...props}
         />

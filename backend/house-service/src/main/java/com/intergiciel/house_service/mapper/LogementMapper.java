@@ -6,6 +6,7 @@ import com.intergiciel.house_service.entity.StatutValidation;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Component
 public class LogementMapper {
@@ -22,10 +23,16 @@ public class LogementMapper {
                 .prix(logement.getPrix())
                 .latitude(logement.getLatitude())
                 .longitude(logement.getLongitude())
+                .nombreChambres(logement.getNombreChambres())
+                .nombreCuisines(logement.getNombreCuisines())
+                .nombreSallesBain(logement.getNombreSallesBain())
+                .nombreToilettes(logement.getNombreToilettes())
                 .disponible(logement.getDisponible())
                 .proprietaireId(logement.getProprietaireId())
-                .statutValidation(StatutValidation.valueOf(logement.getStatutValidation().name()))
+                .statutValidation(logement.getStatutValidation())
                 .dateCreation(logement.getDateCreation())
+                .photos(List.of())
+                .photoCount(0)
                 .build();
     }
 
@@ -40,6 +47,10 @@ public class LogementMapper {
         logement.setPrix(dto.getPrix());
         logement.setLatitude(dto.getLatitude());
         logement.setLongitude(dto.getLongitude());
+        logement.setNombreChambres(dto.getNombreChambres());
+        logement.setNombreCuisines(dto.getNombreCuisines());
+        logement.setNombreSallesBain(dto.getNombreSallesBain());
+        logement.setNombreToilettes(dto.getNombreToilettes());
         logement.setDisponible(dto.getDisponible());
         logement.setProprietaireId(dto.getProprietaireId());
         logement.setStatutValidation(StatutValidation.EN_ATTENTE);
@@ -57,6 +68,10 @@ public class LogementMapper {
         if (dto.getPrix() != null) logement.setPrix(dto.getPrix());
         if (dto.getLatitude() != null) logement.setLatitude(dto.getLatitude());
         if (dto.getLongitude() != null) logement.setLongitude(dto.getLongitude());
+        logement.setNombreChambres(dto.getNombreChambres());
+        logement.setNombreCuisines(dto.getNombreCuisines());
+        logement.setNombreSallesBain(dto.getNombreSallesBain());
+        logement.setNombreToilettes(dto.getNombreToilettes());
         if (dto.getDisponible() != null) logement.setDisponible(dto.getDisponible());
     }
 }
