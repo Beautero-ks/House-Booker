@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intergiciel.booking_service.application.dto.HouseDto;
 import com.intergiciel.booking_service.shared.exception.HouseNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -23,6 +21,7 @@ public class HouseServiceClient {
     private static final String GET_HOUSE_BY_ID_QUERY = """
             query GetHouseById($id: UUID!) {
               getById(id: $id) {
+                id
                 titre
                 description
                 adresse
@@ -34,6 +33,15 @@ public class HouseServiceClient {
                 proprietaireId
                 dateCreation
                 statutValidation
+              }
+            }
+            """;
+    private static final String GET_HOUSES_BY_OWNER_QUERY = """
+            query GetHousesByOwner($proprietaireId: UUID!) {
+              getByProprietaireId(proprietaireId: $proprietaireId) {
+                id
+                titre
+                proprietaireId
               }
             }
             """;
@@ -52,8 +60,7 @@ public class HouseServiceClient {
         this.objectMapper = objectMapper;
     }
 
-    @QueryMapping
-    public HouseDto getHouseById(@Argument UUID id) {
+    public HouseDto getHouseById(UUID id) {
         GraphQlRequest request = new GraphQlRequest(
                 GET_HOUSE_BY_ID_QUERY,
                 Map.of("id", id.toString())
@@ -101,6 +108,52 @@ public class HouseServiceClient {
         }
     }
 
+    public List<HouseDto> getHousesByOwnerId(UUID ownerId) {
+        GraphQlRequest request = new GraphQlRequest(
+                GET_HOUSES_BY_OWNER_QUERY,
+                Map.of("proprietaireId", ownerId.toString())
+        );
+
+        try {
+            String rawResponse = restClient.post()
+                    .uri(graphqlPath)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(request)
+                    .retrieve()
+                    .body(String.class);
+
+            if (rawResponse == null || rawResponse.isBlank()) {
+                throw new IllegalStateException("Empty response from house-service at path: " + graphqlPath);
+            }
+
+            GraphQlResponse response = objectMapper.readValue(rawResponse, GraphQlResponse.class);
+
+            if (response == null) {
+                throw new IllegalStateException("Empty response from house-service");
+            }
+
+            if (response.errors != null && !response.errors.isEmpty()) {
+                String firstErrorMessage = response.errors.getFirst().message();
+                throw new HouseNotFoundException("House service error: " + firstErrorMessage);
+            }
+
+            return response.data() == null || response.data().getByProprietaireId() == null
+                    ? List.of()
+                    : response.data().getByProprietaireId();
+        } catch (RestClientResponseException ex) {
+            throw new IllegalStateException(
+                    "House-service HTTP " + ex.getStatusCode().value() + " at " + graphqlPath + ", body: " +
+                            truncate(ex.getResponseBodyAsString()),
+                    ex
+            );
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Invalid JSON from house-service", ex);
+        } catch (RestClientException ex) {
+            throw new IllegalStateException("Unable to call house-service", ex);
+        }
+    }
+
     private static String truncate(String value) {
         if (value == null) {
             return "";
@@ -115,7 +168,7 @@ public class HouseServiceClient {
     private record GraphQlResponse(GraphQlData data, List<GraphQlError> errors) {
     }
 
-    private record GraphQlData(HouseDto getById) {
+    private record GraphQlData(HouseDto getById, List<HouseDto> getByProprietaireId) {
     }
 
     private record GraphQlError(String message) {

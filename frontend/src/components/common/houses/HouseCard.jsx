@@ -36,7 +36,7 @@ const HouseCard = ({ house }) => {
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center bg-gray-100 text-gray-400">
             <ImageOff size={28} />
-            <span className="mt-2 text-xs">Aucune photo</span>
+            <span className="mt-2 text-xs">{t('dashboard_no_photo')}</span>
           </div>
         )}
         {(house.rating != null || house.reviewsCount != null) && (
@@ -112,9 +112,9 @@ const HouseCard = ({ house }) => {
           </div>
           <Link
             to={ROUTES.HOUSE_DETAIL_LINK(house.id)}
-            className="bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm hover:shadow-md"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-primary px-3 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-primary-hover hover:shadow-md"
           >
-            Détails
+            {t('dashboard_detail')}
           </Link>
         </div>
       </div>

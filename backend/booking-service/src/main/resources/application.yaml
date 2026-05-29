@@ -1,17 +1,21 @@
 spring:
   application:
     name: booking-service
+
   graphql:
     schema:
       locations: classpath:graphql/
       file-extensions: .graphqls
     cors:
       allowed-origins: "*"
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/booking_db
-    username: postgres
-    password: root
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/booking_db}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin123}
     driver-class-name: org.postgresql.Driver
+
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -19,22 +23,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://auth-service:8080/auth/realms/housebooker
-          jwk-set-uri: http://auth-service:8080/auth/realms/housebooker/protocol/openid-connect/certs
+
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       group-id: ${KAFKA_CONSUMER_GROUP:booking-service}
       auto-offset-reset: earliest
-
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
@@ -42,6 +39,12 @@ spring:
 
 server:
   port: 8082
+
+# ===== JWT =====
+jwt:
+  secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000
 
 eureka:
   client:

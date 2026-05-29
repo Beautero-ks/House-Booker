@@ -6,20 +6,15 @@ package com.notification.service.channel;
 //
 // Handles sending notifications via email.
 //
-// In a real system, this would integrate with:
-// - SendGrid
-// - Amazon SES
-// - Mailgun
-// - SMTP server
-//
-// For this demo, we just log the email (mock implementation).
-//
-
 import com.notification.model.entity.Notification;
 import com.notification.model.entity.NotificationUser;
 import com.notification.model.enums.ChannelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 /**
@@ -31,6 +26,16 @@ import org.springframework.stereotype.Component;
 public class EmailChannelHandler implements ChannelHandler {
 
     private static final Logger log = LoggerFactory.getLogger(EmailChannelHandler.class);
+
+    private final JavaMailSender mailSender;
+    private final String fromAddress;
+
+    public EmailChannelHandler(
+            JavaMailSender mailSender,
+            @Value("${notification.mail.from:no-reply@housebooker.local}") String fromAddress) {
+        this.mailSender = mailSender;
+        this.fromAddress = fromAddress;
+    }
     
     @Override
     public ChannelType getChannelType() {
@@ -58,43 +63,23 @@ public class EmailChannelHandler implements ChannelHandler {
     public boolean send(Notification notification) {
         NotificationUser notificationUser = notification.getNotificationUser();
         String email = notificationUser.getEmail();
+        String subject = notification.getSubject() == null || notification.getSubject().isBlank()
+                ? "Notification HouseBooker"
+                : notification.getSubject();
         
-        log.info("========== SENDING EMAIL ==========");
-        log.info("To: {}", email);
-        log.info("Subject: {}", notification.getSubject());
-        log.info("Body: {}", notification.getContent());
-        log.info("====================================");
-        
-        // =====================================================
-        // TODO: Integrate with actual email provider
-        // =====================================================
-        // 
-        // Example with SendGrid:
-        //
-        // Email from = new Email("noreply@yourapp.com");
-        // Email to = new Email(email);
-        // Content content = new Content("text/html", notification.getContent());
-        // Mail mail = new Mail(from, notification.getSubject(), to, content);
-        // 
-        // SendGrid sg = new SendGrid(sendGridApiKey);
-        // Request request = new Request();
-        // request.setMethod(Method.POST);
-        // request.setEndpoint("mail/send");
-        // request.setBody(mail.build());
-        // 
-        // Response response = sg.api(request);
-        // return response.getStatusCode() >= 200 && response.getStatusCode() < 300;
-        //
-        
-        // For demo: Simulate 95% success rate
-        boolean success = Math.random() > 0.05;
-        
-        if (success) {
-            log.info("Email sent successfully to {}", email);
-        } else {
-            log.warn("Email failed to send to {} (simulated failure)", email);
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromAddress);
+        message.setTo(email);
+        message.setSubject(subject);
+        message.setText(notification.getContent());
+
+        try {
+            mailSender.send(message);
+            log.info("Email sent to {} via SMTP", email);
+            return true;
+        } catch (MailException e) {
+            log.error("Email failed to send to {}: {}", email, e.getMessage(), e);
+            return false;
         }
-        
-        return success;
     }
 }

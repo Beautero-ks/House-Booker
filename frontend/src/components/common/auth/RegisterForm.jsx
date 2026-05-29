@@ -15,6 +15,7 @@ const RegisterForm = () => {
     password: '',
     phoneNumber: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
   
   const { register, loading, error } = useAuth();
   const { t } = useLanguage();
@@ -39,9 +40,9 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-card border border-gray-100">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('auth_register_title')}</h2>
+    <div className="w-full max-w-md rounded-xl border border-gray-100 bg-white p-5 shadow-card sm:p-8">
+      <div className="mb-6 text-center sm:mb-8">
+        <h2 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">{t('auth_register_title')}</h2>
         <p className="text-gray-500">{t('auth_register_subtitle')}</p>
       </div>
 
@@ -92,6 +93,9 @@ const RegisterForm = () => {
           icon={Lock}
           value={formData.password}
           onChange={handleChange}
+          showPasswordToggle
+          passwordVisible={showPassword}
+          onTogglePasswordVisibility={() => setShowPassword((value) => !value)}
           required
           placeholder="••••••••"
         />

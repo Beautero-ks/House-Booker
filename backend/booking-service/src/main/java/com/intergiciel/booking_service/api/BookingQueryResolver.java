@@ -1,8 +1,10 @@
 package com.intergiciel.booking_service.api;
 
+import com.intergiciel.booking_service.application.dto.HouseDto;
 import com.intergiciel.booking_service.service.BookingService;
 import com.intergiciel.booking_service.domain.model.Booking;
 import com.intergiciel.booking_service.domain.model.enums.BookingStatus;
+import com.intergiciel.booking_service.feign.HouseServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookingQueryResolver {
     private final BookingService bookingService;
+    private final HouseServiceClient houseServiceClient;
 
     @QueryMapping
     public Booking booking(@Argument UUID id, @Argument UUID userId,
@@ -42,10 +45,30 @@ public class BookingQueryResolver {
     }
 
     @QueryMapping
+    public List<Booking> allBookings(@Argument Integer page,
+                                     @Argument Integer size) {
+        int pageNum = page != null ? page : 0;
+        int pageSize = size != null ? size : 50;
+        return bookingService.getAllBookings(pageNum, pageSize);
+    }
+
+    @QueryMapping
+    public List<Booking> ownerBookings(@Argument UUID ownerId,
+                                       @ContextValue(name = "userId", required = false) String contextUserId) {
+        UUID effectiveOwnerId = resolveUserId(ownerId, contextUserId);
+        return bookingService.getOwnerBookings(effectiveOwnerId);
+    }
+
+    @QueryMapping
     public boolean checkAvailability(@Argument UUID houseId,
                                      @Argument LocalDate startDate,
                                      @Argument LocalDate endDate) {
         return bookingService.isHouseAvailable(houseId, startDate, endDate);
+    }
+
+    @QueryMapping
+    public HouseDto getHouseById(@Argument UUID id) {
+        return houseServiceClient.getHouseById(id);
     }
 
     private UUID resolveUserId(UUID userIdFromArguments, String userIdFromContext) {

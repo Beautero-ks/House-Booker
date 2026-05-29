@@ -65,6 +65,12 @@ public class KafkaConfig {
     
     @Value("${notification.kafka.topic.dlq:notifications.dlq}")
     private String dlqTopic;
+
+    @Value("${notification.kafka.topic.replicas:1}")
+    private int topicReplicas;
+
+    @Value("${spring.kafka.listener.auto-startup:true}")
+    private boolean listenerAutoStartup;
     
     // ==================== Topic Creation ====================
     // 
@@ -76,7 +82,7 @@ public class KafkaConfig {
     public NewTopic emailNotificationsTopic() {
         return TopicBuilder.name(emailTopic)
             .partitions(8)      // 8 partitions for high-volume email
-            .replicas(3)        // 3 replicas for fault tolerance
+            .replicas(topicReplicas)
             .build();
     }
     
@@ -84,7 +90,7 @@ public class KafkaConfig {
     public NewTopic smsNotificationsTopic() {
         return TopicBuilder.name(smsTopic)
             .partitions(4)      // Fewer partitions (SMS is rate-limited by providers)
-            .replicas(3)
+            .replicas(topicReplicas)
             .build();
     }
     
@@ -92,7 +98,7 @@ public class KafkaConfig {
     public NewTopic pushNotificationsTopic() {
         return TopicBuilder.name(pushTopic)
             .partitions(8)      // 8 partitions (push needs to be fast)
-            .replicas(3)
+            .replicas(topicReplicas)
             .build();
     }
     
@@ -100,7 +106,7 @@ public class KafkaConfig {
     public NewTopic inAppNotificationsTopic() {
         return TopicBuilder.name(inAppTopic)
             .partitions(6)
-            .replicas(3)
+            .replicas(topicReplicas)
             .build();
     }
     
@@ -108,7 +114,7 @@ public class KafkaConfig {
     public NewTopic dlqTopic() {
         return TopicBuilder.name(dlqTopic)
             .partitions(1)      // Single partition for DLQ
-            .replicas(3)
+            .replicas(topicReplicas)
             .build();
     }
     
@@ -169,6 +175,7 @@ public class KafkaConfig {
         // Number of concurrent consumers (threads)
         // Should match total partitions across topics for full parallelism
         factory.setConcurrency(10);
+        factory.setAutoStartup(listenerAutoStartup);
         
         return factory;
     }

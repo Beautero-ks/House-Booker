@@ -11,6 +11,7 @@ import { Mail, Lock } from 'lucide-react';
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login, loading, error } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -34,9 +35,9 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-card border border-gray-100">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('auth_login_title')}</h2>
+    <div className="w-full max-w-md rounded-xl border border-gray-100 bg-white p-5 shadow-card sm:p-8">
+      <div className="mb-6 text-center sm:mb-8">
+        <h2 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">{t('auth_login_title')}</h2>
         <p className="text-gray-500">{t('auth_login_subtitle')}</p>
       </div>
 
@@ -66,11 +67,14 @@ const LoginForm = () => {
             icon={Lock}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            showPasswordToggle
+            passwordVisible={showPassword}
+            onTogglePasswordVisibility={() => setShowPassword((value) => !value)}
             required
             placeholder="••••••••"
           />
           <div className="flex justify-end mt-1">
-            <a href="#" className="text-sm text-primary hover:underline">{t('auth_forgot_password')}</a>
+            <a href="#" className="inline-flex min-h-11 items-center text-sm text-primary hover:underline">{t('auth_forgot_password')}</a>
           </div>
         </div>
 

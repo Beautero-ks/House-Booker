@@ -11,6 +11,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class HouseDto {
+    private UUID id;
     private String titre;
     private String description;
     private String adresse;

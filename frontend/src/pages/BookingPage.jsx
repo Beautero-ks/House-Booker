@@ -11,12 +11,13 @@ import Loader from '../components/ui/Loader';
 import EmptyState from '../components/common/EmptyState';
 import { getHouseById } from '../services/houseApi';
 import { createBooking } from '../services/bookingApi';
+import { getAuthenticatedUserId } from '../utils/authUser';
 
 const BookingInfoStep = ({ t, user, onContinue }) => (
   <div className="space-y-6 animate-fade-in">
-    <h2 className="text-2xl font-bold mb-6">{t('booking_info_title')}</h2>
+    <h2 className="mb-6 text-xl font-bold sm:text-2xl">{t('booking_info_title')}</h2>
 
-    <div className="bg-white p-6 rounded-xl border border-gray-200">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6">
       <h3 className="text-lg font-semibold mb-4">{t('booking_your_info')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input label={t('booking_full_name')} defaultValue={user?.name || ''} />
@@ -31,13 +32,13 @@ const BookingInfoStep = ({ t, user, onContinue }) => (
   </div>
 );
 
-const BookingPaymentStep = ({ t, total, onPay }) => (
+const BookingPaymentStep = ({ t, total, onPay, submitting }) => (
   <div className="space-y-6 animate-fade-in">
-    <h2 className="text-2xl font-bold mb-6">{t('payment_choose')}</h2>
+    <h2 className="mb-6 text-xl font-bold sm:text-2xl">{t('payment_choose')}</h2>
 
     <div className="space-y-3">
       {['payment_mobile', 'payment_card', 'payment_arrival'].map((method, idx) => (
-        <label key={method} className="flex items-center justify-between p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+        <label key={method} className="flex min-h-14 cursor-pointer items-center justify-between rounded-xl border p-4 transition-colors hover:bg-gray-50">
           <div className="flex items-center gap-3">
             <input type="radio" name="payment" className="w-5 h-5 text-primary" defaultChecked={idx === 0} />
             <span className="font-medium text-gray-800">{t(method)}</span>
@@ -46,22 +47,22 @@ const BookingPaymentStep = ({ t, total, onPay }) => (
       ))}
     </div>
 
-    <Button fullWidth size="lg" onClick={onPay}>
+    <Button fullWidth size="lg" onClick={onPay} isLoading={submitting}>
       {t('payment_pay')} {formatPrice(total)}
     </Button>
   </div>
 );
 
 const BookingConfirmationStep = ({ house, navigate, t }) => (
-  <div className="text-center py-12 animate-fade-in">
+  <div className="animate-fade-in py-8 text-center sm:py-12">
     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
       <Check size={40} className="text-green-500" />
     </div>
-    <h2 className="text-3xl font-bold mb-4">{t('booking_confirmed_title')}</h2>
+    <h2 className="mb-4 text-2xl font-bold sm:text-3xl">{t('booking_confirmed_title')}</h2>
     <p className="text-gray-600 mb-8 max-w-md mx-auto">
       {t('booking_confirmed_message', { houseTitle: house.title })}
     </p>
-    <div className="flex gap-4 justify-center">
+    <div className="flex flex-col justify-center gap-3 sm:flex-row sm:gap-4">
       <Button variant="outline" onClick={() => navigate(ROUTES.DASHBOARD)}>{t('booking_view_bookings')}</Button>
       <Button onClick={() => navigate(ROUTES.HOME)}>{t('booking_back_home')}</Button>
     </div>
@@ -74,6 +75,7 @@ const BookingPage = () => {
   const location = useLocation();
   const { t } = useLanguage();
   const { user } = useAuth();
+  const userId = getAuthenticatedUserId(user);
 
   const [house, setHouse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -114,26 +116,26 @@ const BookingPage = () => {
 
   const handlePay = async () => {
     setBookingError('');
-    if (!user?.id) {
-      setBookingError('Vous devez être connecté pour réserver.');
+    if (!userId) {
+      setBookingError(t('booking_login_required'));
       return;
     }
     if (!checkIn || !checkOut) {
-      setBookingError('Les dates de réservation sont obligatoires.');
+      setBookingError(t('booking_dates_required'));
       return;
     }
 
     setSubmitting(true);
     try {
       await createBooking({
-        userId: user.id,
+        userId,
         houseId: house.id,
         startDate: checkIn,
         endDate: checkOut,
       });
       setStep(3);
     } catch (err) {
-      setBookingError(err.message || 'Impossible de créer la réservation.');
+      setBookingError(err.message || t('booking_create_error'));
     } finally {
       setSubmitting(false);
     }
@@ -152,30 +154,30 @@ const BookingPage = () => {
       <div className="container mx-auto px-4 py-20">
         <EmptyState
           icon={<Check size={48} className="text-gray-300 mb-4" />}
-          title="Réservation indisponible"
-          description={error?.message || 'Le backend n’a pas retourné ce logement.'}
-          action={<Button variant="outline" onClick={() => navigate(ROUTES.SEARCH)}>Retour aux logements</Button>}
+          title={t('booking_unavailable_title')}
+          description={error?.message || t('booking_missing_house')}
+          action={<Button variant="outline" onClick={() => navigate(ROUTES.SEARCH)}>{t('booking_back_to_listings')}</Button>}
         />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
+    <div className="container mx-auto max-w-5xl px-4 py-6 sm:py-12">
       
       {/* Stepper Header */}
-      <div className="flex items-center justify-center mb-12">
+      <div className="mb-8 flex items-center justify-center sm:mb-12">
         <div className={`flex items-center ${step >= 1 ? 'text-primary' : 'text-gray-400'}`}>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-primary text-white' : 'bg-gray-200'}`}>1</div>
           <span className="ml-2 font-medium hidden sm:inline">{t('booking_step_info')}</span>
         </div>
-        <div className={`w-16 sm:w-24 h-1 mx-4 ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+        <div className={`mx-2 h-1 w-8 sm:mx-4 sm:w-24 ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
         
         <div className={`flex items-center ${step >= 2 ? 'text-primary' : 'text-gray-400'}`}>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-primary text-white' : 'bg-gray-200'}`}>2</div>
           <span className="ml-2 font-medium hidden sm:inline">{t('booking_step_payment')}</span>
         </div>
-        <div className={`w-16 sm:w-24 h-1 mx-4 ${step >= 3 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+        <div className={`mx-2 h-1 w-8 sm:mx-4 sm:w-24 ${step >= 3 ? 'bg-primary' : 'bg-gray-200'}`}></div>
         
         <div className={`flex items-center ${step >= 3 ? 'text-primary' : 'text-gray-400'}`}>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 3 ? 'bg-primary text-white' : 'bg-gray-200'}`}>3</div>
@@ -183,15 +185,14 @@ const BookingPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
         {/* Dynamic Left Content */}
         <div className="flex-1">
           {step === 1 && <BookingInfoStep t={t} user={user} onContinue={() => setStep(2)} />}
           {step === 2 && (
             <>
               {bookingError && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{bookingError}</p>}
-              <BookingPaymentStep t={t} total={total} onPay={handlePay} />
-              {submitting && <p className="mt-3 text-sm text-gray-500">Création de la réservation...</p>}
+              <BookingPaymentStep t={t} total={total} onPay={handlePay} submitting={submitting} />
             </>
           )}
           {step === 3 && <BookingConfirmationStep house={house} navigate={navigate} t={t} />}
@@ -200,10 +201,10 @@ const BookingPage = () => {
         {/* Right Summary Sidebar (hidden on confirmation step) */}
         {step < 3 && (
           <div className="w-full lg:w-[400px]">
-            <div className="bg-white p-6 rounded-2xl shadow-card border border-gray-100 sticky top-24">
+            <div className="sticky top-20 rounded-xl border border-gray-100 bg-white p-4 shadow-card sm:p-6 lg:top-24 lg:rounded-2xl">
               <h3 className="text-xl font-bold mb-4">{t('payment_summary')}</h3>
               
-              <div className="flex gap-4 mb-6 pb-6 border-b">
+              <div className="mb-6 flex gap-4 border-b pb-6">
                 {house.images?.[0] ? (
                   <img src={house.images[0]} alt={house.title} className="w-24 h-24 object-cover rounded-lg" />
                 ) : (
@@ -211,39 +212,39 @@ const BookingPage = () => {
                     <ImageOff size={24} />
                   </div>
                 )}
-                <div>
+                <div className="min-w-0">
                   <h4 className="font-semibold text-gray-900 line-clamp-2">{house.title}</h4>
                   <p className="text-sm text-gray-500">{house.location}</p>
                 </div>
               </div>
 
               <div className="space-y-3 mb-6 pb-6 border-b text-sm">
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-gray-500">{t('booking_arrival')}</span>
                   <span className="font-medium">{checkIn || '12/06/2024'}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-gray-500">{t('booking_departure')}</span>
                   <span className="font-medium">{checkOut || '14/06/2024'}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-gray-500">{t('booking_guests_count')}</span>
                   <span className="font-medium">{t('booking_guest_count_value', { count: guests })}</span>
                 </div>
               </div>
 
               <div className="space-y-3 mb-6 pb-6 border-b text-sm">
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-gray-500">{t('booking_price_night_count', { count: nights })}</span>
                   <span className="font-medium">{formatPrice(totalNightsPrice)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-gray-500">{t('booking_service_fee')}</span>
                   <span className="font-medium">{formatPrice(serviceFee)}</span>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between gap-4">
                 <span className="font-bold text-lg">{t('booking_total')}</span>
                 <span className="font-bold text-xl text-primary">{formatPrice(total)}</span>
               </div>

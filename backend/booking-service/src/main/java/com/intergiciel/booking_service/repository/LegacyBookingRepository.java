@@ -1,4 +1,4 @@
-package com.intergiciel.booking_service.legacy.repository;
+package com.intergiciel.booking_service.repository;
 
 // Legacy placeholder to preserve history. Not used by Spring Data.
 import com.intergiciel.booking_service.domain.model.Booking;

@@ -37,16 +37,16 @@ const SearchPage = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     icon={Search}
                     className="w-full"
-                    inputClassName="border-0 bg-gray-50 text-sm py-2.5 shadow-none focus:ring-1"
+                    inputClassName="border-0 bg-gray-50 text-base py-2.5 shadow-none focus:ring-1"
                   />
                 </div>
               </div>
 
-              <div className="flex w-full sm:w-auto items-center gap-2">
+              <div className="flex w-full items-center gap-2 sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setShowFilters((s) => !s)}
-                  className="inline-flex flex-1 sm:flex-none items-center justify-center gap-2 border border-gray-200 bg-white px-4 py-2.5 rounded-lg text-sm font-medium text-gray-700 shadow-sm hover:border-primary hover:text-primary hover:shadow-md transition"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-primary hover:text-primary hover:shadow-md sm:flex-none"
                 >
                   <Filter size={16} />
                   <span className="text-sm">{t('search_filters')}</span>
@@ -66,7 +66,7 @@ const SearchPage = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('search_type')}</label>
                   <select
-                    className="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                     value={filters.type}
                     onChange={(e) => updateFilter('type', e.target.value)}
                   >
@@ -81,7 +81,7 @@ const SearchPage = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('search_price')}</label>
-                  <div className="flex items-center gap-2">
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                     <Input
                       type="number"
                       placeholder="Min"
@@ -126,16 +126,16 @@ const SearchPage = () => {
         ) : error ? (
           <EmptyState
             icon={<Filter size={48} className="text-gray-300 mb-4" />}
-            title="Backend logement indisponible"
+            title={t('detail_missing_title')}
             description={error.message}
             action={
               <Button variant="outline" className="mt-6" onClick={refetch}>
-                Réessayer
+                {t('common_retry')}
               </Button>
             }
           />
         ) : filteredHouses.length > 0 ? (
-          <div className="mx-auto mt-6 grid w-full grid-cols-[repeat(auto-fit,minmax(220px,240px))] justify-center gap-5 items-stretch">
+          <div className="mx-auto mt-6 grid w-full grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredHouses.map((house) => (
               <HouseCard key={house.id} house={house} />
             ))}
