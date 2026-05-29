@@ -1,5 +1,6 @@
 package com.intergiciel.auth_service.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.intergiciel.auth_service.dto.request.AssignRoleInput;
 import com.intergiciel.auth_service.dto.request.ChangePasswordInput;
 import com.intergiciel.auth_service.dto.request.DeleteAccountInput;
@@ -14,6 +15,7 @@ import com.intergiciel.auth_service.exception.BadRequestException;
 import com.intergiciel.auth_service.exception.ConflictException;
 import com.intergiciel.auth_service.exception.ResourceNotFoundException;
 import com.intergiciel.auth_service.exception.UnauthorizedException;
+import com.intergiciel.auth_service.kafka.EventPublisher;
 import com.intergiciel.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +69,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserInfo updateProfile(UpdateProfileInput input) {
+    public UserInfo updateProfile(UpdateProfileInput input) throws JsonProcessingException {
         User user = getAuthenticatedUser();
 
         if (input.getUsername() != null && !input.getUsername().equals(user.getUsername())) {
