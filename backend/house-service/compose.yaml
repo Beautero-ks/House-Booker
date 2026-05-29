@@ -1,9 +1,9 @@
-services:
-  postgres:
-    image: 'postgres:16-alpine'
-    environment:
-      - 'POSTGRES_DB=db_logements'
-      - 'POSTGRES_PASSWORD=admin123'
-      - 'POSTGRES_USER=admin'
-    ports:
-      - '5433:5432'
+services: {}
+#  postgres:
+#    image: 'postgres:16-alpine'
+#    environment:
+#      - 'POSTGRES_DB=db_logements'
+#      - 'POSTGRES_PASSWORD=admin123'
+#      - 'POSTGRES_USER=admin'
+#    ports:
+#      - '5433:5432'

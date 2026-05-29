@@ -44,8 +44,8 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/notification_db
     #     └── jdbc:postgresql://HOST:PORT/DATABASE_NAME
-    username: admin
-    password: admin123
+    username: postgres
+    password: root
     
     # HikariCP is the connection pool (manages database connections)
     # Formula: pool-size ≈ (core_count * 2) + spinning_disks

@@ -6,6 +6,7 @@ import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier.GoogleUserIn
 import com.intergiciel.auth_service.entity.User;
 import com.intergiciel.auth_service.enums.UserRole;
 import com.intergiciel.auth_service.exception.UnauthorizedException;
+import com.intergiciel.auth_service.kafka.EventPublisher;
 import com.intergiciel.auth_service.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

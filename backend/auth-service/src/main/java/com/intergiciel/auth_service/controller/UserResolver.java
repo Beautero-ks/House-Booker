@@ -1,5 +1,6 @@
 package com.intergiciel.auth_service.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.intergiciel.auth_service.dto.request.AssignRoleInput;
 import com.intergiciel.auth_service.dto.request.ChangePasswordInput;
 import com.intergiciel.auth_service.dto.request.DeleteAccountInput;
@@ -47,7 +48,7 @@ public class UserResolver {
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
-    public UserInfo updateProfile(@Argument @Valid UpdateProfileInput input) {
+    public UserInfo updateProfile(@Argument @Valid UpdateProfileInput input) throws JsonProcessingException {
         log.info("[UserResolver] mutation updateProfile");
         return userService.updateProfile(input);
     }
