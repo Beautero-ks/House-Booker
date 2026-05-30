@@ -198,6 +198,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       HOST_PRIVATE_IP: ${EC2_1_PRIVATE_IP}
       EUREKA_INSTANCE_IP_ADDRESS: ${EC2_1_PRIVATE_IP}
+    ports:
+      - "3001:8081"
     depends_on:
       postgres:
         condition: service_healthy
