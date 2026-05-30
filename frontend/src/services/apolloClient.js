@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
-import { API_CONFIG } from '../constants/app';
+import { API_CONFIG } from '../config/api';
 import { getAccessToken, getRefreshToken, setTokens, clearAuth } from '../utils/tokenStorage';
 import { REFRESH_TOKEN_MUTATION } from './graphql/mutations/refreshToken';
 
