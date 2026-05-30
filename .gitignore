@@ -1,1 +1,5 @@
 backend/auth-service/.env
+.env
+
+.idea/
+.vscode/
