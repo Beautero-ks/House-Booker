@@ -51,8 +51,8 @@ type HouseDto{
     titre: String!
     description: String!
     adresse: String
-    type: String!
-    prix: Float!
+    type: String
+    prix: Float
     latitude: Float
     longitude: Float
     disponible: Boolean!
@@ -64,6 +64,8 @@ type HouseDto{
 type Query {
     booking(id: UUID!, userId: UUID!): Booking
     myBookings(userId: UUID!, status: BookingStatus, page: Int = 0, size: Int = 10): [Booking!]!
+    allBookings(page: Int, size: Int): [Booking!]!
+    ownerBookings(ownerId: UUID): [Booking!]!
     checkAvailability(houseId: UUID!, startDate: Date!, endDate: Date!): Boolean!
     getHouseById(id: UUID!): HouseDto
 }
@@ -71,6 +73,8 @@ type Query {
 type Mutation {
     createBooking(userId: UUID, input: BookingCreateInput!): Booking
     cancelBooking(bookingId: UUID!, reason: String, userId: UUID): Booking
+    cancelBookingByOwner(bookingId: UUID!, reason: String, ownerId: UUID): Booking
+    deleteBookingByOwner(bookingId: UUID!, ownerId: UUID): Boolean
 }
 
 

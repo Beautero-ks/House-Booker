@@ -58,9 +58,9 @@ const OtpVerification = () => {
   };
 
   return (
-    <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-card border border-gray-100">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('auth_otp_title')}</h2>
+    <div className="w-full max-w-md rounded-xl border border-gray-100 bg-white p-5 shadow-card sm:p-8">
+      <div className="mb-8 text-center">
+        <h2 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">{t('auth_otp_title')}</h2>
         <p className="text-gray-500">
           {t('auth_otp_subtitle')} <br/>
           <span className="font-medium text-gray-800">{user?.email}</span>
@@ -88,7 +88,7 @@ const OtpVerification = () => {
             id="code"
             type="text"
             maxLength={6}
-            className="block w-full text-center text-2xl tracking-widest rounded-md border border-gray-300 py-3 focus:border-primary focus:ring-primary"
+            className="block min-h-12 w-full rounded-md border border-gray-300 py-3 text-center text-2xl tracking-widest focus:border-primary focus:ring-primary"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} // only numbers
             required
@@ -105,7 +105,7 @@ const OtpVerification = () => {
           type="button" 
           onClick={handleResend}
           disabled={countdown > 0}
-          className="text-sm text-primary font-medium hover:underline disabled:text-gray-400 disabled:no-underline"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-primary hover:underline disabled:text-gray-400 disabled:no-underline"
         >
           {countdown > 0 ? `Renvoyer le code dans ${countdown}s` : t('auth_otp_resend')}
         </button>

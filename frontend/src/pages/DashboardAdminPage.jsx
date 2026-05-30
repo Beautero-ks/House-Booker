@@ -6,8 +6,10 @@ import { Users, Home, Calendar, DollarSign, Activity, ImageOff, Ban, RotateCcw, 
 import StatCard from '../components/common/StatCard';
 import Loader from '../components/ui/Loader';
 import Button from '../components/ui/Button';
+import PaginationControls, { PAGE_SIZE } from '../components/common/PaginationControls';
 import { assignRole, blockUser, deleteUserByAdmin, getUsers, unblockUser } from '../services/adminApi';
 import { deleteHouse, getHouses } from '../services/houseApi';
+import { getAllBookings } from '../services/bookingApi';
 import { useAuth } from '../hooks/useAuth';
 import { ROUTES } from '../constants/routes';
 
@@ -17,6 +19,7 @@ const STAT_COLORS = {
   purple: 'bg-purple-50 text-purple-600',
   orange: 'bg-orange-50 text-orange-600',
 };
+const HIDDEN_BOOKING_STATUSES = new Set(['CANCELLED', 'CANCELED', 'cancelled', 'canceled', 'annulée']);
 
 const ADMIN_NAV_ITEMS = [
   { to: ROUTES.ADMIN, labelKey: 'admin_dashboard_nav', icon: Activity, section: 'overview' },
@@ -44,8 +47,13 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
   const { user: currentUser } = useAuth();
   const [usersResponse, setUsersResponse] = useState({ users: [], total: 0 });
   const [houses, setHouses] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState('');
+  const [usersPage, setUsersPage] = useState(1);
+  const [housesPage, setHousesPage] = useState(1);
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [userRoleFilter, setUserRoleFilter] = useState('ALL');
 
   useEffect(() => {
     let mounted = true;
@@ -53,18 +61,21 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
     const loadDashboard = async () => {
       setLoading(true);
       try {
-        const [users, logements] = await Promise.all([
+        const [users, logements, reservations] = await Promise.all([
           getUsers({ page: 0, size: 100 }),
           getHouses(),
+          getAllBookings({ page: 0, size: 100 }),
         ]);
         if (mounted) {
           setUsersResponse(users);
           setHouses(logements);
+          setBookings(reservations.filter((booking) => !HIDDEN_BOOKING_STATUSES.has(booking.status)));
         }
       } catch {
         if (mounted) {
           setUsersResponse({ users: [], total: 0 });
           setHouses([]);
+          setBookings([]);
         }
       } finally {
         if (mounted) setLoading(false);
@@ -82,15 +93,29 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
     const pending = houses.filter((house) => house.statutValidation === 'EN_ATTENTE').length;
     const rejected = houses.filter((house) => house.statutValidation === 'REJETE').length;
     return [
-      { name: 'Validés', bookings: valid },
-      { name: 'En attente', bookings: pending },
-      { name: 'Rejetés', bookings: rejected },
+      { name: t('admin_chart_validated'), bookings: valid },
+      { name: t('admin_chart_pending'), bookings: pending },
+      { name: t('admin_chart_rejected'), bookings: rejected },
     ];
-  }, [houses]);
+  }, [houses, t]);
 
-  const totalRevenue = 0;
-  const owners = usersResponse.users.filter((user) => user.role === 'PROPRIETAIRE');
-  const clients = usersResponse.users.filter((user) => user.role === 'USER');
+  const visibleBookings = bookings.filter((booking) => !HIDDEN_BOOKING_STATUSES.has(booking.status));
+  const totalRevenue = visibleBookings.reduce((sum, booking) => sum + Number(booking.totalPrice || 0), 0);
+  const users = usersResponse.users;
+  const owners = users.filter((user) => user.role === 'PROPRIETAIRE');
+  const clients = users.filter((user) => user.role === 'USER');
+  const filteredUsers = userRoleFilter === 'ALL'
+    ? users
+    : users.filter((user) => user.role === userRoleFilter);
+  const usersTotalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const housesTotalPages = Math.max(1, Math.ceil(houses.length / PAGE_SIZE));
+  const bookingsTotalPages = Math.max(1, Math.ceil(visibleBookings.length / PAGE_SIZE));
+  const currentUsersPage = Math.min(usersPage, usersTotalPages);
+  const currentHousesPage = Math.min(housesPage, housesTotalPages);
+  const currentBookingsPage = Math.min(bookingsPage, bookingsTotalPages);
+  const paginatedUsers = filteredUsers.slice((currentUsersPage - 1) * PAGE_SIZE, currentUsersPage * PAGE_SIZE);
+  const paginatedHouses = houses.slice((currentHousesPage - 1) * PAGE_SIZE, currentHousesPage * PAGE_SIZE);
+  const paginatedBookings = visibleBookings.slice((currentBookingsPage - 1) * PAGE_SIZE, currentBookingsPage * PAGE_SIZE);
 
   const updateUser = (updatedUser) => {
     setUsersResponse((current) => ({
@@ -112,7 +137,7 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
   };
 
   const handleDeleteUser = async (targetUser) => {
-    const confirmed = window.confirm(`Supprimer définitivement ${targetUser.email} ?`);
+    const confirmed = window.confirm(t('admin_delete_user_confirm', { email: targetUser.email }));
     if (!confirmed) return;
 
     setActionError('');
@@ -124,7 +149,7 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
         users: current.users.filter((user) => user.id !== targetUser.id),
       }));
     } catch (error) {
-      setActionError(error.message || 'Suppression impossible.');
+      setActionError(error.message || t('dashboard_delete_house_error'));
     }
   };
 
@@ -134,12 +159,12 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
       const updated = await assignRole({ userId: targetUser.id, role });
       updateUser(updated);
     } catch (error) {
-      setActionError(error.message || 'Changement de rôle impossible.');
+      setActionError(error.message || t('admin_role_change_error'));
     }
   };
 
   const handleDeleteHouse = async (house) => {
-    const confirmed = window.confirm(`Supprimer le logement "${house.title}" ?`);
+    const confirmed = window.confirm(t('admin_delete_house_confirm', { title: house.title }));
     if (!confirmed) return;
 
     setActionError('');
@@ -147,137 +172,229 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
       await deleteHouse(house.id);
       setHouses((current) => current.filter((item) => item.id !== house.id));
     } catch (error) {
-      setActionError(error.message || 'Suppression du logement impossible.');
+      setActionError(error.message || t('admin_delete_house_error'));
     }
   };
 
   const renderUsersSection = () => (
-    <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
-      <section className="rounded-lg border border-gray-100 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-5 py-4">
-          <h3 className="font-bold text-gray-900">Propriétaires</h3>
-          <p className="text-sm text-gray-500">{owners.length} compte(s)</p>
+    <section className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
+      <div className="grid gap-4 border-b border-gray-100 px-5 py-4 md:grid-cols-[1fr_220px] md:items-end">
+        <div>
+          <h3 className="font-bold text-gray-900">{t('admin_users_title')}</h3>
+          <p className="text-sm text-gray-500">
+            {t('admin_users_count', { filtered: filteredUsers.length, total: users.length, owners: owners.length, clients: clients.length })}
+          </p>
         </div>
-        <div className="divide-y divide-gray-100">
-          {owners.map((owner) => (
-            <div key={owner.id} className="grid grid-cols-1 gap-3 px-5 py-4 text-sm md:grid-cols-[1fr_auto] md:items-center">
-              <div className="flex items-center gap-3">
-                <UserAvatar user={owner} />
-                <div>
-                  <p className="font-semibold text-gray-900">{owner.name}</p>
-                  <p className="text-gray-500">{owner.email}</p>
-                  <p className={owner.enabled ? 'text-green-600' : 'text-red-600'}>{owner.enabled ? 'Actif' : 'Bloqué'}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <select
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-                  value={owner.role}
-                  disabled={owner.id === currentUser?.id}
-                  onChange={(event) => handleRoleChange(owner, event.target.value)}
-                >
-                  <option value="USER">User</option>
-                  <option value="PROPRIETAIRE">Propriétaire</option>
-                </select>
-                <Button size="sm" variant="outline" disabled={owner.id === currentUser?.id} onClick={() => handleBlockToggle(owner)}>
-                  {owner.enabled ? <Ban size={15} className="mr-1" /> : <RotateCcw size={15} className="mr-1" />}
-                  {owner.enabled ? 'Bloquer' : 'Débloquer'}
-                </Button>
-                <Button size="sm" variant="danger" disabled={owner.id === currentUser?.id} onClick={() => handleDeleteUser(owner)}>
-                  <Trash2 size={15} className="mr-1" />
-                  Supprimer
-                </Button>
-              </div>
-            </div>
-          ))}
-          {owners.length === 0 && <div className="px-5 py-6 text-sm text-gray-500">Aucun propriétaire.</div>}
-        </div>
-      </section>
-
-      <section className="rounded-lg border border-gray-100 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-5 py-4">
-          <h3 className="font-bold text-gray-900">Clients</h3>
-          <p className="text-sm text-gray-500">{clients.length} compte(s)</p>
-        </div>
-        <div className="divide-y divide-gray-100">
-          {clients.map((client) => (
-            <div key={client.id} className="grid grid-cols-1 gap-3 px-5 py-4 text-sm md:grid-cols-[1fr_auto] md:items-center">
-              <div className="flex items-center gap-3">
-                <UserAvatar user={client} />
-                <div>
-                  <p className="font-semibold text-gray-900">{client.name}</p>
-                  <p className="text-gray-500">{client.email}</p>
-                  <p className={client.enabled ? 'text-green-600' : 'text-red-600'}>{client.enabled ? 'Actif' : 'Bloqué'}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <select
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-                  value={client.role}
-                  disabled={client.id === currentUser?.id}
-                  onChange={(event) => handleRoleChange(client, event.target.value)}
-                >
-                  <option value="USER">User</option>
-                  <option value="PROPRIETAIRE">Propriétaire</option>
-                </select>
-                <Button size="sm" variant="outline" disabled={client.id === currentUser?.id} onClick={() => handleBlockToggle(client)}>
-                  {client.enabled ? <Ban size={15} className="mr-1" /> : <RotateCcw size={15} className="mr-1" />}
-                  {client.enabled ? 'Bloquer' : 'Débloquer'}
-                </Button>
-                <Button size="sm" variant="danger" disabled={client.id === currentUser?.id} onClick={() => handleDeleteUser(client)}>
-                  <Trash2 size={15} className="mr-1" />
-                  Supprimer
-                </Button>
-              </div>
-            </div>
-          ))}
-          {clients.length === 0 && <div className="px-5 py-6 text-sm text-gray-500">Aucun client.</div>}
-        </div>
-      </section>
-    </div>
+        <label className="grid gap-1 text-sm font-medium text-gray-700">
+          {t('admin_filter_role')}
+          <select
+            className="min-h-11 rounded-md border border-gray-300 px-3 py-2 text-base font-normal text-gray-700"
+            value={userRoleFilter}
+            onChange={(event) => {
+              setUserRoleFilter(event.target.value);
+              setUsersPage(1);
+            }}
+          >
+            <option value="ALL">{t('admin_all')}</option>
+            <option value="PROPRIETAIRE">{t('admin_owners')}</option>
+            <option value="USER">{t('admin_user_role')}</option>
+          </select>
+        </label>
+      </div>
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <table className="min-w-[820px] divide-y divide-gray-100 text-sm sm:min-w-full">
+          <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <tr>
+              <th className="px-5 py-3">{t('admin_table_user')}</th>
+              <th className="px-5 py-3">{t('admin_table_email')}</th>
+              <th className="px-5 py-3">{t('admin_table_role')}</th>
+              <th className="px-5 py-3">{t('admin_table_status')}</th>
+              <th className="px-5 py-3 text-right">{t('admin_table_actions')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 bg-white">
+            {paginatedUsers.map((targetUser) => (
+              <tr key={targetUser.id} className="align-middle hover:bg-gray-50">
+                <td className="px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <UserAvatar user={targetUser} />
+                    <div>
+                      <p className="font-semibold text-gray-900">{targetUser.name || targetUser.username || t('admin_user_fallback')}</p>
+                      <p className="break-all text-xs text-gray-500">{targetUser.id}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="break-all px-5 py-4 text-gray-600">{targetUser.email}</td>
+                <td className="px-5 py-4">
+                  <select
+                    className="min-h-11 rounded-md border border-gray-300 px-3 py-1.5 text-base"
+                    value={targetUser.role}
+                    disabled={targetUser.id === currentUser?.id}
+                    onChange={(event) => handleRoleChange(targetUser, event.target.value)}
+                  >
+                    <option value="USER">{t('admin_user_role')}</option>
+                    <option value="PROPRIETAIRE">{t('admin_owner_role')}</option>
+                  </select>
+                </td>
+                <td className="px-5 py-4">
+                  <span className={targetUser.enabled ? 'font-medium text-green-600' : 'font-medium text-red-600'}>
+                    {targetUser.enabled ? t('admin_active') : t('admin_blocked')}
+                  </span>
+                </td>
+                <td className="px-5 py-4">
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Button size="sm" variant="outline" disabled={targetUser.id === currentUser?.id} onClick={() => handleBlockToggle(targetUser)}>
+                      {targetUser.enabled ? <Ban size={15} className="mr-1" /> : <RotateCcw size={15} className="mr-1" />}
+                      {targetUser.enabled ? t('admin_block') : t('admin_unblock')}
+                    </Button>
+                    <Button size="sm" variant="danger" disabled={targetUser.id === currentUser?.id} onClick={() => handleDeleteUser(targetUser)}>
+                      <Trash2 size={15} className="mr-1" />
+                      {t('admin_delete')}
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {paginatedUsers.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-5 py-8 text-center text-gray-500">{t('admin_no_users')}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <PaginationControls page={currentUsersPage} totalItems={filteredUsers.length} onPageChange={setUsersPage} label={t('admin_users').toLowerCase()} />
+    </section>
   );
 
   const renderHousesSection = () => (
     <section className="rounded-lg border border-gray-100 bg-white shadow-sm">
       <div className="border-b border-gray-100 px-5 py-4">
-        <h3 className="font-bold text-gray-900">Logements</h3>
-        <p className="text-sm text-gray-500">{houses.length} logement(s)</p>
+        <h3 className="font-bold text-gray-900">{t('admin_listings')}</h3>
+        <p className="text-sm text-gray-500">{t('admin_listings_count', { count: houses.length })}</p>
       </div>
-      <div className="divide-y divide-gray-100">
-        {houses.map((house) => (
-          <div key={house.id} className="grid grid-cols-1 gap-4 px-5 py-4 text-sm md:grid-cols-[72px_1fr_auto] md:items-center">
-            <div className="h-16 w-18 overflow-hidden rounded-md bg-gray-100 text-gray-400">
-              {house.images?.[0] ? (
-                <img src={house.images[0]} alt={house.title} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <ImageOff size={18} />
-                </div>
-              )}
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900">{house.title}</p>
-              <p className="text-gray-500">{house.location}</p>
-              <p className="text-gray-500">{house.statutValidation || 'EN_ATTENTE'} · {formatPrice(house.price || 0)}</p>
-            </div>
-            <Button size="sm" variant="danger" onClick={() => handleDeleteHouse(house)}>
-              <Trash2 size={15} className="mr-1" />
-              Supprimer
-            </Button>
-          </div>
-        ))}
-        {houses.length === 0 && <div className="px-5 py-6 text-sm text-gray-500">Aucun logement retourné par le backend.</div>}
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <table className="min-w-[900px] divide-y divide-gray-100 text-sm sm:min-w-full">
+          <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <tr>
+              <th className="px-5 py-3">{t('admin_table_listing')}</th>
+              <th className="px-5 py-3">{t('admin_table_address')}</th>
+              <th className="px-5 py-3">{t('admin_table_owner')}</th>
+              <th className="px-5 py-3">{t('admin_table_status')}</th>
+              <th className="px-5 py-3">{t('admin_table_price')}</th>
+              <th className="px-5 py-3 text-right">{t('admin_table_actions')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 bg-white">
+            {paginatedHouses.map((house) => {
+              const owner = users.find((u) => u.id === house.userId);
+              return (
+              <tr key={house.id} className="align-middle hover:bg-gray-50">
+                <td className="px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-gray-100 text-gray-400">
+                      {house.images?.[0] ? (
+                        <img src={house.images[0]} alt={house.title} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <ImageOff size={18} />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{house.title}</p>
+                      <p className="break-all text-xs text-gray-500">{house.id}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-gray-600">{house.location}</td>
+                <td className="px-5 py-4">
+                  <div>
+                    <p className="font-medium text-gray-900">{owner?.name || owner?.username || t('admin_owner_role')}</p>
+                    <p className="text-xs text-gray-500">{owner?.email || '-'}</p>
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-gray-600">{house.statutValidation || 'EN_ATTENTE'}</td>
+                <td className="px-5 py-4 font-semibold text-gray-900">{formatPrice(house.price || 0)}</td>
+                <td className="px-5 py-4 text-right">
+                  <Button size="sm" variant="danger" onClick={() => handleDeleteHouse(house)}>
+                    <Trash2 size={15} className="mr-1" />
+                    {t('admin_delete')}
+                  </Button>
+                </td>
+              </tr>
+              );
+            })}
+            {paginatedHouses.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-5 py-8 text-center text-gray-500">{t('admin_no_listings')}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
+      <PaginationControls page={currentHousesPage} totalItems={houses.length} onPageChange={setHousesPage} label={t('admin_listings').toLowerCase()} />
     </section>
   );
 
   const renderBookingsSection = () => (
-    <section className="rounded-lg border border-gray-100 bg-white p-8 text-center shadow-sm">
-      <Calendar className="mx-auto mb-3 text-gray-400" size={32} />
-      <h3 className="font-bold text-gray-900">Réservations</h3>
-      <p className="mt-2 text-sm text-gray-500">
-        Le booking-service ne fournit pas encore de requête administrateur pour lister toutes les réservations.
-      </p>
+    <section className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
+      <div className="border-b border-gray-100 px-5 py-4">
+        <h3 className="font-bold text-gray-900">{t('admin_bookings')}</h3>
+        <p className="text-sm text-gray-500">{t('admin_bookings_count', { count: visibleBookings.length })}</p>
+      </div>
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <table className="min-w-[860px] divide-y divide-gray-100 text-sm sm:min-w-full">
+          <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <tr>
+              <th className="px-5 py-3">{t('admin_table_booking')}</th>
+              <th className="px-5 py-3">{t('admin_table_user')}</th>
+              <th className="px-5 py-3">{t('admin_table_listing')}</th>
+              <th className="px-5 py-3">{t('admin_table_start_date')}</th>
+              <th className="px-5 py-3">{t('admin_table_end_date')}</th>
+              <th className="px-5 py-3">{t('admin_table_status')}</th>
+              <th className="px-5 py-3">{t('admin_table_total_price')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 bg-white">
+            {paginatedBookings.map((booking, index) => {
+              const bookingUser = users.find((u) => u.id === booking.userId);
+              const bookingIndex = (currentBookingsPage - 1) * PAGE_SIZE + index + 1;
+              return (
+              <tr key={booking.id} className="align-middle hover:bg-gray-50">
+                <td className="px-5 py-4 font-semibold text-gray-900">{t('dashboard_reservation_label', { number: bookingIndex })}</td>
+                <td className="px-5 py-4">
+                  <div>
+                    <p className="font-medium text-gray-900">{bookingUser?.name || bookingUser?.username || t('admin_user_fallback')}</p>
+                    <p className="text-xs text-gray-500">{bookingUser?.email || '-'}</p>
+                  </div>
+                </td>
+                <td className="break-all px-5 py-4 text-xs text-gray-600 font-mono">{booking.houseId}</td>
+                <td className="px-5 py-4 text-gray-600">{booking.startDate}</td>
+                <td className="px-5 py-4 text-gray-600">{booking.endDate}</td>
+                <td className="px-5 py-4">
+                  <span className={`font-medium ${
+                    booking.status === 'CONFIRMED' ? 'text-green-600' :
+                    booking.status === 'PENDING' ? 'text-yellow-600' :
+                    booking.status === 'CANCELLED' ? 'text-red-600' :
+                    'text-gray-600'
+                  }`}>
+                    {booking.status}
+                  </span>
+                </td>
+                <td className="px-5 py-4 font-semibold text-gray-900">{formatPrice(booking.totalPrice || 0)}</td>
+              </tr>
+              );
+            })}
+            {paginatedBookings.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-5 py-8 text-center text-gray-500">{t('admin_no_bookings')}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <PaginationControls page={currentBookingsPage} totalItems={visibleBookings.length} onPageChange={setBookingsPage} label={t('admin_bookings_count', { count: '' }).trim()} />
     </section>
   );
 
@@ -286,12 +403,12 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard title={t('admin_users')} value={usersResponse.total || usersResponse.users.length} icon={<Users size={24} />} colorClass={STAT_COLORS.blue} />
         <StatCard title={t('admin_listings')} value={houses.length} icon={<Home size={24} />} colorClass={STAT_COLORS.purple} />
-        <StatCard title={t('admin_bookings')} value="0" icon={<Calendar size={24} />} colorClass={STAT_COLORS.orange} />
+        <StatCard title={t('admin_bookings')} value={visibleBookings.length} icon={<Calendar size={24} />} colorClass={STAT_COLORS.orange} />
         <StatCard title={t('admin_revenue')} value={formatPrice(totalRevenue)} icon={<DollarSign size={24} />} colorClass={STAT_COLORS.green} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm sm:p-6 lg:col-span-2">
           <h3 className="text-lg font-bold mb-6">{t('admin_bookings_last_days')}</h3>
           <div className="h-64 flex items-end justify-between gap-4">
             {chartData.map((d, i) => (
@@ -305,7 +422,7 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
           <h3 className="text-lg font-bold mb-6">{t('admin_top_listings')}</h3>
           <div className="space-y-4">
             {houses.slice(0, 3).map((house) => (
@@ -325,7 +442,7 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
                 </div>
               </div>
             ))}
-            {houses.length === 0 && <p className="text-sm text-gray-500">Aucun logement retourné par le backend.</p>}
+            {houses.length === 0 && <p className="text-sm text-gray-500">{t('admin_no_listings')}</p>}
           </div>
         </div>
       </div>
@@ -334,15 +451,15 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
 
   const pageTitle = {
     overview: t('admin_title'),
-    users: 'Utilisateurs',
-    houses: 'Logements',
-    bookings: 'Réservations',
+    users: t('admin_users'),
+    houses: t('admin_listings'),
+    bookings: t('admin_bookings'),
   }[section];
 
   return (
-    <div className="flex min-h-[calc(100vh-140px)]">
+    <div className="dashboard-shell min-h-[calc(100vh-140px)]">
       {/* Sidebar Admin */}
-      <aside className="w-64 bg-gray-900 text-white hidden md:flex flex-col">
+      <aside className="dashboard-desktop-menu w-64 flex-col bg-gray-900 text-white">
         <div className="p-6">
           <h2 className="text-xl font-bold">HouseBooker Admin</h2>
         </div>
@@ -365,10 +482,31 @@ const DashboardAdminPage = ({ section = 'overview' }) => {
         </nav>
       </aside>
 
+      <div className="dashboard-mobile-menu sticky top-16 z-30 border-b border-gray-200 bg-white/95 px-3 py-3 shadow-sm backdrop-blur">
+        <div className="flex snap-x gap-2 overflow-x-auto pb-1">
+          {ADMIN_NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === ROUTES.ADMIN}
+              className={({ isActive }) =>
+                `inline-flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold shadow-sm transition ${isActive ? 'border-primary bg-primary text-white' : 'border-gray-200 bg-white text-gray-700 hover:border-primary/40 hover:text-primary'}`
+              }
+            >
+              <Icon size={16} />
+              {t(item.labelKey)}
+            </NavLink>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Main Content */}
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">{pageTitle}</h1>
+          <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">{pageTitle}</h1>
           <p className="text-gray-500">{t('admin_subtitle')}</p>
         </div>
 

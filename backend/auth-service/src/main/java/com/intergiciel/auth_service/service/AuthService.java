@@ -8,6 +8,7 @@ import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier.GoogleUserInfo;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
 import com.intergiciel.auth_service.dto.response.UserInfo;
+import com.intergiciel.auth_service.dto.LoginInput;
 import com.intergiciel.auth_service.entity.User;
 import com.intergiciel.auth_service.kafka.EventPublisher;
 import com.intergiciel.auth_service.enums.UserRole;
@@ -95,7 +96,7 @@ public class AuthService {
         otpService.verify(userUUID, code);
 
         user.setVerified(true);
-        User savedUser = userRepository.save(user);
+        userRepository.save(user);
 
         log.info("[AuthService] Compte vérifié : {}", user.getEmail());
 

@@ -35,7 +35,7 @@ const DeleteAccountSection = ({ onDeleteAccount }) => {
       if (response?.success) {
         setStatus({ type: 'success', message: response.message });
       } else {
-        setStatus({ type: 'error', message: response?.message || 'Erreur lors de la suppression.' });
+        setStatus({ type: 'error', message: response?.message || t('profile_delete_error') });
       }
     } catch (err) {
       setStatus({ type: 'error', message: err.message || t('profile_delete_impossible') });
@@ -45,12 +45,15 @@ const DeleteAccountSection = ({ onDeleteAccount }) => {
   };
 
   return (
-    <section className="rounded-3xl border border-rose-200 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex items-center gap-3 text-rose-700">
-        <AlertTriangle size={22} />
+    <section className="rounded-lg border border-rose-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="mb-5 flex items-start gap-3 border-b border-rose-100 pb-5 text-rose-700">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-rose-50">
+          <AlertTriangle size={22} />
+        </span>
         <div>
-          <h2 className="text-xl font-semibold">{t('profile_delete_title')}</h2>
-          <p className="text-sm text-rose-600">{t('profile_delete_subtitle')}</p>
+          <p className="text-xs font-semibold uppercase text-rose-600">{t('profile_section_actions')}</p>
+          <h2 className="mt-1 text-xl font-semibold">{t('profile_delete_title')}</h2>
+          <p className="mt-1 text-sm text-rose-600">{t('profile_delete_subtitle')}</p>
         </div>
       </div>
 
@@ -59,12 +62,12 @@ const DeleteAccountSection = ({ onDeleteAccount }) => {
       </p>
 
       <Button className="mt-6" variant="danger" onClick={openModal}>
-        Supprimer mon compte
+        {t('profile_delete_button')}
       </Button>
 
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={t('profile_delete_modal_title')}>
         {status.message && (
-          <div className={`rounded-2xl p-4 text-sm ${status.type === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}`}>
+          <div className={`rounded-md border p-4 text-sm ${status.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>
             {status.message}
           </div>
         )}

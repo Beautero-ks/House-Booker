@@ -13,6 +13,8 @@ services:
     image: housebooker/auth-service:latest
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: secret
     depends_on:
       - eureka-server
       - postgres-auth

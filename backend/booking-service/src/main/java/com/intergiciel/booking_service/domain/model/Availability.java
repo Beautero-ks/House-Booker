@@ -10,10 +10,11 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Entity
-@Table(name = "availability")
+
 @Getter
 @Setter
+@Entity
+@Table(name = "availability")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -37,12 +38,4 @@ public class Availability {
         this.date = date;
         this.available = available;
     }
-//    @Column(nullable = false)
-//    private boolean isAvailable = true;
-//
-//    public Availability(UUID houseId, LocalDate date, boolean b) {
-//        this.houseId = houseId;
-//        this.date = date;
-//        this.isAvailable = b;
-//    }
 }

@@ -67,6 +67,15 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
 }
 
 body::before {
@@ -109,7 +118,8 @@ ul, ol {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 0.875rem;
+  width: 100%;
 }
 
 .app-background {
@@ -168,3 +178,30 @@ ul, ol {
 .gap-2 { gap: 0.5rem; }
 .gap-4 { gap: 1rem; }
 .gap-6 { gap: 1.5rem; }
+
+.dashboard-shell {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-desktop-menu {
+  display: none !important;
+}
+
+.dashboard-mobile-menu {
+  display: block !important;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-shell {
+    flex-direction: row;
+  }
+
+  .dashboard-desktop-menu {
+    display: flex !important;
+  }
+
+  .dashboard-mobile-menu {
+    display: none !important;
+  }
+}

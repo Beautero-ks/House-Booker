@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
 import { useAuth } from '../hooks/useAuth';
+import DashboardOwnerPage from './DashboardOwnerPage';
 
 const DashboardRedirectPage = () => {
   const { user } = useAuth();
@@ -10,7 +11,7 @@ const DashboardRedirectPage = () => {
   }
 
   if (user?.role === 'PROPRIETAIRE') {
-    return <Navigate to={ROUTES.MY_HOUSES} replace />;
+    return <DashboardOwnerPage />;
   }
 
   return <Navigate to={ROUTES.MY_BOOKINGS} replace />;

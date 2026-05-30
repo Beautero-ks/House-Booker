@@ -24,10 +24,10 @@ const Toast = ({ message, type = 'info', onClose, duration = 3000 }) => {
   };
 
   return (
-    <div className={`fixed bottom-4 right-4 flex items-center p-4 border rounded-lg shadow-lg animate-fade-in z-50 ${bgs[type]}`}>
-      <div className="mr-3">{icons[type]}</div>
-      <p className="text-gray-800 text-sm font-medium mr-4">{message}</p>
-      <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+    <div className={`fixed bottom-4 left-4 right-4 z-50 flex items-start rounded-lg border p-4 shadow-lg animate-fade-in sm:left-auto sm:max-w-sm ${bgs[type]}`}>
+      <div className="mr-3 mt-0.5 shrink-0">{icons[type]}</div>
+      <p className="mr-3 min-w-0 flex-1 break-words text-sm font-medium text-gray-800">{message}</p>
+      <button type="button" onClick={onClose} className="-m-2 flex min-h-11 min-w-11 items-center justify-center text-gray-500 hover:text-gray-700">
         <X size={16} />
       </button>
     </div>

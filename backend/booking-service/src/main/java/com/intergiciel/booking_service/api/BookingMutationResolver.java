@@ -31,12 +31,20 @@ public class BookingMutationResolver {
     }
 
     @MutationMapping
-    public Booking cancelBooking(@Argument UUID bookingId,
-                                 @Argument String reason,
-                                 @Argument UUID userId,
-                                 @ContextValue(name = "userId", required = false) String contextUserId) {
-        UUID effectiveUserId = resolveUserId(userId, contextUserId);
-        return bookingService.cancelBooking(bookingId, effectiveUserId, reason);
+    public Booking cancelBookingByOwner(@Argument UUID bookingId,
+                                        @Argument String reason,
+                                        @Argument UUID ownerId,
+                                        @ContextValue(name = "userId", required = false) String contextUserId) {
+        UUID effectiveOwnerId = resolveUserId(ownerId, contextUserId);
+        return bookingService.cancelBookingByOwner(bookingId, effectiveOwnerId, reason);
+    }
+
+    @MutationMapping
+    public Boolean deleteBookingByOwner(@Argument UUID bookingId,
+                                        @Argument UUID ownerId,
+                                        @ContextValue(name = "userId", required = false) String contextUserId) {
+        UUID effectiveOwnerId = resolveUserId(ownerId, contextUserId);
+        return bookingService.deleteBookingByOwner(bookingId, effectiveOwnerId);
     }
 
     private UUID resolveUserId(UUID userIdFromArguments, String userIdFromContext) {

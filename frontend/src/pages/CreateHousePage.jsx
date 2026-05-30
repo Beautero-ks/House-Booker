@@ -168,10 +168,10 @@ const CreateHousePage = () => {
 
   return (
     <div className="min-h-[calc(100vh-140px)]">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="container mx-auto max-w-5xl px-4 py-6 sm:py-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t('create_title')}</h1>
+            <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">{t('create_title')}</h1>
             <p className="text-sm text-gray-500">{t('create_subtitle')}</p>
           </div>
           <Button variant="outline" onClick={() => navigate(ROUTES.DASHBOARD)}>
@@ -182,7 +182,7 @@ const CreateHousePage = () => {
 
         <form onSubmit={handleSubmit} className="bg-white border border-gray-100 rounded-lg shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-3">
-            <div className="lg:col-span-2 p-6 space-y-6">
+            <div className="space-y-6 p-4 sm:p-6 lg:col-span-2">
               {(submitError || errors.owner) && (
                 <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                   <AlertCircle size={18} className="mt-0.5 shrink-0" />
@@ -209,7 +209,7 @@ const CreateHousePage = () => {
                     id="type"
                     value={form.type}
                     onChange={(event) => updateField('type', event.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="block min-h-11 w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     {HOUSE_TYPES.map((type) => (
                       <option key={type.value} value={type.value}>
@@ -297,7 +297,7 @@ const CreateHousePage = () => {
                   rows={5}
                   value={form.description}
                   onChange={(event) => updateField('description', event.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="block min-h-11 w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder={t('create_placeholder_description')}
                 />
               </div>
@@ -326,7 +326,7 @@ const CreateHousePage = () => {
               </div>
             </div>
 
-            <aside className="border-t lg:border-l lg:border-t-0 border-gray-100 p-6 space-y-6">
+            <aside className="space-y-6 border-t border-gray-100 p-4 sm:p-6 lg:border-l lg:border-t-0">
               <div>
                 <label htmlFor="photos" className="block text-sm font-medium text-gray-900 mb-2">
                   {t('create_label_photos')}
@@ -349,7 +349,7 @@ const CreateHousePage = () => {
               </div>
 
               {photoPreviews.length > 0 && (
-                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{t('create_photo_preview')}</p>
@@ -374,7 +374,7 @@ const CreateHousePage = () => {
                         <button
                           type="button"
                           onClick={() => removePhoto(index)}
-                          className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-sm hover:bg-white"
+                          className="absolute right-2 top-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-sm hover:bg-white sm:h-8 sm:min-h-8 sm:w-8 sm:min-w-8"
                         >
                           <Trash2 size={16} />
                         </button>

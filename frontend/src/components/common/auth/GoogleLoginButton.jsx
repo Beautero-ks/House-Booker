@@ -31,7 +31,7 @@ const GoogleLoginButton = ({ redirectTo = ROUTES.DASHBOARD, onSuccessCallback, o
   }
 
   return (
-    <div className="w-full flex justify-center my-4 overflow-hidden">
+    <div className="my-4 flex w-full justify-center overflow-hidden">
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={() => {
@@ -42,7 +42,7 @@ const GoogleLoginButton = ({ redirectTo = ROUTES.DASHBOARD, onSuccessCallback, o
         theme="outline"
         size="large"
         text="continue_with"
-        width="320"
+        width="100%"
       />
     </div>
   );

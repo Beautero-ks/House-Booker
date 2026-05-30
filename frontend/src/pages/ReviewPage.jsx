@@ -49,16 +49,16 @@ const ReviewPage = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('review_title')}</h1>
-          <p className="text-gray-500">{houses.length} logements chargés depuis le backend</p>
+          <p className="text-gray-500">{t('review_loaded_houses', { count: houses.length })}</p>
         </div>
-        <Button disabled>{t('review_leave')}</Button>
+        <Button disabled className="w-full sm:w-auto">{t('review_leave')}</Button>
       </div>
 
       {loading && <Loader />}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Global Rating Summary */}
-        <div className="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-max">
+        <div className="h-max rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6 md:col-span-1 md:rounded-2xl">
           <h3 className="font-semibold text-gray-900 mb-4">{t('review_global')}</h3>
           <div className="flex items-end gap-2 mb-2">
             <span className="text-5xl font-bold text-gray-900">{globalRating}</span>
@@ -68,7 +68,7 @@ const ReviewPage = () => {
               <Star key={s} size={20} className={s <= Math.floor(globalRating) ? 'fill-current' : 'text-gray-300'} />
             ))}
           </div>
-          <p className="text-sm text-gray-500 mb-6">({reviewCount} avis)</p>
+          <p className="text-sm text-gray-500 mb-6">({reviewCount} {t('detail_reviews')})</p>
 
           <div className="space-y-2">
             <RatingBar stars="5" count={0} total={1} />
@@ -80,10 +80,10 @@ const ReviewPage = () => {
         </div>
 
         {/* Reviews List */}
-        <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div className="space-y-4 md:col-span-2">
+          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6 md:rounded-2xl">
             <p className="text-gray-600">
-              Le service review existe dans le backend, mais il n’expose pas encore d’endpoint de lecture d’avis dans ce projet. Aucun avis mocké n’est affiché.
+              {t('review_backend_notice')}
             </p>
           </div>
         </div>

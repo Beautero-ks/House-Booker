@@ -3,6 +3,7 @@ package com.intergiciel.auth_service.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.intergiciel.auth_service.dto.LoginInput;
 import com.intergiciel.auth_service.dto.request.*;
+import com.intergiciel.auth_service.dto.LoginInput;
 import com.intergiciel.auth_service.dto.request.GoogleAuthInput;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
 import com.intergiciel.auth_service.service.AuthService;
@@ -123,9 +124,9 @@ public class AuthResolver {
      *   }
      * }
      */
-//    @MutationMapping
-//    public AuthResponse googleLogin(@Argument @Valid GoogleAuthInput input) throws JsonProcessingException {
-//        log.info("[AuthResolver] mutation googleLogin");
-//        return authService.loginWithGoogle(input.getIdToken());
-//    }
+    @MutationMapping
+    public AuthResponse googleLogin(@Argument @Valid GoogleAuthInput input) throws JsonProcessingException {
+        log.info("[AuthResolver] mutation googleLogin");
+        return authService.loginWithGoogle(input.getIdToken());
+    }
 }

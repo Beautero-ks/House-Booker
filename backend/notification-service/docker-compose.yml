@@ -1,18 +1,15 @@
-## =====================================================
-## DOCKER COMPOSE - Local Development Infrastructure
-## =====================================================
-##
-## This file defines all the services our application needs:
-## - PostgreSQL (database)
-## - Redis (caching & rate limiting)
-## - Kafka + Zookeeper (message queue)
-##
-## To start all services: docker-compose up -d
-## To stop all services:  docker-compose down
-## To see logs:           docker-compose logs -f
-##
+# =====================================================
+# DOCKER COMPOSE - Local Development Infrastructure
+# =====================================================
 #
-#version: '3.8'
+# This file defines all the services our application needs:
+# - PostgreSQL (database)
+# - Redis (caching & rate limiting)
+# - Kafka + Zookeeper (message queue)
+#
+# To start all services: docker-compose up -d
+# To stop all services:  docker-compose down
+# To see logs:           docker-compose logs -f
 #
 #services:
 #

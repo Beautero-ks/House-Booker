@@ -4,7 +4,7 @@ import { restRequest } from './gatewayClient';
 export const getUserNotifications = async (userId) => {
   if (!userId) return [];
   const response = await restRequest(`${API_CONFIG.NOTIFICATION_API_URL}/user/${userId}`);
-  return response?.data || response?.content || response || [];
+  return response?.data?.content || response?.content || response?.data || response || [];
 };
 
 export const getUnreadNotificationCount = async (userId) => {

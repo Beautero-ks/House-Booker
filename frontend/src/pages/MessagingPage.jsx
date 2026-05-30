@@ -46,22 +46,23 @@ const MessagingPage = () => {
     }));
   }, [notifications, user?.photoUrl]);
 
-  useEffect(() => {
-    if (!activeConv && conversations.length > 0) {
-      setActiveConv(conversations[0]);
+  const activeConversation = useMemo(() => {
+    if (activeConv && conversations.some((conversation) => conversation.id === activeConv.id)) {
+      return activeConv;
     }
+    return conversations[0] || null;
   }, [activeConv, conversations]);
 
   const messages = useMemo(() => {
-    if (!activeConv) return [];
+    if (!activeConversation) return [];
     return [{
-      id: activeConv.id,
-      conversationId: activeConv.id,
+      id: activeConversation.id,
+      conversationId: activeConversation.id,
       senderId: 'backend',
-      text: activeConv.lastMessage,
-      time: activeConv.time,
+      text: activeConversation.lastMessage,
+      time: activeConversation.time,
     }];
-  }, [activeConv]);
+  }, [activeConversation]);
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -71,19 +72,19 @@ const MessagingPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-white rounded-2xl shadow-card border border-gray-100 h-[calc(100vh-200px)] flex overflow-hidden">
+    <div className="container mx-auto px-4 py-4 sm:py-8">
+      <div className="flex h-[calc(100dvh-96px)] min-h-[520px] flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-card md:h-[calc(100vh-200px)] md:min-h-[620px] md:flex-row md:rounded-2xl">
         
         {/* Conversations List */}
-        <div className="w-1/3 border-r border-gray-200 flex flex-col bg-gray-50">
-          <div className="p-4 border-b bg-white">
-            <h2 className="text-xl font-bold mb-4">{t('msg_conversations')}</h2>
+        <div className="flex h-56 shrink-0 flex-col border-b border-gray-200 bg-gray-50 sm:h-64 md:h-auto md:w-1/3 md:border-b-0 md:border-r">
+          <div className="border-b bg-white p-3 sm:p-4">
+            <h2 className="mb-3 text-lg font-bold sm:mb-4 sm:text-xl">{t('msg_conversations')}</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input 
                 type="text" 
                 placeholder={t('msg_search_placeholder')} 
-                className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent rounded-lg focus:bg-white focus:border-primary focus:ring-0 text-sm"
+                className="min-h-11 w-full rounded-lg border-transparent bg-gray-100 py-2 pl-10 pr-4 text-base focus:border-primary focus:bg-white focus:ring-0"
               />
             </div>
           </div>
@@ -91,13 +92,13 @@ const MessagingPage = () => {
           <div className="flex-1 overflow-y-auto">
             {loading && <Loader />}
             {!loading && conversations.length === 0 && (
-              <p className="p-4 text-sm text-gray-500">Aucune notification retournée par le backend.</p>
+              <p className="p-4 text-sm text-gray-500">{t('msg_no_notifications')}</p>
             )}
             {conversations.map(conv => (
               <div 
                 key={conv.id}
                 onClick={() => setActiveConv(conv)}
-                className={`flex items-start gap-3 p-4 border-b cursor-pointer transition-colors ${activeConv?.id === conv.id ? 'bg-blue-50 border-l-4 border-l-primary' : 'hover:bg-gray-100 border-l-4 border-l-transparent'}`}
+                className={`flex min-h-20 cursor-pointer items-start gap-3 border-b p-3 transition-colors sm:p-4 ${activeConversation?.id === conv.id ? 'bg-blue-50 border-l-4 border-l-primary' : 'hover:bg-gray-100 border-l-4 border-l-transparent'}`}
               >
                 <div className="relative">
                   <img src={conv.userImage} alt={conv.userName} className="w-12 h-12 rounded-full object-cover" />
@@ -108,9 +109,9 @@ const MessagingPage = () => {
                   )}
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <div className="flex justify-between items-center mb-1">
+                  <div className="mb-1 flex items-center justify-between gap-2">
                     <h4 className="font-semibold text-gray-900 truncate">{conv.userName}</h4>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">{conv.time}</span>
+                    <span className="max-w-24 truncate text-xs text-gray-500">{conv.time}</span>
                   </div>
                   <p className="text-xs text-primary font-medium mb-1 truncate">{conv.houseTitle}</p>
                   <p className={`text-sm truncate ${conv.unread > 0 ? 'font-semibold text-gray-900' : 'text-gray-500'}`}>
@@ -123,32 +124,32 @@ const MessagingPage = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-white">
+          <div className="min-h-0 flex-1 flex flex-col bg-white">
           {/* Chat Header */}
-          <div className="p-4 border-b flex justify-between items-center bg-white shadow-sm z-10">
-            <div className="flex items-center gap-3">
-              <img src={activeConv?.userImage} alt={activeConv?.userName} className="w-10 h-10 rounded-full object-cover" />
-              <div>
-                <h3 className="font-semibold text-gray-900">{activeConv?.userName || 'Backend'}</h3>
+          <div className="z-10 flex items-center justify-between gap-3 border-b bg-white p-3 shadow-sm sm:p-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <img src={activeConversation?.userImage} alt={activeConversation?.userName} className="w-10 h-10 rounded-full object-cover" />
+              <div className="min-w-0">
+                <h3 className="truncate font-semibold text-gray-900">{activeConversation?.userName || 'Backend'}</h3>
                 <p className="text-xs text-green-500 font-medium">{t('msg_online')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-gray-500">
-              <button className="hover:text-primary transition-colors"><Phone size={20} /></button>
-              <button className="hover:text-primary transition-colors"><Video size={20} /></button>
-              <button className="hover:text-primary transition-colors"><MoreVertical size={20} /></button>
+            <div className="flex shrink-0 items-center gap-1 text-gray-500 sm:gap-2">
+              <button type="button" className="flex min-h-11 min-w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50 hover:text-primary"><Phone size={20} /></button>
+              <button type="button" className="flex min-h-11 min-w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50 hover:text-primary"><Video size={20} /></button>
+              <button type="button" className="flex min-h-11 min-w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50 hover:text-primary"><MoreVertical size={20} /></button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:space-y-6 sm:p-6">
             <div className="text-center text-xs text-gray-400 mb-6">{t('msg_today')}</div>
             
-            {messages.filter(m => m.conversationId === activeConv?.id).map(msg => {
+            {messages.filter(m => m.conversationId === activeConversation?.id).map(msg => {
               const isMe = msg.senderId === 'me';
               return (
                 <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                  <div className={`max-w-[70%] p-3 rounded-2xl ${isMe ? 'bg-primary text-white rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none shadow-sm'}`}>
+                  <div className={`max-w-[88%] rounded-2xl p-3 sm:max-w-[70%] ${isMe ? 'bg-primary text-white rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none shadow-sm'}`}>
                     <p className="text-sm">{msg.text}</p>
                   </div>
                   <span className="text-[10px] text-gray-400 mt-1 mx-1">{msg.time}</span>
@@ -158,14 +159,14 @@ const MessagingPage = () => {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-white border-t">
+          <div className="border-t bg-white p-3 sm:p-4">
             <form onSubmit={handleSend} className="flex items-center gap-2">
               <input 
                 type="text" 
               value={message}
               onChange={e => setMessage(e.target.value)}
-                placeholder="Réponse locale désactivée tant que le backend messaging n’expose pas d’API"
-                className="flex-1 py-3 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all text-sm"
+                placeholder={t('msg_reply_disabled')}
+                className="min-h-11 min-w-0 flex-1 rounded-full bg-gray-100 px-4 py-3 text-base transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary"
                 disabled
               />
               <button 

@@ -45,6 +45,21 @@ public class BookingQueryResolver {
     }
 
     @QueryMapping
+    public List<Booking> allBookings(@Argument Integer page,
+                                     @Argument Integer size) {
+        int pageNum = page != null ? page : 0;
+        int pageSize = size != null ? size : 50;
+        return bookingService.getAllBookings(pageNum, pageSize);
+    }
+
+    @QueryMapping
+    public List<Booking> ownerBookings(@Argument UUID ownerId,
+                                       @ContextValue(name = "userId", required = false) String contextUserId) {
+        UUID effectiveOwnerId = resolveUserId(ownerId, contextUserId);
+        return bookingService.getOwnerBookings(effectiveOwnerId);
+    }
+
+    @QueryMapping
     public boolean checkAvailability(@Argument UUID houseId,
                                      @Argument LocalDate startDate,
                                      @Argument LocalDate endDate) {

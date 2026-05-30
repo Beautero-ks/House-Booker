@@ -68,7 +68,10 @@ public class KafkaConfig {
 
     @Value("${notification.kafka.replication-factor:2}")
     private int replicationFactor;
-    
+
+    @Value("${spring.kafka.listener.auto-startup:true}")
+    private boolean listenerAutoStartup;
+
     // ==================== Topic Creation ====================
     // 
     // Auto-create topics if they don't exist.
@@ -172,7 +175,8 @@ public class KafkaConfig {
         // Number of concurrent consumers (threads)
         // Should match total partitions across topics for full parallelism
         factory.setConcurrency(10);
-        
+        factory.setAutoStartup(listenerAutoStartup);
+
         return factory;
     }
 }

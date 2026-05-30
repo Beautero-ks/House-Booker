@@ -4,28 +4,25 @@
 # 
 # This configuration is used when running tests.
 # It overrides the main application.yml settings.
-# Requires PostgreSQL to be running (via docker-compose).
+# Uses an in-memory database so tests do not depend on local infrastructure.
 #
 
 spring:
-  # Use PostgreSQL for tests (same as production)
   datasource:
-    url: jdbc:postgresql://localhost:5432/notification_db
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    url: jdbc:h2:mem:notification_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
   
   # JPA settings for tests
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     show-sql: false
   
-  # Enable Flyway to manage schema
   flyway:
-    enabled: true
-    locations: classpath:db/migration
+    enabled: false
   
   # Redis - use embedded or mock in tests
   data:
@@ -36,6 +33,10 @@ spring:
   # Kafka - disable for unit tests
   kafka:
     bootstrap-servers: localhost:9092
+    admin:
+      auto-create: false
+    listener:
+      auto-startup: false
     consumer:
       auto-offset-reset: earliest
       group-id: test-group

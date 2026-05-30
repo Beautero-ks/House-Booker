@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
   const [resendOtpMutation] = useMutation(RESEND_OTP_MUTATION);
   const [googleLoginMutation] = useMutation(GOOGLE_LOGIN_MUTATION);
 
-  const [loadCurrentUser, { data: currentUserData, error: currentUserError }] = useLazyQuery(
+  const [loadCurrentUser, { error: currentUserError }] = useLazyQuery(
     GET_CURRENT_USER_QUERY,
     { fetchPolicy: 'network-only' }
   );
@@ -52,17 +52,6 @@ export function AuthProvider({ children }) {
       console.error('[Auth] getCurrentUser failed', currentUserError);
     }
   }, [currentUserError]);
-
-  useEffect(() => {
-    const currentUser = currentUserData?.getCurrentUser;
-    if (!currentUser) return;
-
-    setStoredUser(currentUser);
-    setUser(currentUser);
-    if (currentUser.isVerified && isAccessTokenValid()) {
-      setIsAuthenticated(true);
-    }
-  }, [currentUserData]);
 
   const refreshCurrentUser = useCallback(async () => {
     try {
@@ -270,7 +259,7 @@ export function AuthProvider({ children }) {
         }
         if (!user || !user.role) {
           try {
-            await loadCurrentUser();
+            await refreshCurrentUser();
           } catch {
             // ignore
           }
@@ -279,7 +268,7 @@ export function AuthProvider({ children }) {
         try {
           await refreshToken();
           if (!user || !user.role) {
-            await loadCurrentUser();
+            await refreshCurrentUser();
           }
         } catch {
           // ignore
@@ -289,7 +278,7 @@ export function AuthProvider({ children }) {
     };
 
     initializeAuth();
-  }, [loadCurrentUser, refreshToken, user]);
+  }, [refreshCurrentUser, refreshToken, user]);
 
   const value = {
     user,
