@@ -73,7 +73,7 @@ services:
     networks:
       - house-booker-network
     healthcheck:
-      test: [ "CMD-SHELL", "echo ruok | nc localhost 2181 | grep -q imok || exit 1" ]
+      test: [ "CMD-SHELL", "nc -z localhost 2181 || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
