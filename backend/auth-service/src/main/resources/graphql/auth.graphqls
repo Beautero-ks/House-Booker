@@ -249,8 +249,8 @@ type Mutation {
       - "Ce compte est déjà vérifié" (BAD_REQUEST)
       - "Utilisateur introuvable" (NOT_FOUND)
     """
-    resendOtp(userId: String!):              AuthResponse!
-    googleLogin(input: GoogleAuthInput!):    AuthResponse!
+#    resendOtp(userId: String!):              AuthResponse!
+#    googleLogin(input: GoogleAuthInput!):    AuthResponse!
 
     # User management
     updateProfile(input: UpdateProfileInput!):   UserInfo!

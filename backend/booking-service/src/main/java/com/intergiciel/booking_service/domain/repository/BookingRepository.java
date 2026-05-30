@@ -5,6 +5,8 @@ import com.intergiciel.booking_service.domain.model.enums.BookingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -32,18 +34,20 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             LocalDate startDate
     );
 
-//    @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.houseId = :houseId " +
-//            "AND b.status NOT IN ('CANCELLED', 'REFUNDED') " +
-//            "AND b.startDate < :newEndDate AND b.endDate > :newStartDate")
-//    boolean existsOverlappingBooking(
-//            @Param("houseId") Long houseId,
-//            @Param("newStartDate") LocalDate newStartDate,
-//            @Param("newEndDate") LocalDate newEndDate
-//    );
-//
+    @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.houseId = :houseId " +
+            "AND b.status NOT IN ('CANCELLED', 'REFUNDED') " +
+            "AND b.startDate < :newEndDate AND b.endDate > :newStartDate")
+    boolean existsOverlappingBooking(
+            @Param("houseId") UUID houseId,
+            @Param("newStartDate") LocalDate newStartDate,
+            @Param("newEndDate") LocalDate newEndDate
+    );
+
     // Trouver les réservations pour un logement spécifique
     List<Booking> findByHouseId(UUID houseId);
 
     // Trouver les réservations pour plusieurs logements.
     List<Booking> findByHouseIdIn(Collection<UUID> houseIds);
+
+//    boolean existsOverlappingBooking(UUID houseId, LocalDate startDate, LocalDate endDate);
 }

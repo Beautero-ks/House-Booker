@@ -14,7 +14,7 @@ import java.util.UUID;
 @Controller
 @RequiredArgsConstructor
 public class BookingMutationResolver {
-    private final com.intergiciel.booking_service.service.BookingService bookingService;
+    private final BookingService bookingService;
 
     @MutationMapping
     public Booking createBooking(@Argument BookingCreateRequest input,

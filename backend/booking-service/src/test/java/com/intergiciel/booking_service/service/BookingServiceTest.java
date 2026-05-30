@@ -1,11 +1,12 @@
 package com.intergiciel.booking_service.service;
 
 import com.intergiciel.booking_service.application.dto.HouseDto;
+import com.intergiciel.booking_service.application.service.BookingService;
 import com.intergiciel.booking_service.domain.model.Booking;
 import com.intergiciel.booking_service.domain.model.enums.BookingStatus;
 import com.intergiciel.booking_service.domain.repository.BookingRepository;
-import com.intergiciel.booking_service.event.BookingEventProducer;
 import com.intergiciel.booking_service.feign.HouseServiceClient;
+import com.intergiciel.booking_service.kafka.publisher.BookingEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -33,7 +34,7 @@ class BookingServiceTest {
     private BookingRepository bookingRepository;
 
     @Mock
-    private BookingEventProducer bookingEventProducer;
+    private BookingEventPublisher bookingEventProducer;
 
     @Mock
     private HouseServiceClient houseServiceClient;
@@ -69,7 +70,7 @@ class BookingServiceTest {
         ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingRepository).save(bookingCaptor.capture());
         assertThat(bookingCaptor.getValue().getTotalPrice()).isEqualByComparingTo(new BigDecimal("31000.00"));
-        verify(bookingEventProducer).sendBookingCreated(any());
+        verify(bookingEventProducer).publishBookingCreated(any());
     }
 
     @Test

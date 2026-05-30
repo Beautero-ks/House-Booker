@@ -7,6 +7,7 @@ import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier.GoogleUserInfo;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
 import com.intergiciel.auth_service.dto.response.UserInfo;
+import com.intergiciel.auth_service.dto.LoginInput;
 import com.intergiciel.auth_service.entity.User;
 import com.intergiciel.auth_service.kafka.EventPublisher;
 import com.intergiciel.auth_service.enums.UserRole;
@@ -140,7 +141,7 @@ public class AuthService {
         return AuthResponse.builder()
                 .success(true)
                 .message("Connexion réussie")
-                .accessToken(tokenService.generateAccessToken(user.getId().toString()))
+                .accessToken(tokenService.generateAccessToken(user))
                 .refreshToken(tokenService.generateRefreshToken(user))
                 .user(UserInfo.builder()
                         .id(user.getId().toString())
@@ -167,7 +168,7 @@ public class AuthService {
         return AuthResponse.builder()
                 .success(true)
                 .message("Token renouvelé")
-                .accessToken(tokenService.generateAccessToken(userId))
+                .accessToken(tokenService.generateAccessToken(user))
                 .refreshToken(refreshToken)
                 .build();
     }
