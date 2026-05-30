@@ -15,8 +15,10 @@ x-common-env: &common-env
   EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://${EC2_1_PRIVATE_IP}:8761/eureka/
   SPRING_DATA_REDIS_HOST: ${EC2_1_PRIVATE_IP}
   SPRING_REDIS_HOST: ${EC2_1_PRIVATE_IP}
-  SPRING_KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP}:9092
-  KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP}:9092
+#  SPRING_KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP}:9092
+#  KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP}:9092
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
   JWT_SECRET: ${JWT_SECRET}
   JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION:-900000}
   JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
@@ -91,9 +93,11 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${EC2_1_PRIVATE_IP}:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092  # <-- Utilise le nom du conteneur Kafka
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${EC2_1_PRIVATE_IP}:9092
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -102,10 +106,11 @@ services:
     networks:
       - house-booker-network
     healthcheck:
-      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1" ]
-      interval: 15s
+      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null 2>&1 || exit 1" ]
+      interval: 20s
       timeout: 10s
       retries: 10
+      start_period: 30s
 
   mailpit:
     image: axllent/mailpit:latest
