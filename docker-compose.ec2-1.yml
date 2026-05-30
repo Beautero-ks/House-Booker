@@ -73,10 +73,11 @@ services:
     networks:
       - house-booker-network
     healthcheck:
-      test: [ "CMD-SHELL", "echo stat | nc localhost 2181 | grep -q 'Mode: follower' || echo stat | nc localhost 2181 | grep -q 'Mode: leader'" ]
+      test: [ "CMD-SHELL", "echo ruok | nc localhost 2181 | grep -q imok || exit 1" ]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
+      start_period: 20s
 
   kafka:
     image: apache/kafka:3.7.0
