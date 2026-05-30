@@ -1,0 +1,155 @@
+name: house-booker-ec2-1
+
+networks:
+  house-booker-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  kafka_data:
+
+x-common-env: &common-env
+  SPRING_PROFILES_ACTIVE: docker
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://${EC2_1_PRIVATE_IP}:8761/eureka/
+  SPRING_DATA_REDIS_HOST: ${EC2_1_PRIVATE_IP}
+  SPRING_REDIS_HOST: ${EC2_1_PRIVATE_IP}
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP}:9092
+  KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP}:9092
+  JWT_SECRET: ${JWT_SECRET}
+  JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION:-900000}
+  JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: house-booker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init-multiple-db.sh:/docker-entrypoint-initdb.d/init-multiple-db.sh:ro
+    networks:
+      - house-booker-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: house-booker-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - house-booker-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  kafka:
+    image: bitnami/kafka:3.7
+    container_name: house-booker-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_CFG_NODE_ID: 0
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://${EC2_1_PRIVATE_IP}:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - house-booker-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: house-booker-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - house-booker-network
+
+  eureka-server:
+    image: ghcr.io/${GHCR_OWNER}/house-booker-eureka-server:${IMAGE_TAG}
+    container_name: house-booker-eureka-server
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8761
+      HOST_PRIVATE_IP: ${EC2_1_PRIVATE_IP}
+      EUREKA_INSTANCE_IP_ADDRESS: ${EC2_1_PRIVATE_IP}
+    ports:
+      - "8761:8761"
+    networks:
+      - house-booker-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8761/actuator/health || curl -fsS http://localhost:8761/"]
+      interval: 20s
+      timeout: 10s
+      retries: 20
+
+  api-gateway:
+    image: ghcr.io/${GHCR_OWNER}/house-booker-api-gateway:${IMAGE_TAG}
+    container_name: house-booker-api-gateway
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8080
+      HOST_PRIVATE_IP: ${EC2_1_PRIVATE_IP}
+      EUREKA_INSTANCE_IP_ADDRESS: ${EC2_1_PRIVATE_IP}
+    ports:
+      - "80:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - house-booker-network
+
+  auth-service:
+    image: ghcr.io/${GHCR_OWNER}/house-booker-auth-service:${IMAGE_TAG}
+    container_name: house-booker-auth-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SERVER_PORT: 3001
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      HOST_PRIVATE_IP: ${EC2_1_PRIVATE_IP}
+      EUREKA_INSTANCE_IP_ADDRESS: ${EC2_1_PRIVATE_IP}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - house-booker-network

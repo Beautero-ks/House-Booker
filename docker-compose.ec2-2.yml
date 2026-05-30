@@ -1,0 +1,73 @@
+name: house-booker-ec2-2
+
+networks:
+  house-booker-network:
+    driver: bridge
+
+x-common-env: &common-env
+  SPRING_PROFILES_ACTIVE: docker
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://${EC2_1_PRIVATE_IP}:8761/eureka/
+  SPRING_DATA_REDIS_HOST: ${EC2_1_PRIVATE_IP}
+  SPRING_REDIS_HOST: ${EC2_1_PRIVATE_IP}
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP}:9092
+  KAFKA_BOOTSTRAP_SERVERS: ${EC2_1_PRIVATE_IP}:9092
+  JWT_SECRET: ${JWT_SECRET}
+  JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION:-900000}
+  JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+
+services:
+
+  booking-service:
+    image: ghcr.io/${GHCR_OWNER}/house-booker-booking-service:${IMAGE_TAG}
+    container_name: house-booker-booking-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${EC2_1_PRIVATE_IP}:5432/booking_db
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      HOST_PRIVATE_IP: ${EC2_2_PRIVATE_IP}
+      EUREKA_INSTANCE_IP_ADDRESS: ${EC2_2_PRIVATE_IP}
+    ports:
+      - "8084:8084"
+    networks:
+      - house-booker-network
+
+  house-service:
+    image: ghcr.io/${GHCR_OWNER}/house-booker-house-service:${IMAGE_TAG}
+    container_name: house-booker-house-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${EC2_1_PRIVATE_IP}:5432/house_db
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      HOST_PRIVATE_IP: ${EC2_2_PRIVATE_IP}
+      EUREKA_INSTANCE_IP_ADDRESS: ${EC2_2_PRIVATE_IP}
+    ports:
+      - "8083:8083"
+    networks:
+      - house-booker-network
+
+  notification-service:
+    image: ghcr.io/${GHCR_OWNER}/house-booker-notification-service:${IMAGE_TAG}
+    container_name: house-booker-notification-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8085
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${EC2_1_PRIVATE_IP}:5432/notification_db
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_MAIL_HOST: ${EC2_1_PRIVATE_IP}
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_USERNAME: ""
+      SPRING_MAIL_PASSWORD: ""
+      HOST_PRIVATE_IP: ${EC2_2_PRIVATE_IP}
+      EUREKA_INSTANCE_IP_ADDRESS: ${EC2_2_PRIVATE_IP}
+    ports:
+      - "8085:8085"
+    networks:
+      - house-booker-network

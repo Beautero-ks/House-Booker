@@ -55,7 +55,7 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
-    ip-address: 127.0.0.1
+    ip-address: ${EUREKA_INSTANCE_IP_ADDRESS:${HOST_PRIVATE_IP:127.0.0.1}}
 
 house-service:
   url: ${HOUSE_SERVICE_URL:http://localhost:8084}
