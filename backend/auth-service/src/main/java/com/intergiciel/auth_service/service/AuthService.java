@@ -96,7 +96,7 @@ public class AuthService {
         otpService.verify(userUUID, code);
 
         user.setVerified(true);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         log.info("[AuthService] Compte vérifié : {}", user.getEmail());
 
