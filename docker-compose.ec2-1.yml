@@ -82,7 +82,7 @@ services:
       start_period: 20s
 
   kafka:
-    image: apache/kafka:3.7.0
+    image: confluentinc/cp-kafka:7.5.0  # <-- Image plus stable et compatible avec Zookeeper
     container_name: house-booker-kafka
     restart: unless-stopped
     depends_on:
@@ -93,24 +93,52 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092  # <-- Utilise le nom du conteneur Kafka
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://:9092
-#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${EC2_1_PRIVATE_IP}:9092
-#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     volumes:
-      - kafka_data:/kafka
+      - kafka_data:/var/lib/kafka/data
     networks:
       - house-booker-network
     healthcheck:
-      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null 2>&1 || exit 1" ]
-      interval: 20s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092" ]
+      interval: 30s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+#  kafka:
+#    image: apache/kafka:3.7.0
+#    container_name: house-booker-kafka
+#    restart: unless-stopped
+#    depends_on:
+#      zookeeper:
+#        condition: service_healthy
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      KAFKA_BROKER_ID: 1
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092  # <-- Utilise le nom du conteneur Kafka
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+#      KAFKA_LISTENERS: PLAINTEXT://:9092
+##      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${EC2_1_PRIVATE_IP}:9092
+##      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+#      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+#      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#    volumes:
+#      - kafka_data:/kafka
+#    networks:
+#      - house-booker-network
+#    healthcheck:
+#      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null 2>&1 || exit 1" ]
+#      interval: 20s
+#      timeout: 10s
+#      retries: 10
+#      start_period: 30s
 
   mailpit:
     image: axllent/mailpit:latest
