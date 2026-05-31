@@ -16,6 +16,38 @@ spring:
 
       # Définition explicite des routes (Rattaché directement à 'gateway')
       routes:
+        # Routes publiques exposées au frontend Vercel
+        - id: auth-service-api-graphql-route
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/graphql
+          filters:
+            - RewritePath=/api/auth/graphql, /graphql
+
+        - id: house-service-api-graphql-route
+          uri: lb://house-service
+          predicates:
+            - Path=/api/houses/graphql
+          filters:
+            - JwtAuthenticationFilter
+            - RewritePath=/api/houses/graphql, /graphql
+
+        - id: booking-service-api-graphql-route
+          uri: lb://booking-service
+          predicates:
+            - Path=/api/bookings/graphql
+          filters:
+            - JwtAuthenticationFilter
+            - RewritePath=/api/bookings/graphql, /graphql
+
+        - id: notification-service-api-route
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - JwtAuthenticationFilter
+            - RewritePath=/api/notifications(?<segment>/?.*), /api/v1/notifications$\{segment}
+
         # Route pour le Auth-Service
         - id: auth-service-public-route
           uri: lb://auth-service

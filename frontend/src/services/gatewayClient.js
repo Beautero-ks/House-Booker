@@ -1,11 +1,12 @@
 import { getAccessToken } from '../utils/tokenStorage';
+import { API_CONFIG } from '../config/api';
 
 const withGatewayBase = (path) => {
   if (/^https?:\/\//i.test(path)) {
     return path;
   }
 
-  const base = import.meta.env.VITE_API_GATEWAY_URL || '';
+  const base = API_CONFIG.API_GATEWAY_URL || '';
   return `${base}${path}`;
 };
 

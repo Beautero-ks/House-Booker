@@ -1,13 +1,19 @@
 package com.intergiciel.api_gateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 public class CorsConfig {
+
+    @Value("${app.cors.allowed-origin-patterns:http://localhost:3000,http://localhost:4200,https://*.vercel.app}")
+    private String allowedOriginPatterns;
 
     @Bean
     public CorsWebFilter corsFilter() {
@@ -16,9 +22,10 @@ public class CorsConfig {
         // Autorise ton frontend à lire et envoyer les cookies/headers de session
         config.setAllowCredentials(true);
 
-        // Ajoute ici l'adresse exacte (origine) de ton application frontend
-        config.addAllowedOrigin("http://localhost:4200"); // Port Angular typique
-        config.addAllowedOrigin("http://localhost:3000"); // Port React/Next/Vue typique
+        Arrays.stream(allowedOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .forEach(config::addAllowedOriginPattern);
 
         // Autorise tous les headers (Authorization, Content-Type, etc.)
         config.addAllowedHeader("*");

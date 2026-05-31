@@ -1,4 +1,4 @@
-import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink, from, fromPromise } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
 import { API_CONFIG } from '../config/api';
@@ -6,7 +6,7 @@ import { getAccessToken, getRefreshToken, setTokens, clearAuth } from '../utils/
 import { REFRESH_TOKEN_MUTATION } from './graphql/mutations/refreshToken';
 
 const httpLink = createHttpLink({
-  uri: API_CONFIG.API_GATEWAY_URL,
+  uri: API_CONFIG.AUTH_GRAPHQL_URL,
 });
 
 const authLink = setContext((_, { headers }) => {

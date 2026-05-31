@@ -76,8 +76,6 @@ jobs:
 
       - name: Build frontend
         working-directory: ${{ env.FRONTEND_DIR }}
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy frontend
