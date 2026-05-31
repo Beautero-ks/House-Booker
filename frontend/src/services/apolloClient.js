@@ -1,15 +1,13 @@
-import { ApolloClient, InMemoryCache, createHttpLink, from, split } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
-import { fromPromise } from '@apollo/client';
 import { API_CONFIG } from '../config/api';
 import { getAccessToken, getRefreshToken, setTokens, clearAuth } from '../utils/tokenStorage';
 import { REFRESH_TOKEN_MUTATION } from './graphql/mutations/refreshToken';
 
-// ── HTTP Links par service ──────────────────────────────────────────
-const authHttpLink     = createHttpLink({ uri: API_CONFIG.AUTH_GRAPHQL_URL });
-const houseHttpLink    = createHttpLink({ uri: API_CONFIG.HOUSE_GRAPHQL_URL });
-const bookingHttpLink  = createHttpLink({ uri: API_CONFIG.BOOKING_GRAPHQL_URL });
+const httpLink = createHttpLink({
+  uri: API_CONFIG.AUTH_GRAPHQL_URL,
+});
 
 // Routing selon le contexte { service: 'auth' | 'house' | 'booking' }
 const splitLink = split(
@@ -25,6 +23,12 @@ const splitLink = split(
 // ── Auth Link (injecte le Bearer token) ────────────────────────────
 const authLink = setContext((_, { headers }) => {
   const token = getAccessToken();
+  const nextHeaders = { ...headers };
+
+  if (token) {
+    nextHeaders.authorization = `Bearer ${token}`;
+  }
+
   return {
     headers: {
       ...headers,
@@ -69,6 +73,7 @@ const shouldRefreshToken = ({ graphQLErrors, networkError, operation }) => {
       );
     });
   }
+
   return false;
 };
 
