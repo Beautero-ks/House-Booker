@@ -2,7 +2,7 @@ const DEFAULT_GOOGLE_CLIENT_ID =
     '361819434983-cm1se6aefolqdhc0hashnkh6v9rg5ut6.apps.googleusercontent.com';
 
 const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost';
+    import.meta.env.VITE_API_URL || 'http://localhost';
 
 export const API_CONFIG = {
     API_BASE_URL,

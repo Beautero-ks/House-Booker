@@ -5,7 +5,7 @@ const withGatewayBase = (path) => {
     return path;
   }
 
-  const base = import.meta.env.VITE_API_GATEWAY_URL || '';
+  const base = import.meta.env.VITE_API_URL || '';
   return `${base}${path}`;
 };
 
