@@ -25,7 +25,7 @@ public class KafkaConfig {
     @Value("${kafka.topics.user-created}")
     private String userCreatedTopic;
 
-    @Value("${kafka.topics.user-verified}$")
+    @Value("${kafka.topics.user-verified}")
     private String userVerifiedTopic;
 
     // ===== PRODUCER CONFIG =====

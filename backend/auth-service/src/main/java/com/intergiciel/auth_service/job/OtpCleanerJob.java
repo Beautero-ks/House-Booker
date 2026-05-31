@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +25,7 @@ public class OtpCleanerJob {
      * En production : ajuster la fréquence selon le volume
      */
     @Scheduled(cron = "0 0 * * * *")
+    @Transactional
     public void cleanExpiredOtps() {
         log.info("[OtpCleanerJob] Début du nettoyage des OTPs expirés...");
 
