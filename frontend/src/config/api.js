@@ -1,11 +1,11 @@
 const DEFAULT_GOOGLE_CLIENT_ID =
     '361819434983-cm1se6aefolqdhc0hashnkh6v9rg5ut6.apps.googleusercontent.com';
-const DEFAULT_PRODUCTION_API_BASE_URL = '13.51.109.43';
+const DEFAULT_PRODUCTION_API_BASE_URL = '/backend';
 
 const trimTrailingSlash = (url) => url.replace(/\/+$/, '');
 
 const withHttpProtocol = (url) => {
-    if (!url || /^https?:\/\//i.test(url)) {
+    if (!url || url.startsWith('/') || /^https?:\/\//i.test(url)) {
         return url;
     }
 
@@ -14,12 +14,18 @@ const withHttpProtocol = (url) => {
 
 const normalizeGatewayBaseUrl = (url) => {
     const trimmedUrl = trimTrailingSlash(withHttpProtocol(url));
-    return trimmedUrl
+    const normalizedUrl = trimmedUrl
         .replace(/\/grapql/i, '/graphql')
         .replace(/\/graphql(?:\/(?:auth|house|houses|booking|bookings|notification|notifications))?$/i, '')
         .replace(/\/api\/v1\/notifications$/i, '')
         .replace(/\/api\/notifications$/i, '')
         .replace(/\/api\/(?:auth|houses|bookings)\/graphql$/i, '');
+
+    if (import.meta.env.PROD && normalizedUrl.startsWith('http://')) {
+        return DEFAULT_PRODUCTION_API_BASE_URL;
+    }
+
+    return normalizedUrl;
 };
 
 const withBaseUrl = (path) => {
