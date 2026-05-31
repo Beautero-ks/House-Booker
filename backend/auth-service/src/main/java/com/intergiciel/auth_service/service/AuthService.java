@@ -1,14 +1,12 @@
 package com.intergiciel.auth_service.service;
 
-import com.intergiciel.auth_service.dto.LoginInput;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.intergiciel.auth_service.dto.LoginInput;
 import com.intergiciel.auth_service.dto.event.UserVerifiedEvent;
 import com.intergiciel.auth_service.dto.request.RegisterInput;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier;
 import com.intergiciel.auth_service.dto.request.GoogleTokenVerifier.GoogleUserInfo;
 import com.intergiciel.auth_service.dto.response.AuthResponse;
-import com.intergiciel.auth_service.dto.response.UserInfo;
-import com.intergiciel.auth_service.dto.LoginInput;
 import com.intergiciel.auth_service.entity.User;
 import com.intergiciel.auth_service.kafka.EventPublisher;
 import com.intergiciel.auth_service.enums.UserRole;
@@ -70,13 +68,7 @@ public class AuthService {
                 .message("Compte créé. Un code OTP a été envoyé à " + user.getEmail())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .user(UserInfo.builder()
-                        .id(user.getId().toString())
-                        .name(user.getName())
-                        .email(user.getEmail())
-                        .isVerified(false)
-                        .role(user.getRole().name())
-                        .build())
+                .user(UserMapper.toUserInfo(user))
                 .build();
     }
 
@@ -144,13 +136,7 @@ public class AuthService {
                 .message("Connexion réussie")
                 .accessToken(tokenService.generateAccessToken(user))
                 .refreshToken(tokenService.generateRefreshToken(user))
-                .user(UserInfo.builder()
-                        .id(user.getId().toString())
-                        .name(user.getName())
-                        .email(user.getEmail())
-                        .isVerified(true)
-                        .role(user.getRole().name())
-                        .build())
+                .user(UserMapper.toUserInfo(user))
                 .build();
     }
 
@@ -269,20 +255,7 @@ public class AuthService {
                 .message(isNewUser ? "Compte Google créé et connecté" : "Connexion Google réussie")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .user(UserInfo.builder()
-                        .id(user.getId().toString())
-                        .name(user.getName())
-                        .email(user.getEmail())
-                        .username(user.getUsername())
-                        .phoneNumber(user.getPhoneNumber())
-                        .photoUrl(user.getPhotoUrl())
-                        .isVerified(user.isVerified())
-                        .enabled(user.isEnabled())
-                        .provider(user.getProvider())
-                        .role(user.getRole().name())
-                        .createdAt(user.getCreatedAt() == null ? null : user.getCreatedAt().toString())
-                        .updatedAt(user.getUpdatedAt() == null ? null : user.getUpdatedAt().toString())
-                        .build())
+                .user(UserMapper.toUserInfo(user))
                 .build();
     }
 

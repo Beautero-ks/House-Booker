@@ -1,6 +1,6 @@
 const DEFAULT_GOOGLE_CLIENT_ID =
     '361819434983-cm1se6aefolqdhc0hashnkh6v9rg5ut6.apps.googleusercontent.com';
-const DEFAULT_PRODUCTION_API_BASE_URL = '/13.51.109.43';
+const DEFAULT_PRODUCTION_API_BASE_URL = '/backend';
 
 const trimTrailingSlash = (url) => url.replace(/\/+$/, '');
 

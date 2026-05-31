@@ -51,8 +51,14 @@ public class EventPublisher {
         String payload = objectMapper.writeValueAsString(event);
         // La clé = userId → garantit que tous les events d'un même user
         // vont dans la même partition (ordre garanti)
-        CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(userCreatedTopic, user.getId().toString(), payload);
+        CompletableFuture<SendResult<String, String>> future;
+        try {
+            future = kafkaTemplate.send(userCreatedTopic, user.getId().toString(), payload);
+        } catch (Exception ex) {
+            log.error("[EventPublisher] Publication immédiate impossible pour 'user.created' user={} : {}",
+                    user.getEmail(), ex.getMessage(), ex);
+            return;
+        }
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
