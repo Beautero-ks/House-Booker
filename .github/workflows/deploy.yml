@@ -74,19 +74,13 @@ jobs:
         working-directory: ${{ env.FRONTEND_DIR }}
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Pull Vercel build variables
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: vercel env pull .env.production.local --environment=production --yes --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Build frontend
         working-directory: ${{ env.FRONTEND_DIR }}
-        shell: bash
-        run: |
-          if [ -f .vercel/.env.production.local ]; then
-            set -a
-            . .vercel/.env.production.local
-            set +a
-          fi
-
-          : "${VITE_API_BASE_URL:?VITE_API_BASE_URL must be configured in Vercel production environment}"
-
-          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy frontend
         working-directory: ${{ env.FRONTEND_DIR }}
