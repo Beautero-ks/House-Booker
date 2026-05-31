@@ -55,15 +55,17 @@ const BOOKING_GRAPHQL_URL = graphQLEndpoint(
     /\/api\/bookings\/graphql$/i
 );
 
+const GRAPHQL_URL = graphQLEndpoint(
+    import.meta.env.VITE_GRAPHQL_URL,
+    '/graphql/auth',
+    /\/graphql$/i
+);
+
 export const API_CONFIG = {
     API_BASE_URL,
     API_GATEWAY_URL: API_BASE_URL,
 
-    GRAPHQL_URL: graphQLEndpoint(
-        import.meta.env.VITE_GRAPHQL_URL,
-        '/graphql/auth',
-        /\/graphql$/i
-    ),
+    GRAPHQL_URL: GRAPHQL_URL === '/graphql/auth' ? AUTH_GRAPHQL_URL : GRAPHQL_URL,
 
     // =========================================================
     // GRAPHQL ENDPOINTS VIA API GATEWAY
