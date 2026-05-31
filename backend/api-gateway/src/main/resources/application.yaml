@@ -52,7 +52,7 @@ spring:
         - id: auth-service-public-route
           uri: lb://auth-service
           predicates:
-            - Path=/graphql/auth/**
+            - Path=/graphql/auth, /graphql/auth/**
           filters:
             - RewritePath=/graphql/auth(?<segment>/?.*), /graphql$\{segment}
 
@@ -69,7 +69,7 @@ spring:
         - id: house-service-protected-route
           uri: lb://house-service
           predicates:
-            - Path=/graphql/house/**
+            - Path=/graphql/house, /graphql/house/**
           filters:
             - JwtAuthenticationFilter
             - RewritePath=/graphql/house(?<segment>/?.*), /graphql$\{segment}
@@ -78,7 +78,7 @@ spring:
         - id: booking-service-protected-route
           uri: lb://booking-service
           predicates:
-            - Path=/graphql/booking/**
+            - Path=/graphql/booking, /graphql/booking/**
           filters:
             - JwtAuthenticationFilter
             - RewritePath=/graphql/booking(?<segment>/?.*), /graphql$\{segment}

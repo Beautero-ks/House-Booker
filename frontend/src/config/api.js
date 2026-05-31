@@ -1,5 +1,6 @@
 const DEFAULT_GOOGLE_CLIENT_ID =
     '361819434983-cm1se6aefolqdhc0hashnkh6v9rg5ut6.apps.googleusercontent.com';
+const DEFAULT_PRODUCTION_API_BASE_URL = '13.51.109.43';
 
 const trimTrailingSlash = (url) => url.replace(/\/+$/, '');
 
@@ -32,7 +33,7 @@ const withBaseUrl = (path) => {
 const API_BASE_URL = normalizeGatewayBaseUrl(
     import.meta.env.VITE_API_BASE_URL ||
     import.meta.env.VITE_API_GATEWAY_URL ||
-    (import.meta.env.DEV ? 'http://localhost:8083' : '')
+    (import.meta.env.DEV ? 'http://localhost:8083' : DEFAULT_PRODUCTION_API_BASE_URL)
 );
 
 const AUTH_GRAPHQL_URL = withBaseUrl('/graphql/auth');
