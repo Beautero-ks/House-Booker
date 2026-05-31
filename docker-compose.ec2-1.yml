@@ -140,6 +140,21 @@ services:
 #      retries: 10
 #      start_period: 30s
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: house-booker-kafka-ui
+    restart: unless-stopped
+    ports:
+      - "8090:8090"                         # ← accessible via IP:8090
+    environment:
+      KAFKA_CLUSTERS_0_NAME: house-booker-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - house-booker-network
+
   mailpit:
     image: axllent/mailpit:latest
     container_name: house-booker-mailpit
