@@ -214,7 +214,7 @@ services:
       HOST_PRIVATE_IP: ${EC2_1_PRIVATE_IP}
       EUREKA_INSTANCE_IP_ADDRESS: ${EC2_1_PRIVATE_IP}
     ports:
-      - "3001:8081"
+      - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy

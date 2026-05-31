@@ -54,7 +54,7 @@ spring:
           predicates:
             - Path=/graphql/auth, /graphql/auth/**
           filters:
-            - RewritePath=/graphql/auth(?<segment>/?.*), /graphql$\{segment}
+            - RewritePath=/graphql/auth/?(?<segment>.*), /graphql$\{segment}
 
         # Route pour le User-Service
         - id: user-service-protected-route
@@ -63,7 +63,7 @@ spring:
             - Path=/graphql/user/**
           filters:
             - JwtAuthenticationFilter
-            - RewritePath=/graphql/user(?<segment>/?.*), /graphql$\{segment}
+            - RewritePath=/graphql/user/?(?<segment>.*), /graphql$\{segment}
 
         # Route pour le House-Service
         - id: house-service-protected-route
@@ -72,7 +72,7 @@ spring:
             - Path=/graphql/house, /graphql/house/**
           filters:
             - JwtAuthenticationFilter
-            - RewritePath=/graphql/house(?<segment>/?.*), /graphql$\{segment}
+            - RewritePath=/graphql/house/?(?<segment>.*), /graphql$\{segment}
 
         # Route pour le Booking-Service
         - id: booking-service-protected-route
@@ -81,7 +81,7 @@ spring:
             - Path=/graphql/booking, /graphql/booking/**
           filters:
             - JwtAuthenticationFilter
-            - RewritePath=/graphql/booking(?<segment>/?.*), /graphql$\{segment}
+            - RewritePath=/graphql/booking/?(?<segment>.*), /graphql$\{segment}
 
         # Route pour le Review-Service
         - id: review-service-protected-route
